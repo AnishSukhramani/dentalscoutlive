@@ -56,7 +56,7 @@ export default function Home() {
 
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4 p-4 bg-custom">
       <h1 className="text-blue-500 font-bold text-xl">Neurality Health</h1>
 
       <div className="flex items-center space-x-2">
@@ -64,6 +64,14 @@ export default function Home() {
         <Switch id="file-toggle" checked={isCsv} onCheckedChange={handleToggleChange} />
         <p>CSV</p>
       </div>
+
+      <div className="flex items-center space-x-2">
+      <p>Does the file have a header row?</p>
+      <Switch id="header-toggle" />
+      </div>
+
+      
+
 {/* ✅ ADDED: onChange handler for immediate metrics analysis */}
       <Input id="file-upload" type="file" accept={acceptedFileTypes} onChange={handleFileChange} />
       {fileMetrics && (
