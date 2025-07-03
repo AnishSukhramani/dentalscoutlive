@@ -5,18 +5,20 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import * as XLSX from "xlsx"; // ✅ ADDED: XLSX for Excel parsing
-import Papa from "papaparse"; // ✅ ADDED: PapaParse for CSV parsing
+import * as XLSX from "xlsx"; 
+import Papa from "papaparse"; 
 
 export default function Home() {
   const [isCsv, setIsCsv] = useState(false);
-  const [fileMetrics, setFileMetrics] = useState(null); // ✅ ADDED: Store parsed metrics
+  const [fileMetrics, setFileMetrics] = useState(null); 
+  const [filePreview, setFilePreview] = useState([]); // ✅ NEW: State to store preview rows
   const acceptedFileTypes = isCsv
     ? ".csv"
     : ".xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
   const handleToggleChange = (checked) => {
     setIsCsv(checked);
-    setFileMetrics(null); // ✅ CLEAR metrics when switching type
+    setFileMetrics(null); 
+    setFilePreview([]); // ✅ CLEAR preview when switching type
   };
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -33,7 +35,9 @@ export default function Home() {
           complete: function (results) {
             const columnNames = results.meta.fields;
             const numRows = results.data.length;
+            const preview = results.data.slice(0, 5); // ✅ Slice first 5 rows
             setFileMetrics({ columnNames, numRows, fileSize });
+            setFilePreview(preview);
           },
         });
       };
@@ -48,7 +52,15 @@ export default function Home() {
 
         const columnNames = jsonData[0];
         const numRows = jsonData.length - 1;
+        const previewRows = jsonData.slice(1, 6).map(row => {
+          const rowObject = {};
+          columnNames.forEach((col, i) => {
+            rowObject[col] = row[i];
+          });
+          return rowObject;
+        });
         setFileMetrics({ columnNames, numRows, fileSize });
+        setFilePreview(previewRows);
       };
       reader.readAsBinaryString(file);
     }
@@ -72,13 +84,36 @@ export default function Home() {
 
       
 
-{/* ✅ ADDED: onChange handler for immediate metrics analysis */}
       <Input id="file-upload" type="file" accept={acceptedFileTypes} onChange={handleFileChange} />
       {fileMetrics && (
         <div className="bg-gray-100 p-4 rounded shadow">
           <p><strong>File Size:</strong> {fileMetrics.fileSize}</p>
           <p><strong>Number of Entries:</strong> {fileMetrics.numRows}</p>
           <p><strong>Columns:</strong> {fileMetrics.columnNames.join(", ")}</p>
+        </div>
+      )}
+
+{filePreview.length > 0 && (
+        <div className="overflow-auto bg-white rounded shadow p-4 border">
+          <h2 className="font-semibold mb-2">File Preview (first 5 rows)</h2>
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr>
+                {fileMetrics?.columnNames?.map((col, idx) => (
+                  <th key={idx} className="border px-2 py-1 bg-gray-200">{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filePreview.map((row, idx) => (
+                <tr key={idx}>
+                  {fileMetrics.columnNames.map((col, colIdx) => (
+                    <td key={colIdx} className="border px-2 py-1">{row[col] ?? ""}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
