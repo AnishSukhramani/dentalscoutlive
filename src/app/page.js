@@ -1,5 +1,5 @@
 "use client"
-
+//TODO: Integrate Google Sheets as an alternative to Excel/CSV
 import Image from "next/image";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -12,13 +12,24 @@ export default function Home() {
   const [isCsv, setIsCsv] = useState(false);
   const [fileMetrics, setFileMetrics] = useState(null); 
   const [filePreview, setFilePreview] = useState([]); // ✅ NEW: State to store preview rows
+  const [columnMapping, setColumnMapping] = useState({ // ✅ NEW: Track selected mappings
+    practiceName: "",
+    practiceUrl: "",
+    ownerName: "",
+  });
+
   const acceptedFileTypes = isCsv
     ? ".csv"
     : ".xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
   const handleToggleChange = (checked) => {
     setIsCsv(checked);
     setFileMetrics(null); 
     setFilePreview([]); // ✅ CLEAR preview when switching type
+    setColumnMapping({ practiceName: "", practiceUrl: "", ownerName: "" }); // ✅ CLEAR mapping on switch
+  };
+  const handleMappingChange = (field, value) => { // ✅ Handler to update mapping state
+    setColumnMapping((prev) => ({ ...prev, [field]: value }));
   };
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -65,6 +76,8 @@ export default function Home() {
       reader.readAsBinaryString(file);
     }
   };
+  const isMappingComplete = columnMapping.practiceName && columnMapping.practiceUrl && columnMapping.ownerName; // ✅ Mapping completeness check
+
 
 
   return (
@@ -93,6 +106,54 @@ export default function Home() {
         </div>
       )}
 
+      {/* ✅ MAPPING UI: Shown only after file loaded */}
+      {fileMetrics?.columnNames?.length > 0 && (
+        <div className="space-y-2 bg-white p-4 border rounded shadow">
+          <h2 className="font-semibold">Map Required Fields</h2>
+          <div className="space-y-2">
+            <div>
+              <label className="block text-sm font-medium">Practice Name Column</label>
+              <select
+                className="w-full border rounded px-2 py-1"
+                value={columnMapping.practiceName}
+                onChange={(e) => handleMappingChange("practiceName", e.target.value)}
+              >
+                <option value="">-- Select Column --</option>
+                {fileMetrics.columnNames.map((col, idx) => (
+                  <option key={idx} value={col}>{col}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Practice Website URL Column</label>
+              <select
+                className="w-full border rounded px-2 py-1"
+                value={columnMapping.practiceUrl}
+                onChange={(e) => handleMappingChange("practiceUrl", e.target.value)}
+              >
+                <option value="">-- Select Column --</option>
+                {fileMetrics.columnNames.map((col, idx) => (
+                  <option key={idx} value={col}>{col}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Owner Full Name Column</label>
+              <select
+                className="w-full border rounded px-2 py-1"
+                value={columnMapping.ownerName}
+                onChange={(e) => handleMappingChange("ownerName", e.target.value)}
+              >
+                <option value="">-- Select Column --</option>
+                {fileMetrics.columnNames.map((col, idx) => (
+                  <option key={idx} value={col}>{col}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
 {filePreview.length > 0 && (
         <div className="overflow-auto bg-white rounded shadow p-4 border">
           <h2 className="font-semibold mb-2">File Preview (first 5 rows)</h2>
@@ -117,7 +178,8 @@ export default function Home() {
         </div>
       )}
 
-      <Button>Upload</Button>
+      {/* ✅ DISABLE Upload until mappings are selected */}
+       <Button disabled={!isMappingComplete}>Upload</Button>
     </div>
   );
 }
