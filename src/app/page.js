@@ -1,5 +1,7 @@
 "use client"
 //TODO: Integrate Google Sheets as an alternative to Excel/CSV
+//TODO: Modularize the code into components
+
 import Image from "next/image";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
