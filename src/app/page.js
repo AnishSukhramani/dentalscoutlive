@@ -1,6 +1,8 @@
 "use client"
 //TODO: Integrate Google Sheets as an alternative to Excel/CSV
 //TODO: Modularize the code into components
+//TODO: Row mapping: Implement a check to ensure that no 2 fields are assigened the same column. 
+//TODO: When clicked the excel/csv toggle it should also clear the choose file field
 
 import Image from "next/image";
 import { useState } from "react";
@@ -9,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import * as XLSX from "xlsx"; 
 import Papa from "papaparse"; 
+import SupabaseTable from "@/components/SupabaseTable";
 
 export default function Home() {
   const [isCsv, setIsCsv] = useState(false);
@@ -182,6 +185,7 @@ export default function Home() {
 
       {/* ✅ DISABLE Upload until mappings are selected */}
        <Button disabled={!isMappingComplete}>Upload</Button>
+       <SupabaseTable/>
     </div>
   );
 }
