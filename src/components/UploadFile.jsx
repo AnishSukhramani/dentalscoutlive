@@ -1,19 +1,20 @@
 "use client"
 import React from 'react'
 import { useState } from "react";
-import { useEffect, useRef } from "react";
+// import { useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import * as XLSX from "xlsx"; 
 import Papa from "papaparse"; 
+import { supabase } from "@/lib/supabaseClient"; // ✅ Supabase client import
 
 
 const UploadFile = () => {
     const [isCsv, setIsCsv] = useState(false);
     const [fileMetrics, setFileMetrics] = useState(null); 
-    const [filePreview, setFilePreview] = useState([]); // ✅ NEW: State to store preview rows
-    const [columnMapping, setColumnMapping] = useState({ // ✅ NEW: Track selected mappings
+    const [filePreview, setFilePreview] = useState([]); 
+    const [columnMapping, setColumnMapping] = useState({ 
         practiceName: "",
         practiceUrl: "",
         ownerName: "",
@@ -24,13 +25,13 @@ const UploadFile = () => {
     const [allRows, setAllRows] = useState([]); // ✅ Store all entries
     const [hasHeader, setHasHeader] = useState(true); // ✅ Track toggle for header row
     const [filteredJson, setFilteredJson] = useState(null); // ✅ Store filtered output
+    const [uploading, setUploading] = useState(false);
 
 
   const handleToggleChange = (checked) => {
     setIsCsv(checked);
     setFileMetrics(null); 
     setFilePreview([]); // ✅ CLEAR preview when switching type
-    setColumnMapping({ practiceName: "", practiceUrl: "", ownerName: "" }); // ✅ CLEAR mapping on switch
     setColumnMapping({ practiceName: "", practiceUrl: "", ownerName: "" });
     setAllRows([]);
     setFilteredJson(null);
@@ -82,25 +83,40 @@ const UploadFile = () => {
     }
   };
   const isMappingComplete = columnMapping.practiceName && columnMapping.practiceUrl && columnMapping.ownerName; // ✅ Mapping completeness check
-  const handleUpload = () => {
+  const handleUpload = async () => {
     const { practiceName, practiceUrl, ownerName } = columnMapping;
-    if (!practiceName || !practiceUrl || !ownerName) return;
+    if (!isMappingComplete) return;
 
     const filtered = allRows.filter((row) => {
       const value = row[practiceUrl];
       return value !== undefined && value !== null && value.toString().trim() !== "";
     });
 
-    const output = filtered.map((row) => ({
-      ["Practice Name"]: row[practiceName],
-      ["Practice Website URL"]: row[practiceUrl],
-      ["Owner Full Name"]: row[ownerName],
+    const mappedEntries = filtered.map((row) => ({
+      practice_name: row[practiceName],
+      domain_url: row[practiceUrl],
+      owner_name: row[ownerName],
     }));
-
+    
     setFilteredJson({
       hasHeader,
-      entries: output,
+      entries: mappedEntries,
     });
+    try {
+      setUploading(true);
+      const { error } = await supabase.from("practices").insert(mappedEntries);
+      if (error) {
+        console.error("Supabase insert error:", error);
+        alert("Error uploading data: " + error.message);
+      } else {
+        alert("Upload successful!");
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      alert("Unexpected error uploading data");
+    } finally {
+      setUploading(false);
+    }
   };
 
 
@@ -200,11 +216,10 @@ const UploadFile = () => {
         </div>
       )}
 
-      <Button disabled={!isMappingComplete} onClick={handleUpload}>
-        Upload
+      <Button disabled={!isMappingComplete || uploading} onClick={handleUpload}>
+        {uploading ? "Uploading..." : "Upload"}
       </Button>
 
-      {/* ✅ Output Section */}
       {filteredJson && (
         <div className="mt-6 p-4 bg-gray-100 border rounded">
           <h3 className="font-bold mb-2">Filtered JSON Output</h3>
