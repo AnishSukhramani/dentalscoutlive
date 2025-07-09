@@ -11,7 +11,15 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export default function SupabaseTable() {
   const [data, setData] = useState([]);
@@ -19,6 +27,7 @@ export default function SupabaseTable() {
   const [error, setError] = useState(null);
   const [editingRow, setEditingRow] = useState(null);
   const [formData, setFormData] = useState({});
+  const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -35,6 +44,7 @@ export default function SupabaseTable() {
   const handleDelete = async (id) => {
     await supabase.from("practices").delete().eq("id", id);
     fetchData();
+    setDeleteId(null);
   };
 
   const handleEdit = (row) => {
@@ -82,7 +92,9 @@ export default function SupabaseTable() {
               <TableCell className="text-right space-x-2">
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(row)}>Edit</Button>
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(row)}>
+                      Edit
+                    </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-sm">
                     <DialogHeader>
@@ -98,11 +110,31 @@ export default function SupabaseTable() {
                           onChange={handleChange}
                         />
                       ))}
-                      <Button onClick={handleUpdate} className="w-full">Update</Button>
+                      <Button onClick={handleUpdate} className="w-full">
+                        Update
+                      </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(row.id)}>Delete</Button>
+                <Dialog open={deleteId === row.id} onOpenChange={(open) => setDeleteId(open ? row.id : null)}>
+                  <DialogTrigger asChild>
+                    <Button variant="destructive" size="sm">Delete</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                      <DialogTitle>Are you sure?</DialogTitle>
+                      <DialogDescription>
+                        This action cannot be undone. This will permanently delete the entry.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <div className="flex justify-end space-x-2">
+                        <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => handleDelete(row.id)}>Confirm</Button>
+                      </div>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </TableCell>
             </TableRow>
           ))}
