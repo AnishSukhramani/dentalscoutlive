@@ -21,10 +21,15 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 
 export default function SupabaseTable() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [selectAllPage, setSelectAllPage] = useState(false);
+  const [selectAllGlobal, setSelectAllGlobal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingRow, setEditingRow] = useState(null);
@@ -136,6 +141,70 @@ export default function SupabaseTable() {
     }
   };
 
+  const handleSelect = (id, checked) => {
+    const updated = new Set(selectedIds);
+    checked ? updated.add(id) : updated.delete(id);
+    setSelectedIds(updated);
+    setSelectAllPage(false);
+    setSelectAllGlobal(false);
+  };
+
+  const handleSelectAllPage = () => {
+    const updated = new Set(paginatedData.map((d) => d.id));
+    setSelectedIds(updated);
+    setSelectAllPage(true);
+    setSelectAllGlobal(false);
+  };
+
+  const handleSelectAllGlobal = () => {
+    setSelectedIds(new Set(filteredData.map((d) => d.id)));
+    setSelectAllPage(false);
+    setSelectAllGlobal(true);
+  };
+
+  const handleCopy = async () => {
+    const selected = data.filter((row) => selectedIds.has(row.id));
+    const text = selected.map((r) => JSON.stringify(r)).join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Copied to clipboard");
+    } catch (e) {
+      toast.error("Failed to copy");
+    }
+  };
+
+  const exportToCsv = () => {
+    const selected = data.filter((row) => selectedIds.has(row.id));
+    if (selected.length === 0) return;
+    const headers = Object.keys(selected[0]);
+    const csv = [headers.join(",")].concat(
+      selected.map((row) => headers.map((field) => `"${row[field]}"`).join(","))
+    ).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "data.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportToExcel = async () => {
+    const XLSX = await import("xlsx");
+    const selected = data.filter((row) => selectedIds.has(row.id));
+    const ws = XLSX.utils.json_to_sheet(selected);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Data");
+    XLSX.writeFile(wb, "data.xlsx");
+  };
+
+  const handleBulkDelete = async () => {
+    await supabase.from("practices").delete().in("id", Array.from(selectedIds));
+    fetchData();
+    setSelectedIds(new Set());
+  };
+
+
   if (loading) return <p className="p-4">Loading...</p>;
   if (error) return <p className="p-4 text-red-500">Error loading data: {error.message}</p>;
 
@@ -179,10 +248,38 @@ export default function SupabaseTable() {
         />
       </div>
 
+      {selectedIds.size > 0 && (
+        <div className="flex gap-2 items-center border p-2 rounded-md shadow bg-muted">
+          <Button variant="secondary" onClick={handleSelectAllPage}>Select All on Page</Button>
+          <Button variant="secondary" onClick={handleSelectAllGlobal}>Select All Across Pages</Button>
+          <Button onClick={handleCopy}>Copy</Button>
+          <Button onClick={exportToCsv}>Export CSV</Button>
+          <Button onClick={exportToExcel}>Export Excel</Button>
+          <Button disabled>Fetch</Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="destructive">Delete</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Confirm Deletion</DialogTitle>
+                <DialogDescription>This action cannot be undone.</DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline">Cancel</Button>
+                <Button variant="destructive" onClick={handleBulkDelete}>Confirm</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
+      
+
       <Table>
         <TableCaption>All Practices from Supabase</TableCaption>
         <TableHeader>
           <TableRow>
+            <TableHead>Select</TableHead>
             <TableHead>Practice Name</TableHead>
             <TableHead>Domain URL</TableHead>
             <TableHead>Owner Name</TableHead>
@@ -195,6 +292,12 @@ export default function SupabaseTable() {
         <TableBody>
           {paginatedData.map((row) => (
             <TableRow key={row.id}>
+              <TableCell>
+                <Checkbox
+                  checked={selectedIds.has(row.id)}
+                  onCheckedChange={(checked) => handleSelect(row.id, checked)}
+                />
+              </TableCell>
               <TableCell>{highlightMatch(row.practice_name)}</TableCell>
               <TableCell>{highlightMatch(row.domain_url)}</TableCell>
               <TableCell>{highlightMatch(row.owner_name)}</TableCell>
