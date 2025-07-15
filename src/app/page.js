@@ -3,9 +3,12 @@
 //TODO: Modularize the code into components
 //TODO: Row mapping: Implement a check to ensure that no 2 fields are assigened the same column. 
 //TODO: When clicked the excel/csv toggle it should also clear the choose file field
+//TODO: location Counter - hard to do so maybe try later
+//TODO: Add number of entries selected feature
 import { useState } from "react";
 import UploadFile from "@/components/UploadFile";
 import SupabaseTable from "@/components/SupabaseTable";
+import Outbound from "@/components/Outbound";
 import { Menu } from "lucide-react";
 
 export default function Home() {
@@ -18,6 +21,8 @@ export default function Home() {
         return <UploadFile />;
       case "table":
         return <SupabaseTable />;
+      case "outbound":
+        return <Outbound />;
       default:
         return <div>Select a section</div>;
     }
@@ -66,6 +71,19 @@ export default function Home() {
               }}
             >
               Supabase Table
+            </button>
+          </li>
+          <li>
+            <button
+              className={`w-full text-left p-2 rounded hover:bg-blue-100 transition-colors duration-200 ${
+                activeSection === "outbound" ? "bg-blue-200" : ""
+              }`}
+              onClick={() => {
+                setActiveSection("outbound");
+                setSidebarOpen(false);
+              }}
+            >
+              Outbound
             </button>
           </li>
         </ul>
