@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "title": "Implement Email Sending Functionality",
+    "description": "Replace the placeholder in handleSendEmail with actual logic to send emails to practices, possibly integrating with an email service or backend API.",
+    "status": "pending"
+  },
+  {
+    "id": 2,
+    "title": "Add Success/Error Feedback for Email Sending",
+    "description": "Show user feedback (e.g., toast notifications) when an email is sent successfully or if there is an error.",
+    "status": "pending"
+  },
+  {
+    "id": 3,
+    "title": "Add Practice Details Columns",
+    "description": "Expand the table to include more practice details (e.g., phone number, address) if available in the database.",
+    "status": "pending"
+  },
+  {
+    "id": 4,
+    "title": "Add Search and Filter Functionality",
+    "description": "Allow users to search and filter practices by name, email, or other fields for easier management.",
+    "status": "pending"
+  },
+  {
+    "id": 5,
+    "title": "Paginate Practices Table",
+    "description": "Implement pagination for the practices table to handle large datasets efficiently.",
+    "status": "pending"
+  },
+  {
+    "id": 6,
+    "title": "Loading and Error State Improvements",
+    "description": "Enhance the UI/UX for loading and error states, possibly with spinners or more detailed error messages.",
+    "status": "pending"
+  },
+  {
+    "id": 7,
+    "title": "Unit and Integration Tests",
+    "description": "Write tests for the Outbound component to ensure data fetching, rendering, and email sending work as expected.",
+    "status": "pending"
+  }
+] 
