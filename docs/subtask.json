@@ -15,24 +15,54 @@
     "id": 3,
     "title": "Add Email Template Dropdown",
     "description": "For each row, provide a dropdown (using shadcn/ui select) to choose an email template (placeholder values: 1, 2, 3, 4, 5).",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "id": 4,
     "title": "Add Sender Email Dropdown",
     "description": "Provide a dropdown to select the sender email ID (placeholder values: 1, 2, 3, 4, 5).",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "id": 5,
     "title": "Add Send/Draft Mode Selection",
     "description": "Add a dropdown to choose between sending the email directly or creating a draft.",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "id": 6,
     "title": "Implement Send/Draft Functionality",
     "description": "If 'Send Directly' is selected, allow scheduling via a date-time picker input or immediate send. If 'Create Draft' is selected, save as draft without sending.",
+    "status": "completed"
+  },
+  {
+    "id": 7,
+    "title": "Improve UI/UX for Responsiveness and Scheduling Column",
+    "description": "Make the UI more responsive for mobile devices and simplify the scheduling column for better UX.",
+    "status": "completed"
+  },
+  {
+    "id": 8,
+    "title": "Add PST to IST Converter",
+    "description": "Add a PST to IST converter above the table in desktop mode and beside the Outbound header in mobile. Show current time in both zones, allow input in either to update the other, to help users plan scheduling.",
+    "status": "completed"
+  },
+  {
+    "id": 9,
+    "title": "Implement Pagination and Lazy Loading",
+    "description": "Paginate and lazy load entries (10 per page, up to 8000 total). Use a hybrid input/dropdown for page size, custom footer with page info, prev/next, direct jump, and breadcrumbs for long page lists. Reference SupabaseTable for context.",
+    "status": "completed"
+  },
+  {
+    "id": 10,
+    "title": "Add Search Bar with Highlighting",
+    "description": "Add a search bar to Outbound.jsx that matches as you type and highlights matches across columns. Reference SupabaseTable for context.",
+    "status": "completed"
+  },
+  {
+    "id": 11,
+    "title": "Add Row Selection and Bulk Actions Bar",
+    "description": "Add a select column with checkboxes for each row. When entries are selected, show a select menu bar above the table header with options for bulk selection, template/email/send mode assignment, and scheduling. Reference SupabaseTable for context.",
     "status": "pending"
   }
 ] 

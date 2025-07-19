@@ -106,20 +106,27 @@ Dental Scout Live is a web application designed to streamline the process of col
 **Requirements:**
 - ✅ List all email addresses and first names from the Supabase `practices` table in the Outbound section (primarily in `Outbound.jsx`).
 - ✅ Display a column showing the number of emails sent to each email address (fetched from Supabase).
-- For each row, provide a dropdown (using shadcn/ui select) to choose an email template (placeholder values: 1, 2, 3, 4, 5).
-- Provide a dropdown to select the sender email ID (placeholder values: 1, 2, 3, 4, 5).
-- Add a dropdown to choose between sending the email directly or creating a draft.
-  - If 'Send Directly' is selected, allow scheduling via a date-time picker input or immediate send.
-  - If 'Create Draft' is selected, save as draft without sending.
-- All UI controls should use shadcn/ui components where possible.
-- All logic and UI should be modular and extensible for future enhancements.
+- ✅ For each row, provide a dropdown (using shadcn/ui select) to choose an email template (placeholder values: 1, 2, 3, 4, 5).
+- ✅ Provide a dropdown to select the sender email ID (placeholder values: 1, 2, 3, 4, 5).
+- ✅ Add a dropdown to choose between sending the email directly or creating a draft.
+  - ✅ If 'Send Directly' is selected, allow scheduling via a date-time picker input or immediate send.
+  - ✅ If 'Create Draft' is selected, save as draft without sending.
+- [ ] Improve UI/UX for responsiveness and scheduling column (mobile-friendly, simpler scheduling UI)
+- [ ] Add PST to IST converter above the table (desktop) or beside header (mobile), with live time and bidirectional input conversion
+- [ ] Implement pagination and lazy loading (10 per page, up to 8000 entries, hybrid input/dropdown, custom footer, breadcrumbs, see SupabaseTable)
+- [ ] Add search bar with highlighting (matches as you type, highlights across columns, see SupabaseTable)
+- [ ] Add row selection and bulk actions bar (checkboxes, select menu bar, bulk template/email/send mode/scheduling, see SupabaseTable)
 
 **Acceptance Criteria:**
 - ✅ Emails and first names are listed from Supabase.
 - ✅ Number of emails sent is accurately displayed per email address.
-- Template and sender dropdowns function with placeholder values.
-- Send/draft dropdown and scheduling/date-time picker work as described.
-- All features are accessible and usable in the Outbound section.
+- ✅ Template and sender dropdowns function with placeholder values.
+- ✅ Send/draft dropdown and scheduling/date-time picker work as described.
+- [ ] UI is responsive and scheduling column is simple and clear on all devices
+- [ ] PST/IST converter is visible and functional as described
+- [ ] Pagination and lazy loading work efficiently for large datasets
+- [ ] Search bar matches and highlights as you type
+- [ ] Row selection and bulk actions bar work as described
 
 ---
 
