@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "title": "Filter Non-Null Email Entries",
+    "description": "In the outbound component, display only those entries whose email entry is not null.",
+    "status": "completed"
+  },
+  {
+    "id": 2,
+    "title": "Add Email Count Column",
+    "description": "Display a column showing the number of emails sent to each email address (fetched from Supabase).",
+    "status": "completed"
+  },
+  {
+    "id": 3,
+    "title": "Add Email Template Dropdown",
+    "description": "For each row, provide a dropdown (using shadcn/ui select) to choose an email template (placeholder values: 1, 2, 3, 4, 5).",
+    "status": "pending"
+  },
+  {
+    "id": 4,
+    "title": "Add Sender Email Dropdown",
+    "description": "Provide a dropdown to select the sender email ID (placeholder values: 1, 2, 3, 4, 5).",
+    "status": "pending"
+  },
+  {
+    "id": 5,
+    "title": "Add Send/Draft Mode Selection",
+    "description": "Add a dropdown to choose between sending the email directly or creating a draft.",
+    "status": "pending"
+  },
+  {
+    "id": 6,
+    "title": "Implement Send/Draft Functionality",
+    "description": "If 'Send Directly' is selected, allow scheduling via a date-time picker input or immediate send. If 'Create Draft' is selected, save as draft without sending.",
+    "status": "pending"
+  }
+] 

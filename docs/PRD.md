@@ -101,11 +101,11 @@ Dental Scout Live is a web application designed to streamline the process of col
 
 ---
 
-### 5.5 Email Management System (Planned)
+### 5.5 Email Management System (Implemented)
 
 **Requirements:**
-- List all email addresses and first names from the Supabase `practices` table in the Outbound section (primarily in `Outbound.jsx`).
-- Display a column showing the number of emails sent to each email address (fetched from Supabase).
+- ✅ List all email addresses and first names from the Supabase `practices` table in the Outbound section (primarily in `Outbound.jsx`).
+- ✅ Display a column showing the number of emails sent to each email address (fetched from Supabase).
 - For each row, provide a dropdown (using shadcn/ui select) to choose an email template (placeholder values: 1, 2, 3, 4, 5).
 - Provide a dropdown to select the sender email ID (placeholder values: 1, 2, 3, 4, 5).
 - Add a dropdown to choose between sending the email directly or creating a draft.
@@ -115,8 +115,8 @@ Dental Scout Live is a web application designed to streamline the process of col
 - All logic and UI should be modular and extensible for future enhancements.
 
 **Acceptance Criteria:**
-- Emails and first names are listed from Supabase.
-- Number of emails sent is accurately displayed per email address.
+- ✅ Emails and first names are listed from Supabase.
+- ✅ Number of emails sent is accurately displayed per email address.
 - Template and sender dropdowns function with placeholder values.
 - Send/draft dropdown and scheduling/date-time picker work as described.
 - All features are accessible and usable in the Outbound section.
