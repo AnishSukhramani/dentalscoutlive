@@ -28,6 +28,7 @@ const supabase = createClient(
 const Outbound = () => {
   // State to hold the list of practices fetched from Supabase
   const [practices, setPractices] = useState([]);
+  const [emailCounts, setEmailCounts] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -40,13 +41,23 @@ const Outbound = () => {
 
         const { data, error: fetchError } = await supabase
           .from('practices')
-          .select('email, first_name');
+          .select('email, first_name, email_sent_count')
+          .not('email', 'is', null);
 
         if (fetchError) {
           console.error('Error fetching practices:', fetchError);
           setError('Failed to load practices');
         } else {
           setPractices(data || []);
+          
+          // Extract email counts from the fetched data
+          const counts = {};
+          (data || []).forEach(practice => {
+            if (practice.email) {
+              counts[practice.email] = practice.email_sent_count || 0;
+            }
+          });
+          setEmailCounts(counts);
         }
       } catch (err) {
         console.error('Unexpected error:', err);
@@ -58,6 +69,8 @@ const Outbound = () => {
 
     fetchPractices();
   }, []);
+
+  // Remove the separate fetchEmailCounts function since we're getting counts directly
 
   // Handle sending email to a practice
   const handleSendEmail = (practiceEmail) => {
@@ -106,13 +119,14 @@ const Outbound = () => {
             <TableRow className="bg-gray-50">
               <TableHead className="font-semibold text-gray-900">Email</TableHead>
               <TableHead className="font-semibold text-gray-900">First Name</TableHead>
+              <TableHead className="font-semibold text-gray-900">Email Count</TableHead>
               <TableHead className="font-semibold text-gray-900">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {practices.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={4} className="text-center py-8 text-gray-500">
                   No practices found
                 </TableCell>
               </TableRow>
@@ -127,6 +141,9 @@ const Outbound = () => {
                   </TableCell>
                   <TableCell className="text-gray-700">
                     {practice.first_name || 'N/A'}
+                  </TableCell>
+                  <TableCell className="text-gray-700">
+                    {emailCounts[practice.email] || 0}
                   </TableCell>
                   <TableCell>
                     <Button 

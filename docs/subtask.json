@@ -1,44 +1,38 @@
 [
   {
     "id": 1,
-    "title": "Implement Email Sending Functionality",
-    "description": "Replace the placeholder in handleSendEmail with actual logic to send emails to practices, possibly integrating with an email service or backend API.",
-    "status": "pending"
+    "title": "Filter Non-Null Email Entries",
+    "description": "In the outbound component, display only those entries whose email entry is not null.",
+    "status": "completed"
   },
   {
     "id": 2,
-    "title": "Add Success/Error Feedback for Email Sending",
-    "description": "Show user feedback (e.g., toast notifications) when an email is sent successfully or if there is an error.",
-    "status": "pending"
+    "title": "Add Email Count Column",
+    "description": "Display a column showing the number of emails sent to each email address (fetched from Supabase).",
+    "status": "completed"
   },
   {
     "id": 3,
-    "title": "Add Practice Details Columns",
-    "description": "Expand the table to include more practice details (e.g., phone number, address) if available in the database.",
+    "title": "Add Email Template Dropdown",
+    "description": "For each row, provide a dropdown (using shadcn/ui select) to choose an email template (placeholder values: 1, 2, 3, 4, 5).",
     "status": "pending"
   },
   {
     "id": 4,
-    "title": "Add Search and Filter Functionality",
-    "description": "Allow users to search and filter practices by name, email, or other fields for easier management.",
+    "title": "Add Sender Email Dropdown",
+    "description": "Provide a dropdown to select the sender email ID (placeholder values: 1, 2, 3, 4, 5).",
     "status": "pending"
   },
   {
     "id": 5,
-    "title": "Paginate Practices Table",
-    "description": "Implement pagination for the practices table to handle large datasets efficiently.",
+    "title": "Add Send/Draft Mode Selection",
+    "description": "Add a dropdown to choose between sending the email directly or creating a draft.",
     "status": "pending"
   },
   {
     "id": 6,
-    "title": "Loading and Error State Improvements",
-    "description": "Enhance the UI/UX for loading and error states, possibly with spinners or more detailed error messages.",
-    "status": "pending"
-  },
-  {
-    "id": 7,
-    "title": "Unit and Integration Tests",
-    "description": "Write tests for the Outbound component to ensure data fetching, rendering, and email sending work as expected.",
+    "title": "Implement Send/Draft Functionality",
+    "description": "If 'Send Directly' is selected, allow scheduling via a date-time picker input or immediate send. If 'Create Draft' is selected, save as draft without sending.",
     "status": "pending"
   }
 ] 
