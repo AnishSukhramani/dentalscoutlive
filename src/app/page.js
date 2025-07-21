@@ -9,6 +9,7 @@ import { useState } from "react";
 import UploadFile from "@/components/UploadFile";
 import SupabaseTable from "@/components/SupabaseTable";
 import Outbound from "@/components/Outbound";
+import TemplatesAndIDs from "@/components/TemplatesAndIDs";
 import { Menu } from "lucide-react";
 
 export default function Home() {
@@ -23,6 +24,8 @@ export default function Home() {
         return <SupabaseTable />;
       case "outbound":
         return <Outbound />;
+      case "templates":
+        return <TemplatesAndIDs />;
       default:
         return <div>Select a section</div>;
     }
@@ -84,6 +87,19 @@ export default function Home() {
               }}
             >
               Outbound
+            </button>
+          </li>
+          <li>
+            <button
+              className={`w-full text-left p-2 rounded hover:bg-blue-100 transition-colors duration-200 ${
+                activeSection === "templates" ? "bg-blue-200" : ""
+              }`}
+              onClick={() => {
+                setActiveSection("templates");
+                setSidebarOpen(false);
+              }}
+            >
+              Templates and IDs
             </button>
           </li>
         </ul>

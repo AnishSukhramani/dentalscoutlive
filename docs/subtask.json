@@ -63,6 +63,24 @@
     "id": 11,
     "title": "Add Row Selection and Bulk Actions Bar",
     "description": "Add a select column with checkboxes for each row. When entries are selected, show a select menu bar above the table header with options for bulk selection, template/email/send mode assignment, and scheduling. Reference SupabaseTable for context.",
+    "status": "completed"
+  },
+  {
+    "id": 12,
+    "title": "Improve UploadFile UI and Haptic Feedback",
+    "description": "Improve the UI of the UploadFile component: make it more well-spaced and attractive, and add tactile/haptic feedbacks upon interaction to improve UX.",
+    "status": "completed"
+  },
+  {
+    "id": 13,
+    "title": "Add Optional Additional Mapping in UploadFile",
+    "description": "Inside UploadFile, add an expandable component labeled 'Additional Mapping' where columns Email, Phone Number, and First Name can be optionally mapped to Supabase columns. The existing three mappings (Practice Name, Practice Website URL, Owner Full Name) remain compulsory; the additional ones are optional.",
+    "status": "completed"
+  },
+  {
+    "id": 14,
+    "title": "Create Templates and IDs Sidebar Component",
+    "description": "Create a new sidebar component below Outbound called 'Templates and IDs' (keep it blank for now).",
     "status": "pending"
   }
 ] 
