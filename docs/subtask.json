@@ -88,5 +88,29 @@
     "title": "Build Templates and IDs Component",
     "description": "Create a placeholder area for both the ID section and the Template section in the Templates and IDs component.",
     "status": "completed"
+  },
+  {
+    "id": 16,
+    "title": "Create Templates Div with Create Button and Form",
+    "description": "Create a templates div at the top, full width and mobile responsive, with a Create button. On clicking, expand the div to show fields: Template Name, Subject, Body, and Save/Cancel buttons below.",
+    "status": "completed"
+  },
+  {
+    "id": 17,
+    "title": "Create JSON File for Template Storage",
+    "description": "Create a JSON file to store template responses when the Save button is clicked in the templates div.",
+    "status": "pending"
+  },
+  {
+    "id": 18,
+    "title": "List Templates in Templates Div",
+    "description": "Below the Create button in the templates div, list all templates stored in the JSON file, displaying only the template name.",
+    "status": "pending"
+  },
+  {
+    "id": 19,
+    "title": "Add Delete Button for Templates",
+    "description": "In the list of templates in the templates div, add a Delete button next to each template name to delete the entry from the JSON file.",
+    "status": "pending"
   }
-] 
+]
