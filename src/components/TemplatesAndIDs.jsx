@@ -4,7 +4,9 @@ import { Input } from "./ui/input";
 
 const TemplatesAndIDs = () => {
   const [showForm, setShowForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const [template, setTemplate] = useState({ name: "", subject: "", body: "" });
+  const [editingTemplate, setEditingTemplate] = useState(null);
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,6 +52,41 @@ const TemplatesAndIDs = () => {
     } catch (error) {
       console.error('Error saving template:', error);
     }
+  };
+
+  const handleEdit = (template) => {
+    setEditingTemplate(template);
+    setTemplate({ name: template.name, subject: template.subject, body: template.body });
+    setShowEditForm(true);
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const response = await fetch(`/api/templates/${editingTemplate.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(template),
+      });
+
+      if (response.ok) {
+        setShowEditForm(false);
+        setEditingTemplate(null);
+        setTemplate({ name: "", subject: "", body: "" });
+        fetchTemplates(); // Refresh templates list
+      } else {
+        console.error('Failed to update template');
+      }
+    } catch (error) {
+      console.error('Error updating template:', error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditForm(false);
+    setEditingTemplate(null);
+    setTemplate({ name: "", subject: "", body: "" });
   };
 
   const handleCancel = () => {
@@ -125,7 +162,12 @@ const TemplatesAndIDs = () => {
                     key={template.id}
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
                   >
-                    <span className="font-medium">{template.name}</span>
+                    <span 
+                      className="font-medium cursor-pointer hover:text-blue-600"
+                      onClick={() => handleEdit(template)}
+                    >
+                      {template.name}
+                    </span>
                     <Button
                       variant="outline"
                       size="sm"
@@ -138,6 +180,44 @@ const TemplatesAndIDs = () => {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Edit Form */}
+        {showEditForm && editingTemplate && (
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h3 className="text-md font-medium mb-3 text-blue-800">Edit Template: {editingTemplate.name}</h3>
+            <div className="flex flex-col gap-3">
+              <Input
+                name="name"
+                placeholder="Template Name"
+                value={template.name}
+                onChange={handleChange}
+                className="w-full"
+              />
+              <Input
+                name="subject"
+                placeholder="Subject"
+                value={template.subject}
+                onChange={handleChange}
+                className="w-full"
+              />
+              <textarea
+                name="body"
+                placeholder="Body"
+                value={template.body}
+                onChange={handleChange}
+                className="w-full border rounded p-2 min-h-[80px]"
+              />
+              <div className="flex gap-2 mt-2">
+                <Button onClick={handleUpdate} className="bg-blue-600 hover:bg-blue-700">
+                  Update
+                </Button>
+                <Button variant="outline" onClick={handleCancelEdit}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </div>

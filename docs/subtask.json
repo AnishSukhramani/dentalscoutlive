@@ -112,5 +112,11 @@
     "title": "Add Delete Button for Templates",
     "description": "In the list of templates in the templates div, add a Delete button next to each template name to delete the entry from the JSON file.",
     "status": "completed"
+  },
+  {
+    "id": 20,
+    "title": "Add Edit Functionality for Templates",
+    "description": "When we click on the template name in the list of Saved templates, an edit div should open up allowing to update the template.",
+    "status": "completed"
   }
 ]
