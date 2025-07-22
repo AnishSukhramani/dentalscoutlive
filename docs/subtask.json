@@ -81,6 +81,36 @@
     "id": 14,
     "title": "Create Templates and IDs Sidebar Component",
     "description": "Create a new sidebar component below Outbound called 'Templates and IDs' (keep it blank for now).",
+    "status": "completed"
+  },
+  {
+    "id": 15,
+    "title": "Build Templates and IDs Component",
+    "description": "Create a placeholder area for both the ID section and the Template section in the Templates and IDs component.",
+    "status": "completed"
+  },
+  {
+    "id": 16,
+    "title": "Template Section Options",
+    "description": "In the template section, add a 'Create Template' button and display a list of created templates, each with edit and delete options.",
+    "status": "completed"
+  },
+  {
+    "id": 17,
+    "title": "Template Creation Input Fields",
+    "description": "Add input fields for creating a template: Template Name, Subject, and Body.",
+    "status": "pending"
+  },
+  {
+    "id": 18,
+    "title": "HTML Email Template Option",
+    "description": "Allow users to create an HTML email template by plugging in the code during template creation.",
+    "status": "pending"
+  },
+  {
+    "id": 19,
+    "title": "Refactor Outbound Component",
+    "description": "Refactor the Outbound component by dividing the code into further components to improve developer friendliness. Ensure this does not affect the existing UI.",
     "status": "pending"
   }
 ] 
