@@ -99,18 +99,18 @@
     "id": 17,
     "title": "Create JSON File for Template Storage",
     "description": "Create a JSON file to store template responses when the Save button is clicked in the templates div.",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "id": 18,
     "title": "List Templates in Templates Div",
     "description": "Below the Create button in the templates div, list all templates stored in the JSON file, displaying only the template name.",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "id": 19,
     "title": "Add Delete Button for Templates",
     "description": "In the list of templates in the templates div, add a Delete button next to each template name to delete the entry from the JSON file.",
-    "status": "pending"
+    "status": "completed"
   }
 ]

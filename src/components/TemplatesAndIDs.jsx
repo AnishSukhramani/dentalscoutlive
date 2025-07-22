@@ -1,24 +1,76 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
 const TemplatesAndIDs = () => {
   const [showForm, setShowForm] = useState(false);
   const [template, setTemplate] = useState({ name: "", subject: "", body: "" });
+  const [templates, setTemplates] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await fetch('/api/templates');
+      if (response.ok) {
+        const data = await response.json();
+        setTemplates(data.templates || []);
+      }
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
 
   const handleChange = (e) => {
     setTemplate({ ...template, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    // TODO: Save logic (task 17)
-    setShowForm(false);
-    setTemplate({ name: "", subject: "", body: "" });
+  const handleSave = async () => {
+    try {
+      const response = await fetch('/api/templates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(template),
+      });
+
+      if (response.ok) {
+        setShowForm(false);
+        setTemplate({ name: "", subject: "", body: "" });
+        fetchTemplates(); // Refresh templates list
+      } else {
+        console.error('Failed to save template');
+      }
+    } catch (error) {
+      console.error('Error saving template:', error);
+    }
   };
 
   const handleCancel = () => {
     setShowForm(false);
     setTemplate({ name: "", subject: "", body: "" });
+  };
+
+  const handleDelete = async (templateId) => {
+    try {
+      const response = await fetch(`/api/templates?id=${templateId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        fetchTemplates(); // Refresh templates list
+      } else {
+        console.error('Failed to delete template');
+      }
+    } catch (error) {
+      console.error('Error deleting template:', error);
+    }
   };
 
   return (
@@ -59,8 +111,36 @@ const TemplatesAndIDs = () => {
             </div>
           </div>
         )}
+        
+        {/* Templates List */}
+        {!loading && (
+          <div className="mt-4">
+            <h3 className="text-md font-medium mb-3">Saved Templates</h3>
+            {templates.length === 0 ? (
+              <p className="text-gray-500 text-sm">No templates saved yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {templates.map((template) => (
+                  <div
+                    key={template.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
+                  >
+                    <span className="font-medium">{template.name}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(template.id)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
-      {/* TODO: List templates here (task 18) */}
       {/* TODO: IDs section placeholder */}
     </div>
   );
