@@ -15,6 +15,12 @@ const readTemplates = () => {
 
 const writeTemplates = (templates) => {
   try {
+    // Ensure the data directory exists
+    const dataDir = path.dirname(TEMPLATES_FILE_PATH);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    
     fs.writeFileSync(TEMPLATES_FILE_PATH, JSON.stringify(templates, null, 2));
     return true;
   } catch (error) {
