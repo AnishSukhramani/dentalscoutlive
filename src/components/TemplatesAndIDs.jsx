@@ -55,6 +55,8 @@ const TemplatesAndIDs = () => {
   };
 
   const handleEdit = (template) => {
+    // Close create form if open
+    setShowForm(false);
     setEditingTemplate(template);
     setTemplate({ name: template.name, subject: template.subject, body: template.body });
     setShowEditForm(true);
@@ -94,6 +96,14 @@ const TemplatesAndIDs = () => {
     setTemplate({ name: "", subject: "", body: "" });
   };
 
+  const handleCreateClick = () => {
+    // Close edit form if open
+    setShowEditForm(false);
+    setEditingTemplate(null);
+    setTemplate({ name: "", subject: "", body: "" });
+    setShowForm((v) => !v);
+  };
+
   const handleDelete = async (templateId) => {
     try {
       const response = await fetch(`/api/templates?id=${templateId}`, {
@@ -115,7 +125,7 @@ const TemplatesAndIDs = () => {
       <div className="bg-white rounded-lg shadow p-4 mb-4 flex flex-col gap-4 w-full">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">Templates</h2>
-          <Button onClick={() => setShowForm((v) => !v)}>
+          <Button onClick={handleCreateClick}>
             {showForm ? "Close" : "Create"}
           </Button>
         </div>
