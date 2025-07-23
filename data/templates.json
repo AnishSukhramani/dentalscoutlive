@@ -1,3 +1,18 @@
 {
-  "templates": []
+  "templates": [
+    {
+      "id": "1753208509366",
+      "name": "Anish",
+      "subject": "abc",
+      "body": "def",
+      "createdAt": "2025-07-22T18:21:49.366Z"
+    },
+    {
+      "id": "1753208519018",
+      "name": "Anish 2",
+      "subject": "def",
+      "body": "def",
+      "createdAt": "2025-07-22T18:21:59.018Z"
+    }
+  ]
 }
