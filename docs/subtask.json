@@ -118,5 +118,29 @@
     "title": "Add Edit Functionality for Templates",
     "description": "When we click on the template name in the list of Saved templates, an edit div should open up allowing to update the template.",
     "status": "completed"
+  },
+  {
+    "id": 21,
+    "title": "Map Template Dropdown with Template JSON",
+    "description": "In the outbound.jsx component, map the list in Email template column's template dropdown with the templates in template.json, listing the template name in the dropdown.",
+    "status": "completed"
+  },
+  {
+    "id": 22,
+    "title": "Update Action Column and Conditional Button Display",
+    "description": "In outbound.jsx component in Action column, remove the Send Email button. Keep the Action column blank and only display the Send Now button or Create Draft button when a value is selected from all the dropdowns of Email template, Sender Email and Send Mode. in outbound.jsx component in Action column, remove the Send Email button. Keep the Action column blank and only display the send now button or create draft button when a value is selected from all the dropdowns of Email template, Sender Email and Send Mode. ",
+    "status": "completed"
+  },
+  {
+    "id": 23,
+    "title": "Create Email Queue JSON File",
+    "description": "Create an emailQueue.json file in Data folder.",
+    "status": "completed"
+  },
+  {
+    "id": 24,
+    "title": "Write Send Now Entry to Email Queue",
+    "description": "In outbound.jsx, if the user clicks the Send Now button which only unlocks if all the fields are filled and the send mode is selected to Send Direct and the Send Now option is selected in the Schedule column. When the user clicks the Send Now button it should write the entry in the emailQueue.json file with the data and options selected in the table.",
+    "status": "completed"
   }
 ]

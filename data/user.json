@@ -1,0 +1,155 @@
+{
+  "emailFields": {
+    "required": {
+      "id": {
+        "type": "string",
+        "description": "Unique identifier for the email entry",
+        "example": "1753431010772"
+      },
+      "recipientEmail": {
+        "type": "string",
+        "description": "Email address of the recipient",
+        "example": "tlcdental1@sbcglobal.net"
+      },
+      "recipientName": {
+        "type": "string",
+        "description": "Name of the recipient (can be 'N/A' if not available)",
+        "example": "TLC"
+      },
+      "templateId": {
+        "type": "string",
+        "description": "ID of the email template to use",
+        "example": "1753430998559"
+      },
+      "senderEmail": {
+        "type": "string",
+        "description": "Email address of the sender (must be configured in EMAIL_CONFIGS)",
+        "example": "user1@example.com"
+      },
+      "sendMode": {
+        "type": "string",
+        "description": "Mode of sending - 'send' for immediate sending, 'draft' for creating draft",
+        "enum": ["send", "draft"],
+        "example": "send"
+      }
+    },
+    "optional": {
+      "scheduledDate": {
+        "type": "string",
+        "description": "ISO date string for scheduled sending (null for immediate sending)",
+        "example": "2025-07-26T08:10",
+        "nullable": true
+      },
+      "emailCount": {
+        "type": "number",
+        "description": "Number of emails sent to this recipient (tracking)",
+        "default": 0,
+        "example": 0
+      },
+      "status": {
+        "type": "string",
+        "description": "Current status of the email entry",
+        "enum": ["pending", "sent", "scheduled", "draft_created", "failed"],
+        "default": "pending",
+        "example": "sent"
+      },
+      "createdAt": {
+        "type": "string",
+        "description": "ISO date string when the entry was created",
+        "example": "2025-07-25T08:10:10.772Z"
+      },
+      "processedAt": {
+        "type": "string",
+        "description": "ISO date string when the entry was processed",
+        "example": "2025-07-25T14:51:41.729Z",
+        "nullable": true
+      },
+      "message": {
+        "type": "string",
+        "description": "Status message describing the result of processing",
+        "example": "Email sent successfully"
+      }
+    },
+    "templateFields": {
+      "id": {
+        "type": "string",
+        "description": "Unique identifier for the template",
+        "example": "1753430998559"
+      },
+      "name": {
+        "type": "string",
+        "description": "Name of the email template",
+        "example": "Welcome Email"
+      },
+      "subject": {
+        "type": "string",
+        "description": "Subject line of the email",
+        "example": "Welcome to Our Service"
+      },
+      "body": {
+        "type": "string",
+        "description": "HTML content of the email body",
+        "example": "<h1>Welcome!</h1><p>Thank you for joining us.</p>"
+      }
+    },
+    "senderConfiguration": {
+      "user1@example.com": {
+        "name": "User 1",
+        "smtp": {
+          "host": "smtp.gmail.com",
+          "port": 587,
+          "secure": false,
+          "auth": {
+            "user": "user1@example.com",
+            "pass": "your-app-password-here"
+          }
+        }
+      },
+      "user2@example.com": {
+        "name": "User 2",
+        "smtp": {
+          "host": "smtp.gmail.com",
+          "port": 587,
+          "secure": false,
+          "auth": {
+            "user": "user2@example.com",
+            "pass": "your-app-password-here"
+          }
+        }
+      },
+      "user3@example.com": {
+        "name": "User 3",
+        "smtp": {
+          "host": "smtp.gmail.com",
+          "port": 587,
+          "secure": false,
+          "auth": {
+            "user": "user3@example.com",
+            "pass": "your-app-password-here"
+          }
+        }
+      }
+    }
+  },
+  "exampleEntry": {
+    "id": "1753431010772",
+    "recipientEmail": "tlcdental1@sbcglobal.net",
+    "recipientName": "TLC",
+    "templateId": "1753430998559",
+    "senderEmail": "user1@example.com",
+    "sendMode": "send",
+    "scheduledDate": null,
+    "emailCount": 0,
+    "status": "sent",
+    "createdAt": "2025-07-25T08:10:10.772Z",
+    "processedAt": "2025-07-25T14:51:41.729Z",
+    "message": "Email sent successfully"
+  },
+  "notes": {
+    "processing": "Entries with status 'sent', 'draft_created', or 'scheduled' are automatically removed from the queue after processing",
+    "validation": "All required fields must be present and valid for successful email processing",
+    "templates": "Template ID must exist in templates.json file",
+    "senders": "Sender email must be configured in EMAIL_CONFIGS",
+    "scheduling": "If scheduledDate is provided, sendMode should be 'send' and the email will be scheduled for later delivery"
+  }
+}

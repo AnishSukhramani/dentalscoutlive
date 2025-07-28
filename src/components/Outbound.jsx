@@ -45,6 +45,7 @@ const Outbound = () => {
   const [scheduledDates, setScheduledDates] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [templates, setTemplates] = useState([]);
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -202,15 +203,104 @@ const Outbound = () => {
       }
     };
 
+    const fetchTemplates = async () => {
+      try {
+        const response = await fetch('/api/templates');
+        if (response.ok) {
+          const data = await response.json();
+          setTemplates(data.templates || []);
+        }
+      } catch (error) {
+        console.error('Error fetching templates:', error);
+      }
+    };
+
     fetchPractices();
+    fetchTemplates();
   }, []);
 
   // Remove the separate fetchEmailCounts function since we're getting counts directly
 
   // Handle sending email to a practice
-  const handleSendEmail = (practiceEmail) => {
-    console.log(`Sending email to ${practiceEmail}`);
-    // TODO: Implement actual email sending functionality
+  const handleSendEmail = async (practiceEmail) => {
+    try {
+      // Get the practice data
+      const practice = practices.find(p => p.email === practiceEmail);
+      if (!practice) {
+        console.error('Practice not found:', practiceEmail);
+        return;
+      }
+
+      // Get the selected values for this practice
+      const templateId = emailTemplates[practiceEmail];
+      const senderEmail = senderEmails[practiceEmail];
+      const sendMode = sendModes[practiceEmail];
+      const scheduledDate = scheduledDates[practiceEmail];
+
+      // Validate that all required fields are selected
+      if (!templateId || !senderEmail || !sendMode) {
+        console.error('Missing required fields for email queue entry');
+        return;
+      }
+
+      // Only proceed if send mode is 'send' (Send Directly) or 'draft' (Create Draft)
+      if (sendMode !== 'send' && sendMode !== 'draft') {
+        console.log('Send mode is not "send" or "draft", skipping email queue entry');
+        return;
+      }
+
+      // Create the email queue entry
+      const queueEntry = {
+        recipientEmail: practiceEmail,
+        recipientName: practice.first_name || 'N/A',
+        templateId,
+        senderEmail,
+        sendMode,
+        scheduledDate: scheduledDate || null,
+        emailCount: emailCounts[practiceEmail] || 0
+      };
+
+      // Send to email queue API
+      const response = await fetch('/api/emailQueue', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(queueEntry),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Email queue entry created:', result);
+        
+        // Process the email queue after it's populated
+        try {
+          const processResponse = await fetch('/api/processEmailQueue', {
+            method: 'POST',
+          });
+          const processResult = await processResponse.json();
+          if (processResult.success) {
+            console.log('Email queue processed successfully');
+          } else {
+            console.error('Error processing email queue:', processResult.error);
+          }
+        } catch (processorError) {
+          console.error('Error processing email queue:', processorError);
+          // Don't show error to user as the queue entry was still created successfully
+        }
+        
+        // Show success message (you could add a toast notification here)
+        const actionType = sendMode === 'send' ? 'Email queued for sending' : 'Draft saved to queue';
+        alert(`${actionType} successfully for ${practiceEmail}`);
+      } else {
+        const error = await response.json();
+        console.error('Failed to create email queue entry:', error);
+        alert('Failed to queue email. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error creating email queue entry:', error);
+      alert('An error occurred while queuing the email.');
+    }
   };
 
   // Helper for time conversion
@@ -413,8 +503,29 @@ const Outbound = () => {
             Manage and send emails to your practice contacts
           </p>
         </div>
-        <div className="mt-4 md:mt-0 md:ml-8">
+        <div className="mt-4 md:mt-0 md:ml-8 flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
           <PSTISTConverter />
+          <Button
+            onClick={async () => {
+              try {
+                const response = await fetch('/api/processEmailQueue', {
+                  method: 'POST',
+                });
+                const result = await response.json();
+                if (result.success) {
+                  alert('Email queue processed successfully!');
+                } else {
+                  alert(`Error: ${result.error}`);
+                }
+              } catch (error) {
+                console.error('Error processing email queue:', error);
+                alert('Error processing email queue');
+              }
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
+          >
+            Process Email Queue
+          </Button>
         </div>
       </div>
 
@@ -468,9 +579,15 @@ const Outbound = () => {
           <Select value={bulkTemplate} onValueChange={handleBulkTemplate}>
             <SelectTrigger className="w-[110px] h-8 text-xs"><SelectValue placeholder="Select Template" /></SelectTrigger>
             <SelectContent>
-              {["1","2","3","4","5"].map((num) => (
-                <SelectItem key={num} value={num}>Template {num}</SelectItem>
-              ))}
+              {templates.length === 0 ? (
+                <SelectItem value="" disabled>No templates available</SelectItem>
+              ) : (
+                templates.map((template) => (
+                  <SelectItem key={template.id} value={template.id}>
+                    {template.name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
           <Select value={bulkSender} onValueChange={handleBulkSender}>
@@ -527,7 +644,7 @@ const Outbound = () => {
                   indeterminate={
                     paginatedPractices.some((row) => selectedIds.has(row.email)) &&
                     !paginatedPractices.every((row) => selectedIds.has(row.email))
-                      ? true
+                      ? "true"
                       : undefined
                   }
                   onCheckedChange={(checked) => checked ? handleSelectAllPage() : handleClearSelection()}
@@ -582,11 +699,15 @@ const Outbound = () => {
                         <SelectValue placeholder="Template" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">Template 1</SelectItem>
-                        <SelectItem value="2">Template 2</SelectItem>
-                        <SelectItem value="3">Template 3</SelectItem>
-                        <SelectItem value="4">Template 4</SelectItem>
-                        <SelectItem value="5">Template 5</SelectItem>
+                        {templates.length === 0 ? (
+                          <SelectItem value="" disabled>No templates available</SelectItem>
+                        ) : (
+                          templates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              {template.name}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -698,50 +819,23 @@ const Outbound = () => {
                     )}
                   </TableCell>
                   <TableCell className="text-xs px-2 py-1">
-                    {sendModes[practice.email] === 'send' ? (
-                      <div className="space-y-2">
+                    {emailTemplates[practice.email] && senderEmails[practice.email] && sendModes[practice.email] ? (
+                      sendModes[practice.email] === 'send' ? (
                         <Button
                           onClick={() => handleSendEmail(practice.email)}
                           className="w-full bg-green-600 hover:bg-green-700 text-white text-xs py-1"
                         >
                           {scheduledDates[practice.email] ? 'Schedule Email' : 'Send Now'}
                         </Button>
-                        {(!emailTemplates[practice.email] || !senderEmails[practice.email]) && (
-                          <p className="text-xs text-orange-600">
-                            {!emailTemplates[practice.email] && !senderEmails[practice.email] 
-                              ? 'Select template and sender' 
-                              : !emailTemplates[practice.email] 
-                                ? 'Select template' 
-                                : 'Select sender'}
-                          </p>
-                        )}
-                      </div>
-                    ) : sendModes[practice.email] === 'draft' ? (
-                      <div className="space-y-2">
+                      ) : sendModes[practice.email] === 'draft' ? (
                         <Button
                           onClick={() => handleSendEmail(practice.email)}
                           className="w-full bg-yellow-400 hover:bg-orange-700 text-white text-xs py-1"
                         >
-                          Save Draft
+                          Create Draft
                         </Button>
-                        {(!emailTemplates[practice.email] || !senderEmails[practice.email]) && (
-                          <p className="text-xs text-orange-600">
-                            {!emailTemplates[practice.email] && !senderEmails[practice.email] 
-                              ? 'Select template and sender' 
-                              : !emailTemplates[practice.email] 
-                                ? 'Select template' 
-                                : 'Select sender'}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <Button 
-                        onClick={() => handleSendEmail(practice.email)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        Send Email
-                      </Button>
-                    )}
+                      ) : null
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))
