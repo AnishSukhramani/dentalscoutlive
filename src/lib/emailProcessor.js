@@ -1,46 +1,28 @@
+// Load environment variables
+require('dotenv').config();
+
 // ============================================================================
 // EMAIL PROCESSOR CONFIGURATION
 // ============================================================================
 // Change the sender email here to switch between different senders
-let SENDER_EMAIL = "anishsukhram@gmail.com"; // Change this to switch senders
+let SENDER_EMAIL = "anishsukhramani@gmail.com"; // Change this to switch senders
 
-// Email service configuration (you can add more senders here)
+// Gmail SMTP configuration for your account
+const GMAIL_CONFIG = {
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: "anishsukhramani@gmail.com", // Your Gmail address
+    pass: process.env.GMAIL_APP_PASSWORD // Use environment variable for security
+  }
+};
+
+// Email service configuration (simplified for single user)
 const EMAIL_CONFIGS = {
-  "user1@example.com": {
-    name: "User 1",
-    smtp: {
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: "user1@example.com",
-        pass: "your-app-password-here" // Replace with actual app password
-      }
-    }
-  },
-  "user2@example.com": {
-    name: "User 2", 
-    smtp: {
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: "user2@example.com",
-        pass: "your-app-password-here" // Replace with actual app password
-      }
-    }
-  },
-  "user3@example.com": {
-    name: "User 3",
-    smtp: {
-      host: "smtp.gmail.com", 
-      port: 587,
-      secure: false,
-      auth: {
-        user: "user3@example.com",
-        pass: "your-app-password-here" // Replace with actual app password
-      }
-    }
+  "anishsukhramani@gmail.com": {
+    name: "Anish Sukhramani",
+    smtp: GMAIL_CONFIG
   }
 };
 
@@ -195,28 +177,19 @@ async function processCreateDraft(entry, template) {
  * Send email using configured SMTP
  */
 async function sendEmail(emailData) {
-  // This is a placeholder implementation
-  // In a real application, you would use a library like nodemailer
-  console.log('Sending email:', {
-    to: emailData.to,
-    subject: emailData.subject,
-    from: emailData.senderEmail
-  });
-  
-  // Simulate email sending
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Here you would implement actual email sending logic
-  // Example with nodemailer:
-  /*
-  const transporter = nodemailer.createTransporter(EMAIL_CONFIGS[emailData.senderEmail].smtp);
-  await transporter.sendMail({
-    from: emailData.senderEmail,
-    to: emailData.to,
-    subject: emailData.subject,
-    html: emailData.body
-  });
-  */
+  try {
+    const transporter = require('nodemailer').createTransport(EMAIL_CONFIGS[emailData.senderEmail].smtp);
+    await transporter.sendMail({
+      from: emailData.senderEmail,
+      to: emailData.to,
+      subject: emailData.subject,
+      html: emailData.body
+    });
+    console.log(`Email sent to ${emailData.to} from ${emailData.senderEmail}`);
+  } catch (error) {
+    console.error(`Error sending email for ${emailData.to}:`, error);
+    throw error;
+  }
 }
 
 /**
