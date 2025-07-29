@@ -142,5 +142,23 @@
     "title": "Write Send Now Entry to Email Queue",
     "description": "In outbound.jsx, if the user clicks the Send Now button which only unlocks if all the fields are filled and the send mode is selected to Send Direct and the Send Now option is selected in the Schedule column. When the user clicks the Send Now button it should write the entry in the emailQueue.json file with the data and options selected in the table.",
     "status": "completed"
+  },
+  {
+    "id": 25,
+    "title": "Create User JSON and Map Sender Email Dropdown",
+    "description": "In user.json create an entry has 3 parameters User Name, User email, pwd. The Sender Email column in outbound.jsx has a dropdown, map it with the user.json, it should list the entries in user.json, and only name parameter should be listed.",
+    "status": "completed"
+  },
+  {
+    "id": 26,
+    "title": "Attach User Parameters to Email Queue",
+    "description": "Once user clicks Send Now, Schedule Email or Create Draft in the Action column the parsing function that writes data in emailQueue.json should also attach the corresponding parameters of the user selected from user.json. The senderEmail of emailQueue should map to email in user.json.",
+    "status": "completed"
+  },
+  {
+    "id": 27,
+    "title": "Refactor Email Processor and Add Logging",
+    "description": "Refactor code in emailProcessor.js remove redundant functions, and add proper logging statements.",
+    "status": "completed"
   }
 ]

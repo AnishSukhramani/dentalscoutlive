@@ -4,41 +4,74 @@ require('dotenv').config();
 // ============================================================================
 // EMAIL PROCESSOR CONFIGURATION
 // ============================================================================
-// Change the sender email here to switch between different senders
-let SENDER_EMAIL = "anishsukhramani@gmail.com"; // Change this to switch senders
 
-// Gmail SMTP configuration for your account
+// Gmail SMTP configuration
 const GMAIL_CONFIG = {
   host: "smtp.gmail.com",
   port: 587,
-  secure: false, // true for 465, false for other ports
+  secure: false,
   auth: {
-    user: "anishsukhramani@gmail.com", // Your Gmail address
-    pass: process.env.GMAIL_APP_PASSWORD // Use environment variable for security
+    user: "anishsukhramani@gmail.com",
+    pass: process.env.GMAIL_APP_PASSWORD
   }
 };
 
-// Email service configuration (simplified for single user)
-const EMAIL_CONFIGS = {
-  "anishsukhramani@gmail.com": {
-    name: "Anish Sukhramani",
-    smtp: GMAIL_CONFIG
-  }
-};
+// Email service configuration - now dynamically loaded from user.json
+let EMAIL_CONFIGS = {};
 
 // ============================================================================
 // EMAIL PROCESSOR FUNCTIONS
 // ============================================================================
 
 /**
+ * Initialize email configurations from user.json
+ */
+async function initializeEmailConfigs() {
+  try {
+    console.log('Initializing email configurations...');
+    const fs = require('fs').promises;
+    const path = require('path');
+    const userFilePath = path.join(process.cwd(), 'data', 'user.json');
+    
+    const data = await fs.readFile(userFilePath, 'utf8');
+    const userData = JSON.parse(data);
+    
+    EMAIL_CONFIGS = {};
+    userData.users.forEach(user => {
+      EMAIL_CONFIGS[user.email] = {
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        smtp: {
+          host: "smtp.gmail.com",
+          port: 587,
+          secure: false,
+          auth: {
+            user: user.email,
+            pass: process.env[user.password.replace('process.env.', '')] || user.password
+          }
+        }
+      };
+    });
+    
+    console.log(`Initialized ${Object.keys(EMAIL_CONFIGS).length} email configurations`);
+  } catch (error) {
+    console.error('Error initializing email configurations:', error);
+    throw error;
+  }
+}
+
+/**
  * Main function to process email queue entries
- * This function should be called after emailQueue.json is populated
  */
 async function processEmailQueue() {
   try {
-    console.log('Starting email queue processing...');
+    console.log('=== Starting email queue processing ===');
     
-    // Read the email queue
+    // Initialize email configurations
+    await initializeEmailConfigs();
+    
+    // Read the email queue and templates
     const emailQueue = await readEmailQueue();
     const templates = await readTemplates();
     
@@ -49,7 +82,7 @@ async function processEmailQueue() {
     
     console.log(`Found ${emailQueue.queue.length} emails in queue`);
     
-    // Process each queue entry and track processed ones
+    // Process each queue entry
     const processedEntryIds = [];
     
     for (const entry of emailQueue.queue) {
@@ -65,7 +98,7 @@ async function processEmailQueue() {
       console.log(`Removed ${processedEntryIds.length} processed entries from queue`);
     }
     
-    console.log('Email queue processing completed');
+    console.log('=== Email queue processing completed ===');
     
   } catch (error) {
     console.error('Error processing email queue:', error);
@@ -75,7 +108,6 @@ async function processEmailQueue() {
 
 /**
  * Process a single queue entry
- * Returns true if the entry was successfully processed, false otherwise
  */
 async function processQueueEntry(entry, templates) {
   try {
@@ -122,11 +154,14 @@ async function processQueueEntry(entry, templates) {
  */
 async function processSendEmail(entry, template) {
   try {
+    console.log(`Preparing to send email for entry ${entry.id}`);
+    
     const emailData = {
       to: entry.recipientEmail,
       subject: template.subject,
       body: template.body,
       senderEmail: entry.senderEmail,
+      senderName: entry.senderName,
       recipientName: entry.recipientName
     };
     
@@ -154,11 +189,14 @@ async function processSendEmail(entry, template) {
  */
 async function processCreateDraft(entry, template) {
   try {
+    console.log(`Creating draft for entry ${entry.id}`);
+    
     const emailData = {
       to: entry.recipientEmail,
       subject: template.subject,
       body: template.body,
       senderEmail: entry.senderEmail,
+      senderName: entry.senderName,
       recipientName: entry.recipientName
     };
     
@@ -178,16 +216,22 @@ async function processCreateDraft(entry, template) {
  */
 async function sendEmail(emailData) {
   try {
+    console.log(`Sending email to ${emailData.to} from ${emailData.senderEmail}`);
+    
     const transporter = require('nodemailer').createTransport(EMAIL_CONFIGS[emailData.senderEmail].smtp);
-    await transporter.sendMail({
-      from: emailData.senderEmail,
+    
+    const mailOptions = {
+      from: `"${emailData.senderName}" <${emailData.senderEmail}>`,
       to: emailData.to,
       subject: emailData.subject,
       html: emailData.body
-    });
-    console.log(`Email sent to ${emailData.to} from ${emailData.senderEmail}`);
+    };
+    
+    const result = await transporter.sendMail(mailOptions);
+    console.log(`Email sent successfully to ${emailData.to}. Message ID: ${result.messageId}`);
+    
   } catch (error) {
-    console.error(`Error sending email for ${emailData.to}:`, error);
+    console.error(`Error sending email to ${emailData.to}:`, error);
     throw error;
   }
 }
@@ -196,13 +240,16 @@ async function sendEmail(emailData) {
  * Schedule email for later sending
  */
 async function scheduleEmail(entryId, emailData, scheduledDate) {
+  console.log(`Scheduling email for entry ${entryId} at ${scheduledDate}`);
+  
   // This is a placeholder implementation
   // In a real application, you would use a job queue like Bull or Agenda
-  console.log('Scheduling email:', {
+  console.log('Email scheduling details:', {
     entryId,
     scheduledDate,
     to: emailData.to,
-    subject: emailData.subject
+    subject: emailData.subject,
+    from: emailData.senderEmail
   });
   
   // Here you would implement actual scheduling logic
@@ -221,12 +268,15 @@ async function scheduleEmail(entryId, emailData, scheduledDate) {
  * Create draft in email client
  */
 async function createDraft(emailData) {
+  console.log(`Creating draft for ${emailData.to}`);
+  
   // This is a placeholder implementation
   // In a real application, you would use an email API like Gmail API
-  console.log('Creating draft:', {
+  console.log('Draft creation details:', {
     to: emailData.to,
     subject: emailData.subject,
-    from: emailData.senderEmail
+    from: emailData.senderEmail,
+    senderName: emailData.senderName
   });
   
   // Here you would implement actual draft creation logic
@@ -286,6 +336,8 @@ async function readTemplates() {
  */
 async function updateQueueEntryStatus(entryId, status, message) {
   try {
+    console.log(`Updating entry ${entryId} status to: ${status}`);
+    
     const fs = require('fs').promises;
     const path = require('path');
     const filePath = path.join(process.cwd(), 'data', 'emailQueue.json');
@@ -304,6 +356,7 @@ async function updateQueueEntryStatus(entryId, status, message) {
     
     // Write back to file
     await fs.writeFile(filePath, JSON.stringify(emailQueue, null, 2));
+    console.log(`Entry ${entryId} status updated successfully`);
     
   } catch (error) {
     console.error('Error updating queue entry status:', error);
@@ -316,6 +369,8 @@ async function updateQueueEntryStatus(entryId, status, message) {
  */
 async function removeProcessedEntries(processedEntryIds) {
   try {
+    console.log(`Removing ${processedEntryIds.length} processed entries from queue file`);
+    
     const fs = require('fs').promises;
     const path = require('path');
     const filePath = path.join(process.cwd(), 'data', 'emailQueue.json');
@@ -325,6 +380,7 @@ async function removeProcessedEntries(processedEntryIds) {
     const emailQueue = JSON.parse(data);
     
     // Filter out processed entries
+    const originalCount = emailQueue.queue.length;
     emailQueue.queue = emailQueue.queue.filter(entry => 
       !processedEntryIds.includes(entry.id)
     );
@@ -332,7 +388,7 @@ async function removeProcessedEntries(processedEntryIds) {
     // Write back to file
     await fs.writeFile(filePath, JSON.stringify(emailQueue, null, 2));
     
-    console.log(`Removed ${processedEntryIds.length} processed entries from queue file`);
+    console.log(`Removed ${originalCount - emailQueue.queue.length} entries from queue file`);
     
   } catch (error) {
     console.error('Error removing processed entries:', error);
@@ -341,28 +397,15 @@ async function removeProcessedEntries(processedEntryIds) {
 }
 
 /**
- * Get current sender email configuration
+ * Get current email configurations
  */
-function getCurrentSenderEmail() {
-  return SENDER_EMAIL;
-}
-
-/**
- * Set sender email configuration
- */
-function setSenderEmail(email) {
-  if (EMAIL_CONFIGS[email]) {
-    SENDER_EMAIL = email;
-    console.log(`Sender email changed to: ${email}`);
-  } else {
-    console.error(`Email ${email} not configured`);
-  }
+function getEmailConfigs() {
+  return EMAIL_CONFIGS;
 }
 
 // Export functions for use in other files
 module.exports = {
   processEmailQueue,
-  getCurrentSenderEmail,
-  setSenderEmail,
-  EMAIL_CONFIGS
+  getEmailConfigs,
+  initializeEmailConfigs
 }; 

@@ -46,6 +46,8 @@ export async function POST(request) {
       recipientName, 
       templateId, 
       senderEmail, 
+      senderName,
+      senderPassword,
       sendMode, 
       scheduledDate,
       emailCount 
@@ -62,6 +64,8 @@ export async function POST(request) {
       recipientName: recipientName || 'N/A',
       templateId,
       senderEmail,
+      senderName: senderName || 'N/A',
+      senderPassword: senderPassword || 'N/A',
       sendMode,
       scheduledDate: scheduledDate || null,
       emailCount: emailCount || 0,

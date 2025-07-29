@@ -46,6 +46,7 @@ const Outbound = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [templates, setTemplates] = useState([]);
+  const [users, setUsers] = useState([]);
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -98,36 +99,55 @@ const Outbound = () => {
 
   // Use filtered data for pagination
   const totalRows = filteredPractices.length;
-  const totalPages = Math.max(1, Math.ceil(totalRows / entriesPerPage));
-  const paginatedPractices = filteredPractices.slice((page - 1) * entriesPerPage, page * entriesPerPage);
+  const totalPages = Math.ceil(totalRows / entriesPerPage);
+  const startIndex = (page - 1) * entriesPerPage;
+  const endIndex = startIndex + entriesPerPage;
+  const currentPageData = filteredPractices.slice(startIndex, endIndex);
 
+  // Get page numbers for pagination
   const getPageNumbers = () => {
-    const visiblePages = 6;
-    let pages = [];
-    if (totalPages <= visiblePages + 2) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
     } else {
-      pages = [1];
-      const start = Math.max(2, page - 2);
-      const end = Math.min(totalPages - 1, start + visiblePages - 1);
-      if (start > 2) pages.push("...");
-      for (let i = start; i <= end; i++) pages.push(i);
-      if (end < totalPages - 1) pages.push("...");
-      pages.push(totalPages);
+      if (page <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (page >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = page - 1; i <= page + 1; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      }
     }
     return pages;
   };
 
   const handleCustomEntriesChange = (e) => {
     const value = e.target.value;
-    if (/^\d*$/.test(value)) {
-      setCustomEntries(value);
-      const num = Math.max(1, Math.min(50, Number(value)));
-      if (value !== "") setEntriesPerPage(num);
+    setCustomEntries(value);
+    if (value && !isNaN(value) && value > 0 && value <= 100) {
+      setEntriesPerPage(parseInt(value));
+      setPage(1);
     }
   };
 
-  // Handle email template selection for a specific practice
   const handleTemplateChange = (practiceEmail, templateValue) => {
     setEmailTemplates(prev => ({
       ...prev,
@@ -135,7 +155,6 @@ const Outbound = () => {
     }));
   };
 
-  // Handle sender email selection for a specific practice
   const handleSenderEmailChange = (practiceEmail, senderValue) => {
     setSenderEmails(prev => ({
       ...prev,
@@ -143,24 +162,21 @@ const Outbound = () => {
     }));
   };
 
-  // Handle send/draft mode selection for a specific practice
   const handleSendModeChange = (practiceEmail, modeValue) => {
     setSendModes(prev => ({
       ...prev,
       [practiceEmail]: modeValue
     }));
     
-    // Clear scheduled date if switching to draft mode
+    // Clear scheduled date when switching to draft mode
     if (modeValue === 'draft') {
-      setScheduledDates(prev => {
-        const newDates = { ...prev };
-        delete newDates[practiceEmail];
-        return newDates;
-      });
+      setScheduledDates(prev => ({
+        ...prev,
+        [practiceEmail]: null
+      }));
     }
   };
 
-  // Handle scheduled date change for a specific practice
   const handleScheduledDateChange = (practiceEmail, dateValue) => {
     setScheduledDates(prev => ({
       ...prev,
@@ -215,8 +231,21 @@ const Outbound = () => {
       }
     };
 
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('/api/users');
+        if (response.ok) {
+          const data = await response.json();
+          setUsers(data.users || []);
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
     fetchPractices();
     fetchTemplates();
+    fetchUsers();
   }, []);
 
   // Remove the separate fetchEmailCounts function since we're getting counts directly
@@ -249,12 +278,21 @@ const Outbound = () => {
         return;
       }
 
-      // Create the email queue entry
+      // Find the selected user to get additional user parameters
+      const selectedUser = users.find(user => user.email === senderEmail);
+      if (!selectedUser) {
+        console.error('Selected user not found:', senderEmail);
+        return;
+      }
+
+      // Create the email queue entry with user parameters
       const queueEntry = {
         recipientEmail: practiceEmail,
         recipientName: practice.first_name || 'N/A',
         templateId,
         senderEmail,
+        senderName: selectedUser.name,
+        senderPassword: selectedUser.password,
         sendMode,
         scheduledDate: scheduledDate || null,
         emailCount: emailCounts[practiceEmail] || 0
@@ -414,7 +452,7 @@ const Outbound = () => {
     setSelectAllGlobal(false);
   };
   const handleSelectAllPage = () => {
-    const updated = new Set(paginatedPractices.map((d) => d.email));
+    const updated = new Set(currentPageData.map((d) => d.email));
     setSelectedIds(updated);
     setSelectAllPage(true);
     setSelectAllGlobal(false);
@@ -593,8 +631,8 @@ const Outbound = () => {
           <Select value={bulkSender} onValueChange={handleBulkSender}>
             <SelectTrigger className="w-[110px] h-8 text-xs"><SelectValue placeholder="Select Email" /></SelectTrigger>
             <SelectContent>
-              {["user1@example.com","user2@example.com","user3@example.com"].map((email, i) => (
-                <SelectItem key={email} value={email}>User {i+1}</SelectItem>
+              {users.map((user) => (
+                <SelectItem key={user.email} value={user.email}>{user.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -640,10 +678,10 @@ const Outbound = () => {
             <TableRow className="bg-gray-50">
               <TableHead className="w-8 text-xs px-2 py-1">
                 <Checkbox
-                  checked={paginatedPractices.length > 0 && paginatedPractices.every((row) => selectedIds.has(row.email))}
+                  checked={currentPageData.length > 0 && currentPageData.every((row) => selectedIds.has(row.email))}
                   indeterminate={
-                    paginatedPractices.some((row) => selectedIds.has(row.email)) &&
-                    !paginatedPractices.every((row) => selectedIds.has(row.email))
+                    currentPageData.some((row) => selectedIds.has(row.email)) &&
+                    !currentPageData.every((row) => selectedIds.has(row.email))
                       ? "true"
                       : undefined
                   }
@@ -662,14 +700,14 @@ const Outbound = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedPractices.length === 0 ? (
+            {currentPageData.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-8 text-gray-500 text-xs">
                   No practices found
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedPractices.map((practice, index) => (
+              currentPageData.map((practice, index) => (
                 <TableRow 
                   key={`${practice.email}-${index}`}
                   className="hover:bg-gray-50 transition-colors"
@@ -720,9 +758,9 @@ const Outbound = () => {
                         <SelectValue placeholder="Sender Email" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="user1@example.com">User 1</SelectItem>
-                        <SelectItem value="user2@example.com">User 2</SelectItem>
-                        <SelectItem value="user3@example.com">User 3</SelectItem>
+                        {users.map((user) => (
+                          <SelectItem key={user.email} value={user.email}>{user.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </TableCell>
