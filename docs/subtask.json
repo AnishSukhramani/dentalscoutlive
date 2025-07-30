@@ -160,5 +160,17 @@
     "title": "Refactor Email Processor and Add Logging",
     "description": "Refactor code in emailProcessor.js remove redundant functions, and add proper logging statements.",
     "status": "completed"
+  },
+  {
+    "id": 28,
+    "title": "Make Email Processor Fully Dynamic Based on User Selection",
+    "description": "Configure emailProcessor.js to use the specific user selected from the email queue entry instead of the hardcoded anishsukhramani@gmail.com. Remove the manual email configuration dependency and rely fully on dynamic user selection from user.json. Each user's password field contains the environment variable name to reference the password from the .env file.",
+    "status": "pending"
+  },
+  {
+    "id": 29,
+    "title": "Implement Bulk Send Functionality for Selected Entries",
+    "description": "Implement bulk send functionality in outbound.jsx for multiple selected entries. When users select multiple entries, provide a bulk action menu under the search bar with template, user, and send mode options. Configure the send now option in send mode that unlocks the send button when all options are selected. Write bulk entries to emailQueue.json with corresponding correct values and trigger emailProcessor.js to process the emailQueue.json. Do not create testing or sandbox mode - implement real changes directly.",
+    "status": "pending"
   }
 ]

@@ -193,7 +193,7 @@ const Outbound = () => {
 
         const { data, error: fetchError } = await supabase
           .from('practices')
-          .select('email, first_name, email_sent_count')
+          .select('email, first_name, email_sent_count, owner_name, id')
           .not('email', 'is', null);
 
         if (fetchError) {
@@ -507,6 +507,100 @@ const Outbound = () => {
     setBulkScheduleDate(e.target.value);
   };
 
+  // Bulk send handler
+  const handleBulkSend = async () => {
+    if (!bulkTemplate || !bulkSender || !bulkSendMode) {
+      alert('Please select template, sender, and send mode for bulk send');
+      return;
+    }
+
+    if (bulkSendMode === 'send' && bulkScheduleType === 'schedule' && !bulkScheduleDate) {
+      alert('Please select a schedule date for bulk send');
+      return;
+    }
+
+    try {
+      // Get selected practices - use email as the key since that's what the selection system uses
+      const selectedPractices = practices.filter(practice => selectedIds.has(practice.email));
+      
+      console.log('Selected practices:', selectedPractices);
+      console.log('Selected IDs:', Array.from(selectedIds));
+      
+      // Find the template and user details
+      const template = templates.find(t => t.id === bulkTemplate);
+      const user = users.find(u => u.email === bulkSender);
+      
+      if (!template || !user) {
+        alert('Template or user not found');
+        return;
+      }
+
+      // Create bulk entries for email queue
+      const bulkEntries = selectedPractices.map(practice => ({
+        id: Date.now() + Math.random(), // Generate unique ID
+        recipientEmail: practice.email,
+        recipientName: practice.owner_name || 'N/A',
+        templateId: bulkTemplate,
+        senderEmail: bulkSender,
+        senderName: user.name,
+        sendMode: bulkSendMode,
+        scheduledDate: bulkSendMode === 'send' && bulkScheduleType === 'schedule' ? bulkScheduleDate : null,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      }));
+
+      console.log('Bulk entries to be sent:', bulkEntries);
+
+      // Write bulk entries to email queue
+      const response = await fetch('/api/emailQueue', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ entries: bulkEntries }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Bulk email queue entries created:', result);
+        
+        // Process the email queue after bulk entries are added
+        try {
+          const processResponse = await fetch('/api/processEmailQueue', {
+            method: 'POST',
+          });
+          const processResult = await processResponse.json();
+          if (processResult.success) {
+            console.log('Bulk email queue processed successfully');
+            alert(`Successfully queued ${bulkEntries.length} emails for processing`);
+          } else {
+            console.error('Error processing bulk email queue:', processResult.error);
+            alert('Emails queued but processing failed. You can manually process the queue.');
+          }
+        } catch (processorError) {
+          console.error('Error processing bulk email queue:', processorError);
+          alert('Emails queued but processing failed. You can manually process the queue.');
+        }
+        
+        // Clear selection after successful bulk send
+        setSelectedIds(new Set());
+        setBulkTemplate("");
+        setBulkSender("");
+        setBulkSendMode("");
+        setBulkScheduleType("");
+        setBulkScheduleDate("");
+        
+      } else {
+        const error = await response.json();
+        console.error('Failed to create bulk email queue entries:', error);
+        alert('Failed to queue bulk emails. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error creating bulk email queue entries:', error);
+      alert('An error occurred while queuing bulk emails.');
+    }
+  };
+
   // Render loading state
   if (isLoading) {
     return (
@@ -618,7 +712,7 @@ const Outbound = () => {
             <SelectTrigger className="w-[110px] h-8 text-xs"><SelectValue placeholder="Select Template" /></SelectTrigger>
             <SelectContent>
               {templates.length === 0 ? (
-                <SelectItem value="" disabled>No templates available</SelectItem>
+                <SelectItem value="no-templates" disabled>No templates available</SelectItem>
               ) : (
                 templates.map((template) => (
                   <SelectItem key={template.id} value={template.id}>
@@ -661,10 +755,21 @@ const Outbound = () => {
             />
           )}
           {bulkSendMode === "send" && ((bulkScheduleType === "now") || (bulkScheduleType === "schedule" && bulkScheduleDate)) && (
-            <Button size="sm" className="bg-blue-600 text-white" disabled>Send</Button>
+            <Button 
+              size="sm" 
+              className="bg-blue-600 text-white" 
+              onClick={handleBulkSend}
+              disabled={!bulkTemplate || !bulkSender}
+            >
+              Send {selectedIds.size} Email{selectedIds.size > 1 ? 's' : ''}
+            </Button>
           )}
           {bulkSendMode === "draft" && bulkTemplate && bulkSender && selectedIds.size > 0 && (
-            <Button size="sm" className="bg-yellow-500 text-white">
+            <Button 
+              size="sm" 
+              className="bg-yellow-500 text-white"
+              onClick={handleBulkSend}
+            >
               Create {selectedIds.size} Draft{selectedIds.size > 1 ? 's' : ''}
             </Button>
           )}
@@ -738,7 +843,7 @@ const Outbound = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {templates.length === 0 ? (
-                          <SelectItem value="" disabled>No templates available</SelectItem>
+                          <SelectItem value="no-templates" disabled>No templates available</SelectItem>
                         ) : (
                           templates.map((template) => (
                             <SelectItem key={template.id} value={template.id}>

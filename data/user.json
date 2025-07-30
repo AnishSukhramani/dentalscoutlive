@@ -7,28 +7,10 @@
       "password": "process.env.GMAIL_APP_PASSWORD"
     },
     {
-      "id": 2,
-      "name": "John Doe",
-      "email": "john.doe@example.com",
-      "password": "process.env.JOHN_APP_PASSWORD"
-    },
-    {
-      "id": 3,
-      "name": "Jane Smith",
-      "email": "jane.smith@example.com",
-      "password": "process.env.JANE_APP_PASSWORD"
-    },
-    {
-      "id": 4,
-      "name": "Mike Johnson",
-      "email": "mike.johnson@example.com",
-      "password": "process.env.MIKE_APP_PASSWORD"
-    },
-    {
-      "id": 5,
-      "name": "Sarah Wilson",
-      "email": "sarah.wilson@example.com",
-      "password": "process.env.SARAH_APP_PASSWORD"
+      "id": 1,
+      "name": "Anish Secondary",
+      "email": "anishsukhramani1@gmail.com",
+      "password": "process.env.GMAIL_APP_PASSWORD_2"
     }
   ]
 }

@@ -1,20 +1,8 @@
-// Load environment variables
 require('dotenv').config();
 
 // ============================================================================
 // EMAIL PROCESSOR CONFIGURATION
 // ============================================================================
-
-// Gmail SMTP configuration
-const GMAIL_CONFIG = {
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: "anishsukhramani@gmail.com",
-    pass: process.env.GMAIL_APP_PASSWORD
-  }
-};
 
 // Email service configuration - now dynamically loaded from user.json
 let EMAIL_CONFIGS = {};
