@@ -86,6 +86,10 @@ async function processEmailQueue() {
       console.log(`Removed ${processedEntryIds.length} processed entries from queue`);
     }
     
+    // Update processing statistics
+    const failedCount = emailQueue.queue.filter(entry => entry.status === 'failed').length;
+    await updateProcessingStats(processedEntryIds.length, failedCount);
+    
     console.log('=== Email queue processing completed ===');
     
   } catch (error) {
@@ -380,6 +384,50 @@ async function removeProcessedEntries(processedEntryIds) {
     
   } catch (error) {
     console.error('Error removing processed entries:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update processing statistics
+ */
+async function updateProcessingStats(processed, failed) {
+  try {
+    const fs = require('fs').promises;
+    const path = require('path');
+    const statsFilePath = path.join(process.cwd(), 'data', 'processingStats.json');
+    
+    // Read current stats
+    let stats = {
+      totalProcessed: 0,
+      totalFailed: 0,
+      lastProcessingTime: null,
+      sessionProcessed: 0,
+      sessionFailed: 0
+    };
+    
+    try {
+      const statsContent = await fs.readFile(statsFilePath, 'utf8');
+      stats = JSON.parse(statsContent);
+    } catch (error) {
+      // If file doesn't exist, use default
+      console.log('Processing stats file not found, creating new one');
+    }
+    
+    // Update stats
+    stats.totalProcessed += processed;
+    stats.totalFailed += failed;
+    stats.sessionProcessed += processed;
+    stats.sessionFailed += failed;
+    stats.lastProcessingTime = new Date().toISOString();
+    
+    // Write back to file
+    await fs.writeFile(statsFilePath, JSON.stringify(stats, null, 2));
+    
+    console.log(`Updated processing stats: +${processed} processed, +${failed} failed`);
+    
+  } catch (error) {
+    console.error('Error updating processing stats:', error);
     throw error;
   }
 }

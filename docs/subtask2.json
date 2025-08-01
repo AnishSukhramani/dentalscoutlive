@@ -1,0 +1,27 @@
+[
+  {
+    "id": 30,
+    "title": "Add Live Dynamic Queue Processing Status Component",
+    "description": "In outbound.jsx between the heading 'Outbound - Manage and send emails to your practice contacts' and the PST to IST converter, add a live dynamic queue processing status component with attractive UI. It should show: how many entries are already processed, how many emails are left in the emailQueue, how many we selected to process, and an estimated time of completion. When errors occur and queue is not processed fully, alert the user to process the queue to clear it before starting a new batch. The alert should not hinder user operations but should notify that the queue is not empty and not fresh.",
+    "status": "completed"
+  },
+  {
+    "id": 31,
+    "title": "Implement Scheduling Functionality for Individual and Bulk Emails",
+    "description": "In outbound.jsx, implement scheduling functionality for both individual and bulk scheduling of emails. Currently there are placeholder comments for these functions. The functionality should work from the Send Mode column's dropdown, Action column, and from the select menu that appears when entries are selected.",
+    "status": "pending"
+  },
+  {
+    "id": 32,
+    "title": "Add Clear Selection Button to Supabase Table",
+    "description": "In the supabase table component, add a 'Clear Selection' button next to 'Select All' and 'Select All on Page' in the select menu that appears when entries are selected. This button should uncheck all selected checkboxes across all pages and close the select menu.",
+    "status": "pending"
+  },
+  {
+    "id": 33,
+    "title": "Add Create Entry Button to Supabase Table",
+    "description": "In the supabase table, add a 'Create Entry' button near the search bar. This should be able to create a single entry with all the fields of the supabase table. The Domain URL column should not be blank.",
+    "status": "pending"
+  }
+]
+

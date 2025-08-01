@@ -67,6 +67,19 @@ const Outbound = () => {
   const [bulkScheduleType, setBulkScheduleType] = useState("");
   const [bulkScheduleDate, setBulkScheduleDate] = useState("");
 
+  // Queue status state
+  const [queueStatus, setQueueStatus] = useState({
+    totalInQueue: 0,
+    processedCount: 0,
+    failedCount: 0,
+    pendingCount: 0,
+    hasFailedEntries: false,
+    hasUnprocessedEntries: false,
+    lastUpdated: null
+  });
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStartTime, setProcessingStartTime] = useState(null);
+
   // Pagination logic
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -83,6 +96,16 @@ const Outbound = () => {
     setFilteredPractices(result);
     setPage(1);
   }, [searchQuery, practices]);
+
+  // Fetch queue status on component mount and periodically
+  useEffect(() => {
+    fetchQueueStatus();
+    
+    // Set up periodic refresh every 10 seconds
+    const interval = setInterval(fetchQueueStatus, 10000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   // Highlight function
   const highlightMatch = (text) => {
@@ -330,6 +353,11 @@ const Outbound = () => {
         // Show success message (you could add a toast notification here)
         const actionType = sendMode === 'send' ? 'Email queued for sending' : 'Draft saved to queue';
         alert(`${actionType} successfully for ${practiceEmail}`);
+        
+        // Update queue status after adding email
+        setTimeout(() => {
+          fetchQueueStatus();
+        }, 1000);
       } else {
         const error = await response.json();
         console.error('Failed to create email queue entry:', error);
@@ -590,6 +618,11 @@ const Outbound = () => {
         setBulkScheduleType("");
         setBulkScheduleDate("");
         
+        // Update queue status after adding emails
+        setTimeout(() => {
+          fetchQueueStatus();
+        }, 1000);
+        
       } else {
         const error = await response.json();
         console.error('Failed to create bulk email queue entries:', error);
@@ -599,6 +632,81 @@ const Outbound = () => {
       console.error('Error creating bulk email queue entries:', error);
       alert('An error occurred while queuing bulk emails.');
     }
+  };
+
+  // Queue status functions
+  const fetchQueueStatus = async (resetProcessed = false) => {
+    try {
+      if (resetProcessed) {
+        // Reset the processed count first
+        const resetResponse = await fetch('/api/resetProcessedCount', {
+          method: 'POST',
+        });
+        const resetData = await resetResponse.json();
+        
+        if (!resetData.success) {
+          console.error('Error resetting processed count:', resetData.error);
+          return;
+        }
+      }
+      
+      const response = await fetch('/api/queueStatus');
+      const data = await response.json();
+      
+      if (data.success) {
+        setQueueStatus(data.queueStatus);
+      }
+    } catch (error) {
+      console.error('Error fetching queue status:', error);
+    }
+  };
+
+  const startProcessing = async () => {
+    setIsProcessing(true);
+    setProcessingStartTime(new Date());
+    
+    try {
+      const response = await fetch('/api/processEmailQueue', {
+        method: 'POST',
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        // Fetch updated status after processing
+        setTimeout(() => {
+          fetchQueueStatus();
+          setIsProcessing(false);
+          setProcessingStartTime(null);
+        }, 2000);
+      } else {
+        alert(`Error: ${result.error}`);
+        setIsProcessing(false);
+        setProcessingStartTime(null);
+      }
+    } catch (error) {
+      console.error('Error processing email queue:', error);
+      alert('Error processing email queue');
+      setIsProcessing(false);
+      setProcessingStartTime(null);
+    }
+  };
+
+  const getEstimatedTime = () => {
+    if (!processingStartTime || !isProcessing) return null;
+    
+    const elapsed = (new Date() - processingStartTime) / 1000; // seconds
+    const processed = queueStatus.processedCount;
+    const remaining = queueStatus.pendingCount;
+    
+    if (processed === 0) return null;
+    
+    const avgTimePerEmail = elapsed / processed;
+    const estimatedRemaining = remaining * avgTimePerEmail;
+    
+    const minutes = Math.floor(estimatedRemaining / 60);
+    const seconds = Math.floor(estimatedRemaining % 60);
+    
+    return `${minutes}m ${seconds}s`;
   };
 
   // Render loading state
@@ -658,6 +766,107 @@ const Outbound = () => {
           >
             Process Email Queue
           </Button>
+        </div>
+      </div>
+
+      {/* Queue Status Component */}
+      <div className="mb-4">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+              <div className="w-3 h-3 rounded-full bg-blue-500 mr-2 animate-pulse"></div>
+              Email Queue Status
+            </h3>
+            <div className="flex items-center space-x-2">
+              <Button
+                onClick={startProcessing}
+                disabled={isProcessing || queueStatus.totalInQueue === 0}
+                className="bg-green-600 hover:bg-green-700 text-white text-xs"
+                size="sm"
+              >
+                {isProcessing ? 'Processing...' : 'Start Processing'}
+              </Button>
+              <Button
+                onClick={() => fetchQueueStatus(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
+                size="sm"
+              >
+                Refresh
+              </Button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white rounded-lg p-3 border border-blue-100">
+              <div className="text-2xl font-bold text-blue-600">{queueStatus.totalInQueue}</div>
+              <div className="text-xs text-gray-600">Total in Queue</div>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-green-100">
+              <div className="text-2xl font-bold text-green-600">{queueStatus.processedCount}</div>
+              <div className="text-xs text-gray-600">Processed</div>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-yellow-100">
+              <div className="text-2xl font-bold text-yellow-600">{queueStatus.pendingCount}</div>
+              <div className="text-xs text-gray-600">Pending</div>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-red-100">
+              <div className="text-2xl font-bold text-red-600">{queueStatus.failedCount}</div>
+              <div className="text-xs text-gray-600">Failed</div>
+            </div>
+          </div>
+
+          {/* Processing Status */}
+          {isProcessing && (
+            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin mr-2"></div>
+                  <span className="text-sm font-medium text-blue-800">Processing emails...</span>
+                </div>
+                {getEstimatedTime() && (
+                  <span className="text-xs text-blue-600">ETA: {getEstimatedTime()}</span>
+                )}
+              </div>
+              <div className="mt-2 bg-blue-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: `${queueStatus.totalInQueue > 0 ? (queueStatus.processedCount / queueStatus.totalInQueue) * 100 : 0}%` 
+                  }}
+                ></div>
+              </div>
+            </div>
+          )}
+
+          {/* Alerts */}
+          {queueStatus.hasFailedEntries && (
+            <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="flex items-center">
+                <div className="w-4 h-4 text-red-500 mr-2">⚠️</div>
+                <span className="text-sm text-red-800">
+                  {queueStatus.failedCount} email(s) failed to process. Please check the queue and retry.
+                </span>
+              </div>
+            </div>
+          )}
+
+          {queueStatus.hasUnprocessedEntries && queueStatus.totalInQueue > 0 && !isProcessing && (
+            <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <div className="flex items-center">
+                <div className="w-4 h-4 text-yellow-500 mr-2">⚠️</div>
+                <span className="text-sm text-yellow-800">
+                  Queue is not empty. {queueStatus.pendingCount} email(s) pending. Process queue to clear it before starting a new batch.
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Last Updated */}
+          {queueStatus.lastUpdated && (
+            <div className="mt-3 text-xs text-gray-500 text-center">
+              Last updated: {new Date(queueStatus.lastUpdated).toLocaleTimeString()}
+            </div>
+          )}
         </div>
       </div>
 
