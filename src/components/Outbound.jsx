@@ -22,6 +22,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
 
 // Initialize Supabase client with environment variables
 const supabase = createClient(
@@ -79,6 +80,14 @@ const Outbound = () => {
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStartTime, setProcessingStartTime] = useState(null);
+  
+  // Scheduled emails state
+  const [scheduledEmailsStatus, setScheduledEmailsStatus] = useState({
+    total: 0,
+    upcoming: 0,
+    overdue: 0,
+    emails: []
+  });
 
   // Pagination logic
   useEffect(() => {
@@ -100,9 +109,15 @@ const Outbound = () => {
   // Fetch queue status on component mount and periodically
   useEffect(() => {
     fetchQueueStatus();
+    fetchScheduledEmailsStatus();
     
     // Set up periodic refresh every 10 seconds
-    const interval = setInterval(fetchQueueStatus, 10000);
+    const interval = setInterval(() => {
+      fetchQueueStatus();
+      fetchScheduledEmailsStatus();
+      // Also process scheduled emails automatically
+      processScheduledEmails();
+    }, 10000);
     
     return () => clearInterval(interval);
   }, []);
@@ -661,6 +676,19 @@ const Outbound = () => {
     }
   };
 
+  const fetchScheduledEmailsStatus = async () => {
+    try {
+      const response = await fetch('/api/scheduledEmails');
+      const data = await response.json();
+      
+      if (data.success) {
+        setScheduledEmailsStatus(data.scheduledEmails);
+      }
+    } catch (error) {
+      console.error('Error fetching scheduled emails status:', error);
+    }
+  };
+
   const startProcessing = async () => {
     setIsProcessing(true);
     setProcessingStartTime(new Date());
@@ -688,6 +716,28 @@ const Outbound = () => {
       alert('Error processing email queue');
       setIsProcessing(false);
       setProcessingStartTime(null);
+    }
+  };
+
+  const processScheduledEmails = async () => {
+    try {
+      const response = await fetch('/api/processScheduledEmails', {
+        method: 'POST',
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success('Scheduled emails processed successfully');
+        // Refresh scheduled emails status
+        setTimeout(() => {
+          fetchScheduledEmailsStatus();
+        }, 1000);
+      } else {
+        toast.error(`Error: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error processing scheduled emails:', error);
+      toast.error('Error processing scheduled emails');
     }
   };
 
@@ -793,6 +843,14 @@ const Outbound = () => {
               >
                 Refresh
               </Button>
+              <Button
+                onClick={processScheduledEmails}
+                disabled={scheduledEmailsStatus.total === 0}
+                className="bg-purple-600 hover:bg-purple-700 text-white text-xs"
+                size="sm"
+              >
+                Process Scheduled
+              </Button>
             </div>
           </div>
           
@@ -814,6 +872,79 @@ const Outbound = () => {
               <div className="text-xs text-gray-600">Failed</div>
             </div>
           </div>
+
+          {/* Scheduled Emails Status */}
+          {scheduledEmailsStatus.total > 0 && (
+            <div className="mt-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-md font-semibold text-gray-800 flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>
+                  Scheduled Emails
+                </h4>
+                <Button
+                  onClick={fetchScheduledEmailsStatus}
+                  className="bg-purple-600 hover:bg-purple-700 text-white text-xs"
+                  size="sm"
+                >
+                  Refresh
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-white rounded-lg p-3 border border-purple-100">
+                  <div className="text-xl font-bold text-purple-600">{scheduledEmailsStatus.total}</div>
+                  <div className="text-xs text-gray-600">Total Scheduled</div>
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-green-100">
+                  <div className="text-xl font-bold text-green-600">{scheduledEmailsStatus.upcoming}</div>
+                  <div className="text-xs text-gray-600">Upcoming</div>
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-orange-100">
+                  <div className="text-xl font-bold text-orange-600">{scheduledEmailsStatus.overdue}</div>
+                  <div className="text-xs text-gray-600">Overdue</div>
+                </div>
+              </div>
+              
+              {/* Scheduled Emails List */}
+              {scheduledEmailsStatus.emails.length > 0 && (
+                <div className="mt-3">
+                  <h5 className="text-sm font-medium text-gray-700 mb-2">Scheduled Emails:</h5>
+                  <div className="max-h-32 overflow-y-auto space-y-1">
+                    {scheduledEmailsStatus.emails.slice(0, 5).map((email, index) => {
+                      const scheduledTime = new Date(email.scheduledDate);
+                      const now = new Date();
+                      const isOverdue = scheduledTime <= now;
+                      
+                      return (
+                        <div key={email.id} className={`text-xs p-2 rounded border ${
+                          isOverdue 
+                            ? 'bg-orange-50 border-orange-200' 
+                            : 'bg-green-50 border-green-200'
+                        }`}>
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">{email.emailData.to}</span>
+                            <span className={`text-xs ${
+                              isOverdue ? 'text-orange-600' : 'text-green-600'
+                            }`}>
+                              {isOverdue ? 'Overdue' : 'Scheduled'}
+                            </span>
+                          </div>
+                          <div className="text-gray-600">
+                            {scheduledTime.toLocaleString()}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {scheduledEmailsStatus.emails.length > 5 && (
+                      <div className="text-xs text-gray-500 text-center">
+                        +{scheduledEmailsStatus.emails.length - 5} more scheduled emails
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Processing Status */}
           {isProcessing && (

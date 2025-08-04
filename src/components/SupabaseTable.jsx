@@ -41,6 +41,8 @@ export default function SupabaseTable() {
   const [customEntries, setCustomEntries] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [totalRows, setTotalRows] = useState(0);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [createFormData, setCreateFormData] = useState({});
 
   const cacheRef = useRef({});
 
@@ -163,6 +165,38 @@ export default function SupabaseTable() {
     setSelectAllGlobal(true);
   };
 
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+    setSelectAllPage(false);
+    setSelectAllGlobal(false);
+  };
+
+  const handleCreate = async () => {
+    try {
+      // Ensure domain_url is not blank
+      if (!createFormData.domain_url || createFormData.domain_url.trim() === '') {
+        toast.error('Domain URL cannot be blank');
+        return;
+      }
+
+      const { error } = await supabase.from("practices").insert(createFormData);
+      if (error) {
+        toast.error('Failed to create entry: ' + error.message);
+      } else {
+        toast.success('Entry created successfully');
+        setIsCreateDialogOpen(false);
+        setCreateFormData({});
+        fetchData();
+      }
+    } catch (error) {
+      toast.error('Error creating entry: ' + error.message);
+    }
+  };
+
+  const handleCreateChange = (e) => {
+    setCreateFormData({ ...createFormData, [e.target.name]: e.target.value });
+  };
+
   const handleCopy = async () => {
     const selected = data.filter((row) => selectedIds.has(row.id));
     const text = selected.map((r) => JSON.stringify(r)).join("\n");
@@ -247,12 +281,94 @@ export default function SupabaseTable() {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-[250px]"
         />
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-green-600 hover:bg-green-700 text-white">
+              Create Entry
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Create New Practice Entry</DialogTitle>
+              <DialogDescription>
+                Fill in the details for the new practice entry. Domain URL is required.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Practice Name</label>
+                <Input
+                  name="practice_name"
+                  placeholder="Practice Name"
+                  value={createFormData.practice_name || ""}
+                  onChange={handleCreateChange}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Domain URL *</label>
+                <Input
+                  name="domain_url"
+                  placeholder="Domain URL (required)"
+                  value={createFormData.domain_url || ""}
+                  onChange={handleCreateChange}
+                  className="border-red-300 focus:border-red-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Owner Name</label>
+                <Input
+                  name="owner_name"
+                  placeholder="Owner Name"
+                  value={createFormData.owner_name || ""}
+                  onChange={handleCreateChange}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Email</label>
+                <Input
+                  name="email"
+                  type="email"
+                  placeholder="Email"
+                  value={createFormData.email || ""}
+                  onChange={handleCreateChange}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Phone Number</label>
+                <Input
+                  name="phone_number"
+                  placeholder="Phone Number"
+                  value={createFormData.phone_number || ""}
+                  onChange={handleCreateChange}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">First Name</label>
+                <Input
+                  name="first_name"
+                  placeholder="First Name"
+                  value={createFormData.first_name || ""}
+                  onChange={handleCreateChange}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreate} className="bg-green-600 hover:bg-green-700">
+                Create Entry
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {selectedIds.size > 0 && (
         <div className="flex gap-2 items-center border p-2 rounded-md shadow bg-muted">
           <Button variant="secondary" onClick={handleSelectAllPage}>Select All on Page</Button>
           <Button variant="secondary" onClick={handleSelectAllGlobal}>Select All Across Pages</Button>
+          <Button onClick={handleClearSelection}>Clear Selection</Button>
           <Button onClick={handleCopy}>Copy</Button>
           <Button onClick={exportToCsv}>Export CSV</Button>
           <Button onClick={exportToExcel}>Export Excel</Button>

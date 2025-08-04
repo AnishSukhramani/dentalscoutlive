@@ -59,6 +59,10 @@ async function processEmailQueue() {
     // Initialize email configurations
     await initializeEmailConfigs();
     
+    // First, process any scheduled emails that are due
+    console.log('Processing scheduled emails...');
+    await processScheduledEmails();
+    
     // Read the email queue and templates
     const emailQueue = await readEmailQueue();
     const templates = await readTemplates();
@@ -234,26 +238,125 @@ async function sendEmail(emailData) {
 async function scheduleEmail(entryId, emailData, scheduledDate) {
   console.log(`Scheduling email for entry ${entryId} at ${scheduledDate}`);
   
-  // This is a placeholder implementation
-  // In a real application, you would use a job queue like Bull or Agenda
-  console.log('Email scheduling details:', {
-    entryId,
-    scheduledDate,
-    to: emailData.to,
-    subject: emailData.subject,
-    from: emailData.senderEmail
-  });
-  
-  // Here you would implement actual scheduling logic
-  // Example with a job queue:
-  /*
-  const job = await emailQueue.add('send-email', {
-    entryId,
-    emailData
-  }, {
-    delay: new Date(scheduledDate).getTime() - Date.now()
-  });
-  */
+  try {
+    // Read current scheduled emails
+    const fs = require('fs').promises;
+    const path = require('path');
+    const scheduledEmailsPath = path.join(process.cwd(), 'data', 'scheduledEmails.json');
+    
+    let scheduledEmails = [];
+    try {
+      const data = await fs.readFile(scheduledEmailsPath, 'utf8');
+      scheduledEmails = JSON.parse(data);
+    } catch (error) {
+      // File doesn't exist, start with empty array
+      scheduledEmails = [];
+    }
+    
+    // Add the new scheduled email
+    const scheduledEmail = {
+      id: entryId,
+      emailData,
+      scheduledDate,
+      createdAt: new Date().toISOString(),
+      status: 'scheduled'
+    };
+    
+    scheduledEmails.push(scheduledEmail);
+    
+    // Write back to file
+    await fs.writeFile(scheduledEmailsPath, JSON.stringify(scheduledEmails, null, 2));
+    
+    console.log('Email scheduling details:', {
+      entryId,
+      scheduledDate,
+      to: emailData.to,
+      subject: emailData.subject,
+      from: emailData.senderEmail
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Error scheduling email:', error);
+    throw error;
+  }
+}
+
+/**
+ * Process scheduled emails that are due to be sent
+ */
+async function processScheduledEmails() {
+  try {
+    // Initialize email configurations first
+    await initializeEmailConfigs();
+    
+    const fs = require('fs').promises;
+    const path = require('path');
+    const scheduledEmailsPath = path.join(process.cwd(), 'data', 'scheduledEmails.json');
+    
+    // Read scheduled emails
+    let scheduledEmails = [];
+    try {
+      const data = await fs.readFile(scheduledEmailsPath, 'utf8');
+      scheduledEmails = JSON.parse(data);
+    } catch (error) {
+      // File doesn't exist, nothing to process
+      return;
+    }
+    
+    const now = new Date();
+    const emailsToSend = [];
+    const remainingEmails = [];
+    
+    // Check which emails are due to be sent
+    for (const scheduledEmail of scheduledEmails) {
+      const scheduledTime = new Date(scheduledEmail.scheduledDate);
+      
+      if (scheduledTime <= now) {
+        // Email is due to be sent
+        emailsToSend.push(scheduledEmail);
+      } else {
+        // Email is not due yet, keep it in the list
+        remainingEmails.push(scheduledEmail);
+      }
+    }
+    
+    // Send emails that are due
+    for (const scheduledEmail of emailsToSend) {
+      try {
+        console.log(`Processing scheduled email ${scheduledEmail.id}`);
+        
+        // Send the email
+        await sendEmail(scheduledEmail.emailData);
+        
+        // Update the queue entry status if it exists
+        try {
+          await updateQueueEntryStatus(scheduledEmail.id, 'sent', 'Scheduled email sent successfully');
+        } catch (error) {
+          console.log(`Queue entry ${scheduledEmail.id} not found, skipping status update`);
+        }
+        
+        console.log(`Scheduled email ${scheduledEmail.id} sent successfully`);
+      } catch (error) {
+        console.error(`Error sending scheduled email ${scheduledEmail.id}:`, error);
+        try {
+          await updateQueueEntryStatus(scheduledEmail.id, 'failed', `Scheduled email failed: ${error.message}`);
+        } catch (statusError) {
+          console.log(`Queue entry ${scheduledEmail.id} not found, skipping status update`);
+        }
+      }
+    }
+    
+    // Update the scheduled emails file with remaining emails
+    await fs.writeFile(scheduledEmailsPath, JSON.stringify(remainingEmails, null, 2));
+    
+    if (emailsToSend.length > 0) {
+      console.log(`Processed ${emailsToSend.length} scheduled emails`);
+    }
+    
+  } catch (error) {
+    console.error('Error processing scheduled emails:', error);
+  }
 }
 
 /**
@@ -442,6 +545,7 @@ function getEmailConfigs() {
 // Export functions for use in other files
 module.exports = {
   processEmailQueue,
+  processScheduledEmails,
   getEmailConfigs,
   initializeEmailConfigs
 }; 
