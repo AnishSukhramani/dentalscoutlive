@@ -7,7 +7,7 @@
       "password": "process.env.GMAIL_APP_PASSWORD"
     },
     {
-      "id": 1,
+      "id": 2,
       "name": "Anish Secondary",
       "email": "anishsukhramani1@gmail.com",
       "password": "process.env.GMAIL_APP_PASSWORD_2"

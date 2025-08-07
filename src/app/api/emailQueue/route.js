@@ -60,7 +60,8 @@ export async function POST(request) {
           senderPassword,
           sendMode, 
           scheduledDate,
-          emailCount 
+          emailCount,
+          entryData
         } = entry;
         
         if (!recipientEmail || !templateId || !senderEmail || !sendMode) {
@@ -79,6 +80,7 @@ export async function POST(request) {
           sendMode,
           scheduledDate: scheduledDate || null,
           emailCount: emailCount || 0,
+          entryData: entryData || {},
           status: 'pending',
           createdAt: new Date().toISOString()
         };
@@ -111,7 +113,8 @@ export async function POST(request) {
         senderPassword,
         sendMode, 
         scheduledDate,
-        emailCount 
+        emailCount,
+        entryData
       } = body;
       
       if (!recipientEmail || !templateId || !senderEmail || !sendMode) {
@@ -131,6 +134,7 @@ export async function POST(request) {
         sendMode,
         scheduledDate: scheduledDate || null,
         emailCount: emailCount || 0,
+        entryData: entryData || {},
         status: 'pending',
         createdAt: new Date().toISOString()
       };

@@ -231,7 +231,7 @@ const Outbound = () => {
 
         const { data, error: fetchError } = await supabase
           .from('practices')
-          .select('email, first_name, email_sent_count, owner_name, id')
+          .select('email, first_name, email_sent_count, owner_name, id, practice_name, domain_url, phone_number')
           .not('email', 'is', null);
 
         if (fetchError) {
@@ -333,8 +333,23 @@ const Outbound = () => {
         senderPassword: selectedUser.password,
         sendMode,
         scheduledDate: scheduledDate || null,
-        emailCount: emailCounts[practiceEmail] || 0
+        emailCount: emailCounts[practiceEmail] || 0,
+        // Include the full practice data for placeholder replacement
+        entryData: {
+          id: practice.id,
+          practice_name: practice.practice_name,
+          domain_url: practice.domain_url,
+          owner_name: practice.owner_name,
+          email: practice.email,
+          phone_number: practice.phone_number,
+          first_name: practice.first_name
+        }
       };
+      
+      console.log('Practice data being sent to queue:', practice);
+      console.log('Practice data keys:', Object.keys(practice));
+      console.log('Queue entry being created:', queueEntry);
+      console.log('EntryData in queue entry:', queueEntry.entryData);
 
       // Send to email queue API
       const response = await fetch('/api/emailQueue', {
@@ -588,9 +603,21 @@ const Outbound = () => {
         senderName: user.name,
         sendMode: bulkSendMode,
         scheduledDate: bulkSendMode === 'send' && bulkScheduleType === 'schedule' ? bulkScheduleDate : null,
+        // Include the full practice data for placeholder replacement
+        entryData: {
+          id: practice.id,
+          practice_name: practice.practice_name,
+          domain_url: practice.domain_url,
+          owner_name: practice.owner_name,
+          email: practice.email,
+          phone_number: practice.phone_number,
+          first_name: practice.first_name
+        },
         status: 'pending',
         createdAt: new Date().toISOString()
       }));
+      
+      console.log('Bulk entries being created:', bulkEntries);
 
       console.log('Bulk entries to be sent:', bulkEntries);
 

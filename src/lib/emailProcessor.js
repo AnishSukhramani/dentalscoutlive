@@ -4,12 +4,107 @@ require('dotenv').config();
 // EMAIL PROCESSOR CONFIGURATION
 // ============================================================================
 
+// Supabase table columns reference for placeholder replacement
+const TABLE_COLUMNS = [
+  { name: "id", description: "Unique identifier for each practice entry" },
+  { name: "practice_name", description: "Name of the dental practice" },
+  { name: "domain_url", description: "Website URL of the practice" },
+  { name: "owner_name", description: "Name of the practice owner" },
+  { name: "email", description: "Contact email address" },
+  { name: "phone_number", description: "Contact phone number" },
+  { name: "first_name", description: "First name of the contact person" }
+];
+
 // Email service configuration - now dynamically loaded from user.json
 let EMAIL_CONFIGS = {};
 
 // ============================================================================
 // EMAIL PROCESSOR FUNCTIONS
 // ============================================================================
+
+/**
+ * Replace placeholders in email content with actual column values
+ * @param {string} content - The email content (subject or body)
+ * @param {object} entryData - The entry data from Supabase table
+ * @returns {string} - Content with placeholders replaced
+ */
+function replacePlaceholders(content, entryData) {
+  if (!content || !entryData) return content;
+
+  console.log('Entry data:', entryData);
+  let replacedContent = content;
+
+  console.log('Content:', content);
+  console.log('\n🔄 PLACEHOLDER REPLACEMENT PROCESS');
+  console.log('=====================================');
+  console.log('Original content:', content.substring(0, 100) + '...');
+  console.log('Entry data keys:', Object.keys(entryData));
+  console.log('Full entry data:', JSON.stringify(entryData, null, 2));
+  
+  // First, handle any placeholders that might not be in our main mappings
+  console.log('\n📋 Step 1: Finding all placeholders...');
+  const allPlaceholders = replacedContent.match(/\[([^\]]+)\]/g);
+  console.log('All placeholders:', allPlaceholders);
+  if (allPlaceholders) {
+    console.log('Found placeholders:', allPlaceholders);
+    console.log('\n🔄 Step 2: Processing each placeholder...');
+    allPlaceholders.forEach((placeholder, index) => {
+      console.log(`\n  Processing placeholder ${index + 1}/${allPlaceholders.length}: ${placeholder}`);
+      const fieldName = placeholder.slice(1, -1); // Remove [ and ]
+      console.log('  Field name (without brackets):', fieldName);
+      
+      // Try to find the field by converting spaces to underscores
+      const fieldKey = fieldName.replace(/ /g, '_');
+      console.log('  Field key (spaces to underscores):', fieldKey);
+      
+      const value = entryData[fieldKey] || entryData[fieldName] || '';
+      console.log('  Value found:', `"${value}"`);
+      console.log('  Value source:', entryData[fieldKey] ? `entryData["${fieldKey}"]` : entryData[fieldName] ? `entryData["${fieldName}"]` : 'not found');
+      
+      console.log('  Replacing:', `${placeholder} → "${value}"`);
+      replacedContent = replacedContent.split(placeholder).join(value);
+      console.log('  Content after replacement:', replacedContent.substring(0, 100) + '...');
+    });
+  } else {
+    console.log('No placeholders found in content');
+  }
+  
+  // Then handle our specific field mappings for any remaining placeholders
+  console.log('\n📋 Step 3: Processing specific field mappings...');
+  const fieldMappings = {
+    'first_name': ['[first_name]', '[first name]', '[firstname]'],
+    'practice_name': ['[practice_name]', '[practice name]', '[practicename]'],
+    'domain_url': ['[domain_url]', '[domain url]', '[domainurl]'],
+    'owner_name': ['[owner_name]', '[owner name]', '[ownername]'],
+    'email': ['[email]'],
+    'phone_number': ['[phone_number]', '[phone number]', '[phonenumber]'],
+    'id': ['[id]']
+  };
+  
+  Object.entries(fieldMappings).forEach(([fieldName, placeholders]) => {
+    const value = entryData[fieldName] || '';
+    console.log(`\n  Processing field "${fieldName}" with value: "${value}"`);
+    
+    placeholders.forEach(placeholder => {
+      if (replacedContent.includes(placeholder)) {
+        console.log(`    Replacing ${placeholder} with "${value}"`);
+        // Use simple string replacement to avoid regex issues
+        replacedContent = replacedContent.split(placeholder).join(value);
+        console.log(`    Content after replacement:`, replacedContent.substring(0, 100) + '...');
+      } else {
+        console.log(`    Placeholder ${placeholder} not found in content`);
+      }
+    });
+  });
+  
+  console.log('\n✅ PLACEHOLDER REPLACEMENT COMPLETE');
+  console.log('=====================================');
+  console.log('Final result:', replacedContent.substring(0, 100) + '...');
+  console.log('Full final result:', replacedContent);
+  console.log('=====================================\n');
+  
+  return replacedContent;
+}
 
 /**
  * Initialize email configurations from user.json
@@ -55,49 +150,77 @@ async function initializeEmailConfigs() {
 async function processEmailQueue() {
   try {
     console.log('=== Starting email queue processing ===');
+    console.log('Timestamp:', new Date().toISOString());
     
     // Initialize email configurations
+    console.log('Step 1: Initializing email configurations...');
     await initializeEmailConfigs();
+    console.log('✓ Email configurations initialized successfully');
     
     // First, process any scheduled emails that are due
-    console.log('Processing scheduled emails...');
+    console.log('Step 2: Processing scheduled emails...');
     await processScheduledEmails();
+    console.log('✓ Scheduled emails processed');
     
     // Read the email queue and templates
+    console.log('Step 3: Reading email queue and templates...');
     const emailQueue = await readEmailQueue();
     const templates = await readTemplates();
+    console.log('✓ Email queue and templates read successfully');
+    console.log('  - Email queue entries:', emailQueue?.queue?.length || 0);
+    console.log('  - Available templates:', templates?.templates?.length || 0);
     
     if (!emailQueue || !emailQueue.queue || emailQueue.queue.length === 0) {
-      console.log('No emails in queue to process');
+      console.log('⚠ No emails in queue to process');
       return;
     }
     
-    console.log(`Found ${emailQueue.queue.length} emails in queue`);
+    console.log(`Step 4: Processing ${emailQueue.queue.length} emails in queue`);
     
     // Process each queue entry
     const processedEntryIds = [];
     
-    for (const entry of emailQueue.queue) {
+    for (let i = 0; i < emailQueue.queue.length; i++) {
+      const entry = emailQueue.queue[i];
+      console.log(`\n--- Processing Entry ${i + 1}/${emailQueue.queue.length} ---`);
+      console.log('Entry ID:', entry.id);
+      console.log('Recipient Email:', entry.recipientEmail);
+      console.log('Template ID:', entry.templateId);
+      console.log('Send Mode:', entry.sendMode);
+      console.log('Sender Email:', entry.senderEmail);
+      console.log('Entry Data Keys:', Object.keys(entry.entryData || {}));
+      
       const wasProcessed = await processQueueEntry(entry, templates);
       if (wasProcessed) {
         processedEntryIds.push(entry.id);
+        console.log('✓ Entry processed successfully');
+      } else {
+        console.log('✗ Entry processing failed');
       }
     }
     
     // Remove processed entries from the queue file
     if (processedEntryIds.length > 0) {
+      console.log(`\nStep 5: Removing ${processedEntryIds.length} processed entries from queue file...`);
       await removeProcessedEntries(processedEntryIds);
-      console.log(`Removed ${processedEntryIds.length} processed entries from queue`);
+      console.log('✓ Processed entries removed from queue');
     }
     
     // Update processing statistics
+    console.log('Step 6: Updating processing statistics...');
     const failedCount = emailQueue.queue.filter(entry => entry.status === 'failed').length;
     await updateProcessingStats(processedEntryIds.length, failedCount);
+    console.log('✓ Processing statistics updated');
     
     console.log('=== Email queue processing completed ===');
+    console.log('Final Summary:');
+    console.log('  - Total entries processed:', processedEntryIds.length);
+    console.log('  - Failed entries:', failedCount);
+    console.log('  - Timestamp:', new Date().toISOString());
     
   } catch (error) {
-    console.error('Error processing email queue:', error);
+    console.error('❌ Error processing email queue:', error);
+    console.error('Error stack:', error.stack);
     throw error;
   }
 }
@@ -107,39 +230,59 @@ async function processEmailQueue() {
  */
 async function processQueueEntry(entry, templates) {
   try {
-    console.log(`Processing entry ${entry.id} for ${entry.recipientEmail}`);
+    console.log(`\n🔍 Processing entry ${entry.id} for ${entry.recipientEmail}`);
+    console.log('Entry details:');
+    console.log('  - ID:', entry.id);
+    console.log('  - Recipient:', entry.recipientEmail);
+    console.log('  - Template ID:', entry.templateId);
+    console.log('  - Send Mode:', entry.sendMode);
+    console.log('  - Sender Email:', entry.senderEmail);
+    console.log('  - Entry Data:', JSON.stringify(entry.entryData || {}, null, 2));
     
     // Find the template
+    console.log('\n📋 Looking for template...');
     const template = templates.templates.find(t => t.id === entry.templateId);
     if (!template) {
-      console.error(`Template not found for entry ${entry.id}`);
+      console.error(`❌ Template not found for entry ${entry.id}`);
+      console.error('Available template IDs:', templates.templates.map(t => t.id));
       await updateQueueEntryStatus(entry.id, 'failed', 'Template not found');
       return false;
     }
+    console.log('✓ Template found:', template.name);
+    console.log('Template details:');
+    console.log('  - Subject:', template.subject);
+    console.log('  - Body preview:', template.body.substring(0, 100) + '...');
     
     // Check if sender email is configured
+    console.log('\n📧 Checking sender email configuration...');
     if (!EMAIL_CONFIGS[entry.senderEmail]) {
-      console.error(`Sender email ${entry.senderEmail} not configured`);
+      console.error(`❌ Sender email ${entry.senderEmail} not configured`);
+      console.error('Available sender emails:', Object.keys(EMAIL_CONFIGS));
       await updateQueueEntryStatus(entry.id, 'failed', 'Sender email not configured');
       return false;
     }
+    console.log('✓ Sender email configured');
     
     // Process based on send mode
+    console.log(`\n🚀 Processing based on send mode: ${entry.sendMode}`);
     switch (entry.sendMode) {
       case 'send':
+        console.log('📤 Sending email immediately...');
         await processSendEmail(entry, template);
         return true;
       case 'draft':
+        console.log('📝 Creating draft...');
         await processCreateDraft(entry, template);
         return true;
       default:
-        console.error(`Invalid send mode: ${entry.sendMode}`);
+        console.error(`❌ Invalid send mode: ${entry.sendMode}`);
         await updateQueueEntryStatus(entry.id, 'failed', 'Invalid send mode');
         return false;
     }
     
   } catch (error) {
-    console.error(`Error processing entry ${entry.id}:`, error);
+    console.error(`❌ Error processing entry ${entry.id}:`, error);
+    console.error('Error stack:', error.stack);
     await updateQueueEntryStatus(entry.id, 'failed', error.message);
     return false;
   }
@@ -150,31 +293,58 @@ async function processQueueEntry(entry, templates) {
  */
 async function processSendEmail(entry, template) {
   try {
-    console.log(`Preparing to send email for entry ${entry.id}`);
+    console.log(`\n📤 Preparing to send email for entry ${entry.id}`);
+    
+    // Get the entry data from Supabase for placeholder replacement
+    console.log('\n📊 Getting entry data for placeholder replacement...');
+    const entryData = entry.entryData || entry || {};
+    console.log('Entry data source:', entry.entryData ? 'entryData field' : 'entry itself');
+    console.log('Entry data keys:', Object.keys(entryData));
+    console.log('Full entry data:', JSON.stringify(entryData, null, 2));
+    
+    // Replace placeholders in subject and body
+    console.log('\n🔄 Processing placeholders...');
+    console.log('Original subject:', template.subject);
+    console.log('Original body preview:', template.body.substring(0, 100) + '...');
+    
+    const processedSubject = replacePlaceholders(template.subject, entryData);
+    const processedBody = replacePlaceholders(template.body, entryData);
+    
+    console.log('Processed subject:', processedSubject);
+    console.log('Processed body preview:', processedBody.substring(0, 100) + '...');
     
     const emailData = {
       to: entry.recipientEmail,
-      subject: template.subject,
-      body: template.body,
+      subject: processedSubject,
+      body: processedBody,
       senderEmail: entry.senderEmail,
       senderName: entry.senderName,
       recipientName: entry.recipientName
     };
     
+    console.log('\n📧 Email data prepared:');
+    console.log('  - To:', emailData.to);
+    console.log('  - Subject:', emailData.subject);
+    console.log('  - From:', emailData.senderEmail);
+    console.log('  - Sender Name:', emailData.senderName);
+    
     if (entry.scheduledDate) {
       // Schedule the email
+      console.log('\n⏰ Scheduling email...');
       await scheduleEmail(entry.id, emailData, entry.scheduledDate);
       await updateQueueEntryStatus(entry.id, 'scheduled', 'Email scheduled for sending');
-      console.log(`Email scheduled for ${entry.scheduledDate}`);
+      console.log(`✓ Email scheduled for ${entry.scheduledDate}`);
     } else {
       // Send immediately
+      console.log('\n📤 Sending email immediately...');
       await sendEmail(emailData);
       await updateQueueEntryStatus(entry.id, 'sent', 'Email sent successfully');
-      console.log(`Email sent to ${entry.recipientEmail}`);
+      console.log(`✓ Email sent to ${entry.recipientEmail}`);
     }
     
   } catch (error) {
-    console.error(`Error sending email for entry ${entry.id}:`, error);
+    console.error(`❌ Error sending email for entry ${entry.id}:`, error);
+    console.error('Error stack:', error.stack);
     await updateQueueEntryStatus(entry.id, 'failed', error.message);
     throw error;
   }
@@ -187,10 +357,20 @@ async function processCreateDraft(entry, template) {
   try {
     console.log(`Creating draft for entry ${entry.id}`);
     
+    // Get the entry data from Supabase for placeholder replacement
+    // Try to get entryData first, fallback to the entry itself
+    const entryData = entry.entryData || entry || {};
+    
+    console.log('Processing entry with data keys:', Object.keys(entryData));
+    
+    // Replace placeholders in subject and body
+    const processedSubject = replacePlaceholders(template.subject, entryData);
+    const processedBody = replacePlaceholders(template.body, entryData);
+    
     const emailData = {
       to: entry.recipientEmail,
-      subject: template.subject,
-      body: template.body,
+      subject: processedSubject,
+      body: processedBody,
       senderEmail: entry.senderEmail,
       senderName: entry.senderName,
       recipientName: entry.recipientName
@@ -212,9 +392,16 @@ async function processCreateDraft(entry, template) {
  */
 async function sendEmail(emailData) {
   try {
-    console.log(`Sending email to ${emailData.to} from ${emailData.senderEmail}`);
+    console.log(`\n📧 Sending email to ${emailData.to} from ${emailData.senderEmail}`);
+    console.log('SMTP Configuration:', {
+      host: EMAIL_CONFIGS[emailData.senderEmail].smtp.host,
+      port: EMAIL_CONFIGS[emailData.senderEmail].smtp.port,
+      secure: EMAIL_CONFIGS[emailData.senderEmail].smtp.secure,
+      user: EMAIL_CONFIGS[emailData.senderEmail].smtp.auth.user
+    });
     
     const transporter = require('nodemailer').createTransport(EMAIL_CONFIGS[emailData.senderEmail].smtp);
+    console.log('✓ Transporter created successfully');
     
     const mailOptions = {
       from: `"${emailData.senderName}" <${emailData.senderEmail}>`,
@@ -223,11 +410,26 @@ async function sendEmail(emailData) {
       html: emailData.body
     };
     
+    console.log('Mail options prepared:');
+    console.log('  - From:', mailOptions.from);
+    console.log('  - To:', mailOptions.to);
+    console.log('  - Subject:', mailOptions.subject);
+    console.log('  - Body length:', emailData.body.length, 'characters');
+    
+    console.log('\n🚀 Attempting to send email...');
     const result = await transporter.sendMail(mailOptions);
-    console.log(`Email sent successfully to ${emailData.to}. Message ID: ${result.messageId}`);
+    console.log(`✓ Email sent successfully to ${emailData.to}`);
+    console.log('Message ID:', result.messageId);
+    console.log('Response:', result.response);
     
   } catch (error) {
-    console.error(`Error sending email to ${emailData.to}:`, error);
+    console.error(`❌ Error sending email to ${emailData.to}:`, error);
+    console.error('Error details:', {
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      responseCode: error.responseCode
+    });
     throw error;
   }
 }
@@ -547,5 +749,7 @@ module.exports = {
   processEmailQueue,
   processScheduledEmails,
   getEmailConfigs,
-  initializeEmailConfigs
+  initializeEmailConfigs,
+  replacePlaceholders,
+  TABLE_COLUMNS
 }; 

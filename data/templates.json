@@ -4,8 +4,16 @@
       "id": "1753430998559",
       "name": "First Send",
       "subject": "Hello There",
-      "body": "We are Neurality Health AI",
-      "createdAt": "2025-07-25T08:09:58.560Z"
+      "body": "Hello, [first_name]! We are Neurality Health AI.",
+      "createdAt": "2025-07-25T08:09:58.560Z",
+      "updatedAt": "2025-08-07T12:25:16.819Z"
+    },
+    {
+      "id": "1754573500096",
+      "name": "Mapping Test",
+      "subject": "Hello [first_name]",
+      "body": "Hello [first_name] of [practice name] we got your details from [domain url] owned by [owner name]. We get that your email address is [email] and phone number is [phone number].",
+      "createdAt": "2025-08-07T13:31:40.096Z"
     }
   ]
 }

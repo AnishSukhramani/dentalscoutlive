@@ -22,6 +22,18 @@
     "title": "Add Create Entry Button to Supabase Table",
     "description": "In the supabase table, add a 'Create Entry' button near the search bar. This should be able to create a single entry with all the fields of the supabase table. The Domain URL column should not be blank.",
     "status": "completed"
+  },
+  {
+    "id": 34,
+    "title": "Add Table Column Reference to Templates and Email Processor",
+    "description": "In Templates and IDs component and emailProcessor.js at the top enlist all the columns of the supabase table. This provides a reference for users to know what placeholders they can use in their email templates.",
+    "status": "completed"
+  },
+  {
+    "id": 35,
+    "title": "Implement Placeholder Replacement in Email Templates",
+    "description": "In Templates and IDs component when the create or edit components are being used I want to add a feature where you can use [column name] to indicate a placeholder to insert the corresponding column value of that entry. Example if my email body text says: 'Hello, [first name] ! How are you?' Then for each email sent using this template should remove the [first name] and replace it by the entry in the first name column of the entry to whom the email is being sent. This way we can send customized emails to a lot of people.",
+    "status": "completed"
   }
 ]
 
