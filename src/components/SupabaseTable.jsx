@@ -56,7 +56,11 @@ export default function SupabaseTable() {
 
   const fetchData = async () => {
     setLoading(true);
-    const { data, error, count } = await supabase.from("practices").select("*", { count: "exact" });
+    const { data, error, count } = await supabase
+      .from("practices")
+      .select("*", { count: "exact" })
+      .order('practice_name', { ascending: true })
+      .order('id', { ascending: true });
     if (error) setError(error);
     else {
       cacheRef.current = data;
@@ -199,12 +203,31 @@ export default function SupabaseTable() {
 
   const handleCopy = async () => {
     const selected = data.filter((row) => selectedIds.has(row.id));
-    const text = selected.map((r) => JSON.stringify(r)).join("\n");
+    if (selected.length === 0) {
+      toast.error("No rows selected to copy");
+      return;
+    }
+    
+    // Get column headers (excluding 'id' for cleaner output)
+    const headers = Object.keys(selected[0]).filter(key => key !== 'id');
+    
+    // Create TSV content with headers
+    const tsvContent = [
+      headers.join('\t'), // Header row
+      ...selected.map(row => 
+        headers.map(header => {
+          const value = row[header];
+          // Handle null/undefined values and escape tabs
+          return value === null || value === undefined ? '' : String(value).replace(/\t/g, ' ');
+        }).join('\t')
+      )
+    ].join('\n');
+    
     try {
-      await navigator.clipboard.writeText(text);
-      toast.success("Copied to clipboard");
+      await navigator.clipboard.writeText(tsvContent);
+      toast.success(`Copied ${selected.length} row(s) as TSV to clipboard`);
     } catch (e) {
-      toast.error("Failed to copy");
+      toast.error("Failed to copy to clipboard");
     }
   };
 

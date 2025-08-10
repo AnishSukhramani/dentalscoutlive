@@ -57,6 +57,10 @@ const Outbound = () => {
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredPractices, setFilteredPractices] = useState([]);
+  
+  // Tag filtering state
+  const [tags, setTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -91,20 +95,29 @@ const Outbound = () => {
 
   // Pagination logic
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredPractices(practices);
-      setPage(1);
-      return;
+    let result = practices;
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((row) =>
+        Object.values(row).some((value) =>
+          String(value).toLowerCase().includes(query)
+        )
+      );
     }
-    const query = searchQuery.toLowerCase();
-    const result = practices.filter((row) =>
-      Object.values(row).some((value) =>
-        String(value).toLowerCase().includes(query)
-      )
-    );
+    
+    // Apply tag filter
+    if (selectedTags.length > 0) {
+      result = result.filter((practice) => {
+        const practiceTags = practice.tags || [];
+        return selectedTags.some(tag => practiceTags.includes(tag));
+      });
+    }
+    
     setFilteredPractices(result);
     setPage(1);
-  }, [searchQuery, practices]);
+  }, [searchQuery, selectedTags, practices]);
 
   // Fetch queue status on component mount and periodically
   useEffect(() => {
@@ -231,8 +244,10 @@ const Outbound = () => {
 
         const { data, error: fetchError } = await supabase
           .from('practices')
-          .select('email, first_name, email_sent_count, owner_name, id, practice_name, domain_url, phone_number')
-          .not('email', 'is', null);
+          .select('email, first_name, email_sent_count, owner_name, id, practice_name, domain_url, phone_number, tags')
+          .not('email', 'is', null)
+          .order('practice_name', { ascending: true })
+          .order('id', { ascending: true });
 
         if (fetchError) {
           console.error('Error fetching practices:', fetchError);
@@ -248,6 +263,15 @@ const Outbound = () => {
             }
           });
           setEmailCounts(counts);
+          
+          // Extract unique tags from all practices
+          const allTags = new Set();
+          (data || []).forEach(practice => {
+            if (practice.tags && Array.isArray(practice.tags)) {
+              practice.tags.forEach(tag => allTags.add(tag));
+            }
+          });
+          setTags(Array.from(allTags).sort());
         }
       } catch (err) {
         console.error('Unexpected error:', err);
@@ -529,6 +553,22 @@ const Outbound = () => {
     setBulkSendMode("");
     setBulkScheduleType("");
     setBulkScheduleDate("");
+  };
+
+  // Handle tag selection for filtering
+  const handleTagSelect = (tag) => {
+    setSelectedTags(prev => {
+      if (prev.includes(tag)) {
+        return prev.filter(t => t !== tag);
+      } else {
+        return [...prev, tag];
+      }
+    });
+  };
+
+  // Clear tag filters
+  const clearTagFilters = () => {
+    setSelectedTags([]);
   };
   // Bulk actions
   const handleBulkTemplate = (value) => {
@@ -1028,6 +1068,38 @@ const Outbound = () => {
         </div>
       </div>
 
+      {/* Tags Gallery */}
+      {tags.length > 0 && (
+        <div className="mb-4 bg-white p-4 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-gray-900">Filter by Tags</h3>
+            {selectedTags.length > 0 && (
+              <button
+                onClick={clearTagFilters}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {tags.map(tag => (
+              <button
+                key={tag}
+                onClick={() => handleTagSelect(tag)}
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                  selectedTags.includes(tag)
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Pagination controls and search bar */}
       <div className="flex items-center space-x-4 flex-wrap mb-2">
         <span className="text-xs">Rows per page:</span>
@@ -1163,6 +1235,7 @@ const Outbound = () => {
               </TableHead>
               <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1">Email</TableHead>
               <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1">First Name</TableHead>
+              <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1 hidden md:table-cell">Tags</TableHead>
               <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1 hidden md:table-cell">Email Count</TableHead>
               <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1">Email Template</TableHead>
               <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1 hidden md:table-cell">Sender Email</TableHead>
@@ -1174,7 +1247,7 @@ const Outbound = () => {
           <TableBody>
             {currentPageData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-gray-500 text-xs">
+                <TableCell colSpan={9} className="text-center py-8 text-gray-500 text-xs">
                   No practices found
                 </TableCell>
               </TableRow>
@@ -1196,6 +1269,18 @@ const Outbound = () => {
                   </TableCell>
                   <TableCell className="text-gray-700 text-xs px-2 py-1">
                     {highlightMatch(practice.first_name || 'N/A')}
+                  </TableCell>
+                  <TableCell className="text-gray-700 text-xs px-2 py-1 hidden md:table-cell">
+                    <div className="flex flex-wrap gap-1">
+                      {practice.tags && practice.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   </TableCell>
                   <TableCell className="text-gray-700 text-xs px-2 py-1 hidden md:table-cell">
                     {highlightMatch(emailCounts[practice.email] || 0)}
