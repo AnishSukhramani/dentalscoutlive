@@ -235,6 +235,36 @@ const Outbound = () => {
     }));
   };
 
+  // Helper function to check if a scheduled date is in the past
+  const isScheduledDateInPast = (dateValue) => {
+    if (!dateValue) return false;
+    const scheduledTime = new Date(dateValue);
+    const now = new Date();
+    return scheduledTime <= now;
+  };
+
+  // Helper function to get time until scheduled date
+  const getTimeUntilScheduled = (dateValue) => {
+    if (!dateValue) return null;
+    const scheduledTime = new Date(dateValue);
+    const now = new Date();
+    const diff = scheduledTime - now;
+    
+    if (diff <= 0) return 'Past';
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 24) {
+      const days = Math.floor(hours / 24);
+      return `${days} day${days > 1 ? 's' : ''} away`;
+    } else if (hours > 0) {
+      return `${hours}h ${minutes}m away`;
+    } else {
+      return `${minutes}m away`;
+    }
+  };
+
   // Fetch practices data from Supabase when the component mounts
   useEffect(() => {
     const fetchPractices = async () => {
@@ -456,32 +486,64 @@ const Outbound = () => {
   }
 
   const PSTISTConverter = () => {
-    // Live clocks for display
+    // Live clocks for display with seconds
     const [livePst, setLivePst] = React.useState(() => {
       const d = getCurrentTimeInTz('PST');
-      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      return {
+        time: `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`,
+        date: d.toLocaleDateString('en-US', { 
+          weekday: 'short', 
+          month: 'short', 
+          day: 'numeric',
+          year: 'numeric'
+        })
+      };
     });
     const [liveIst, setLiveIst] = React.useState(() => {
       const d = getCurrentTimeInTz('IST');
-      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      return {
+        time: `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`,
+        date: d.toLocaleDateString('en-US', { 
+          weekday: 'short', 
+          month: 'short', 
+          day: 'numeric',
+          year: 'numeric'
+        })
+      };
     });
 
     // Input fields for conversion
     const [pstInput, setPstInput] = React.useState('');
     const [istInput, setIstInput] = React.useState('');
 
-    // Live clocks update
+    // Live clocks update every second
     React.useEffect(() => {
       const interval = setInterval(() => {
         setLivePst(() => {
           const d = getCurrentTimeInTz('PST');
-          return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+          return {
+            time: `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`,
+            date: d.toLocaleDateString('en-US', { 
+              weekday: 'short', 
+              month: 'short', 
+              day: 'numeric',
+              year: 'numeric'
+            })
+          };
         });
         setLiveIst(() => {
           const d = getCurrentTimeInTz('IST');
-          return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+          return {
+            time: `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`,
+            date: d.toLocaleDateString('en-US', { 
+              weekday: 'short', 
+              month: 'short', 
+              day: 'numeric',
+              year: 'numeric'
+            })
+          };
         });
-      }, 60000);
+      }, 1000);
       return () => clearInterval(interval);
     }, []);
 
@@ -501,7 +563,8 @@ const Outbound = () => {
       <div className="flex flex-col md:flex-row md:items-center md:space-x-8 w-full md:w-auto mb-4">
         <div className="flex flex-col items-center mb-2 md:mb-0">
           <span className="font-semibold text-xs text-gray-700">PST</span>
-          <span className="text-lg font-mono text-blue-700">{livePst}</span>
+          <span className="text-sm text-gray-600">{livePst.date}</span>
+          <span className="text-lg font-mono text-blue-700">{livePst.time}</span>
           <input
             type="time"
             value={pstInput}
@@ -512,7 +575,8 @@ const Outbound = () => {
         </div>
         <div className="flex flex-col items-center">
           <span className="font-semibold text-xs text-gray-700">IST</span>
-          <span className="text-lg font-mono text-green-700">{liveIst}</span>
+          <span className="text-sm text-gray-600">{liveIst.date}</span>
+          <span className="text-lg font-mono text-green-700">{liveIst.time}</span>
           <input
             type="time"
             value={istInput}
@@ -615,6 +679,14 @@ const Outbound = () => {
     if (bulkSendMode === 'send' && bulkScheduleType === 'schedule' && !bulkScheduleDate) {
       alert('Please select a schedule date for bulk send');
       return;
+    }
+
+    // Check if scheduled date is in the past
+    if (bulkSendMode === 'send' && bulkScheduleType === 'schedule' && bulkScheduleDate) {
+      if (isScheduledDateInPast(bulkScheduleDate)) {
+        alert('Cannot schedule emails in the past. Please select a future date and time.');
+        return;
+      }
     }
 
     try {
@@ -1186,12 +1258,30 @@ const Outbound = () => {
             </Select>
           )}
           {bulkSendMode === "send" && bulkScheduleType === "schedule" && (
-            <Input
-              type="datetime-local"
-              value={bulkScheduleDate}
-              onChange={handleBulkScheduleDate}
-              className="w-[170px] h-8 text-xs"
-            />
+            <div className="flex flex-col space-y-1">
+              <Input
+                type="datetime-local"
+                value={bulkScheduleDate}
+                onChange={handleBulkScheduleDate}
+                className={`w-[170px] h-8 text-xs ${
+                  isScheduledDateInPast(bulkScheduleDate) 
+                    ? 'border-red-300 focus:border-red-500' 
+                    : 'border-gray-300'
+                }`}
+              />
+              {bulkScheduleDate && (
+                <div className={`text-xs ${
+                  isScheduledDateInPast(bulkScheduleDate)
+                    ? 'text-red-600 font-medium'
+                    : 'text-green-600'
+                }`}>
+                  {isScheduledDateInPast(bulkScheduleDate) 
+                    ? '⚠️ Past time - will send immediately' 
+                    : `📅 ${getTimeUntilScheduled(bulkScheduleDate)}`
+                  }
+                </div>
+              )}
+            </div>
           )}
           {bulkSendMode === "send" && ((bulkScheduleType === "now") || (bulkScheduleType === "schedule" && bulkScheduleDate)) && (
             <Button 
@@ -1381,13 +1471,29 @@ const Outbound = () => {
                         
                         {/* Date Time Picker */}
                         {scheduledDates[practice.email] && (
-                          <div className="mt-2">
+                          <div className="mt-2 space-y-1">
                             <Input
                               type="datetime-local"
                               value={scheduledDates[practice.email]}
                               onChange={(e) => handleScheduledDateChange(practice.email, e.target.value)}
-                              className="w-full text-xs border-gray-300"
+                              className={`w-full text-xs ${
+                                isScheduledDateInPast(scheduledDates[practice.email]) 
+                                  ? 'border-red-300 focus:border-red-500' 
+                                  : 'border-gray-300'
+                              }`}
                             />
+                            {scheduledDates[practice.email] && (
+                              <div className={`text-xs ${
+                                isScheduledDateInPast(scheduledDates[practice.email])
+                                  ? 'text-red-600 font-medium'
+                                  : 'text-green-600'
+                              }`}>
+                                {isScheduledDateInPast(scheduledDates[practice.email]) 
+                                  ? '⚠️ Past time - will send immediately' 
+                                  : `📅 ${getTimeUntilScheduled(scheduledDates[practice.email])}`
+                                }
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

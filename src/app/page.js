@@ -11,6 +11,7 @@ import SupabaseTable from "@/components/SupabaseTable";
 import Outbound from "@/components/Outbound";
 import TemplatesAndIDs from "@/components/TemplatesAndIDs";
 import Audience from "@/components/Audience";
+import AgenticCall from "@/components/AgenticCall";
 import { Menu } from "lucide-react";
 
 export default function Home() {
@@ -29,6 +30,8 @@ export default function Home() {
         return <TemplatesAndIDs />;
       case "audience":
         return <Audience />;
+      case "agentic-call":
+        return <AgenticCall />;
       default:
         return <div>Select a section</div>;
     }
@@ -116,6 +119,24 @@ export default function Home() {
               }}
             >
               Audience
+            </button>
+          </li>
+          <li>
+            <button
+              className={`w-full text-left p-2 rounded hover:bg-blue-100 transition-colors duration-200 ${
+                activeSection === "agentic-call" ? "bg-blue-200" : ""
+              }`}
+              onClick={() => {
+                setActiveSection("agentic-call");
+                setSidebarOpen(false);
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <span>Agentic Call</span>
+                <span className="px-2 py-0.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-bold rounded-full border border-cyan-400/50 shadow-sm">
+                  BETA
+                </span>
+              </div>
             </button>
           </li>
         </ul>

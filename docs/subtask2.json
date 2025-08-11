@@ -81,60 +81,54 @@
     "id": 43,
     "title": "Supabase Table: Exclude email_sent_count from Edit Modal",
     "description": "Remove the email_sent_count field from the edit modal so it cannot be modified directly by users.",
-    "status": "todo"
+    "status": "completed"
   },
   {
     "id": 44,
     "title": "Outbound: Live PST↔IST Clock with Seconds",
     "description": "Enhance the PST–IST converter to show live date/time with second-level accuracy for both time zones.",
-    "status": "todo"
+    "status": "completed"
   },
   {
     "id": 45,
     "title": "Outbound: Improve Scheduling UX to Prevent Past Times",
     "description": "Refine scheduling UI to make it clear when a chosen time would be in the past and prevent submission without blocking flows. Keep existing validation logic; focus on clearer affordances and warnings.",
-    "status": "todo"
+    "status": "completed"
   },
   {
     "id": 46,
     "title": "Templates & IDs: Add Rich Text Email Editor",
     "description": "Provide a full-featured editor (bold/italic/links/lists, HTML preview) for composing/editing email templates.",
-    "status": "todo"
+    "status": "completed"
   },
   {
     "id": 47,
     "title": "Templates & IDs: Usable Templates UI",
     "description": "Build a UI that lists templates from templates.json, supports search/sort, and opens them in the new editor for create/edit/duplicate workflows.",
-    "status": "todo"
+    "status": "completed"
   },
   {
     "id": 48,
     "title": "Agentic Call [beta]: Display Table",
     "description": "Create a table view for Agentic Call to list relevant entries (source aligned with Audience/Outbound data model).",
-    "status": "todo"
+    "status": "completed"
   },
   {
     "id": 49,
     "title": "Agentic Call [beta]: Tag Filters",
     "description": "Add tag-based searching/filtering to Agentic Call, reusing the shared tags system.",
-    "status": "todo"
+    "status": "completed"
   },
   {
     "id": 50,
     "title": "Agentic Call [beta]: Bulk Select → Google Sheet",
     "description": "Enable bulk selection and export of selected rows to a Google Sheet for the call agent workflow.",
-    "status": "todo"
+    "status": "completed"
   },
   {
     "id": 51,
     "title": "Agentic Call [beta]: Tag Context Windows (CRUD in Audience)",
     "description": "Allow each tag to have a 'context' text stored in app JSON when created/edited in Audience. Show this context in Agentic Call to guide the agent, and include it when exporting to Google Sheet.",
-    "status": "todo"
-  },
-  {
-    "id": 52,
-    "title": "Adopt New Practices Schema Across UI",
-    "description": "Update queries, table columns, and template placeholders to use the new practices schema (practice_name, domain_url, owner_name, email, phone_number, first_name, email_sent_count, tags jsonb[]). Ensure 'Practice' column maps to practice_name and tags read/write to jsonb[].",
     "status": "todo"
   }
 ]

@@ -10,6 +10,9 @@ const TemplatesAndIDs = () => {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   // Supabase table columns reference
   const tableColumns = [
@@ -21,6 +24,46 @@ const TemplatesAndIDs = () => {
     { name: "phone_number", description: "Contact phone number" },
     { name: "first_name", description: "First name of the contact person" }
   ];
+
+  // Simple formatting functions for textarea
+  const formatText = (format) => {
+    const textarea = document.querySelector('textarea[name="body"]');
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    
+    let formattedText = '';
+    switch (format) {
+      case 'bold':
+        formattedText = `**${selectedText}**`;
+        break;
+      case 'italic':
+        formattedText = `*${selectedText}*`;
+        break;
+      case 'underline':
+        formattedText = `__${selectedText}__`;
+        break;
+      case 'list':
+        formattedText = `• ${selectedText}`;
+        break;
+      case 'link':
+        formattedText = `[${selectedText}](url)`;
+        break;
+      default:
+        formattedText = selectedText;
+    }
+    
+    const newValue = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
+    setTemplate({ ...template, body: newValue });
+    
+    // Set cursor position after formatting
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + formattedText.length, start + formattedText.length);
+    }, 0);
+  };
 
   const fetchTemplates = async () => {
     try {
@@ -108,6 +151,32 @@ const TemplatesAndIDs = () => {
     setTemplate({ name: "", subject: "", body: "" });
   };
 
+  // Filter and sort templates
+  const filteredAndSortedTemplates = templates
+    .filter(template => 
+      template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      template.subject.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      let aValue = a[sortBy] || "";
+      let bValue = b[sortBy] || "";
+      
+      if (sortOrder === "asc") {
+        return aValue.localeCompare(bValue);
+      } else {
+        return bValue.localeCompare(aValue);
+      }
+    });
+
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setSortOrder("asc");
+    }
+  };
+
   const handleCreateClick = () => {
     // Close edit form if open
     setShowEditForm(false);
@@ -125,6 +194,19 @@ const TemplatesAndIDs = () => {
     email: "john@sampledental.com",
     phone_number: "(555) 123-4567",
     first_name: "John"
+  };
+
+  // Function to convert markdown to HTML for preview
+  const markdownToHtml = (text) => {
+    if (!text) return '';
+    
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+      .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
+      .replace(/__(.*?)__/g, '<u>$1</u>') // Underline
+      .replace(/•\s*(.*?)(?=\n|$)/g, '<li>$1</li>') // List items
+      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>') // Links
+      .replace(/\n/g, '<br>'); // Line breaks
   };
 
   // Function to replace placeholders for preview
@@ -238,13 +320,66 @@ const TemplatesAndIDs = () => {
               onChange={handleChange}
               className="w-full"
             />
-            <textarea
-              name="body"
-              placeholder="Body"
-              value={template.body}
-              onChange={handleChange}
-              className="w-full border rounded p-2 min-h-[80px]"
-            />
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email Body</label>
+              <div className="border rounded-lg">
+                {/* Formatting toolbar */}
+                <div className="flex gap-1 p-2 bg-gray-50 border-b rounded-t-lg">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => formatText('bold')}
+                    className="text-xs px-2 py-1"
+                  >
+                    B
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => formatText('italic')}
+                    className="text-xs px-2 py-1"
+                  >
+                    I
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => formatText('underline')}
+                    className="text-xs px-2 py-1"
+                  >
+                    U
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => formatText('list')}
+                    className="text-xs px-2 py-1"
+                  >
+                    •
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => formatText('link')}
+                    className="text-xs px-2 py-1"
+                  >
+                    🔗
+                  </Button>
+                </div>
+                <textarea
+                  name="body"
+                  placeholder="Write your email content here... Use **bold**, *italic*, __underline__, • lists, and [links](url)"
+                  value={template.body}
+                  onChange={handleChange}
+                  className="w-full border-0 rounded-b-lg p-3 min-h-[120px] resize-y focus:ring-0 focus:outline-none"
+                />
+              </div>
+            </div>
             <div className="flex gap-2 mt-2">
               <Button onClick={handleSave}>Save</Button>
               <Button 
@@ -270,9 +405,12 @@ const TemplatesAndIDs = () => {
                   </div>
                   <div>
                     <span className="text-sm font-medium text-gray-600">Body:</span>
-                    <p className="text-sm bg-white p-2 rounded border whitespace-pre-wrap">
-                      {replacePlaceholders(template.body, sampleEntryData)}
-                    </p>
+                    <div 
+                      className="text-sm bg-white p-2 rounded border"
+                      dangerouslySetInnerHTML={{ 
+                        __html: markdownToHtml(replacePlaceholders(template.body, sampleEntryData)) 
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -283,30 +421,85 @@ const TemplatesAndIDs = () => {
         {/* Templates List */}
         {!loading && (
           <div className="mt-4">
-            <h3 className="text-md font-medium mb-3">Saved Templates</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-md font-medium">Saved Templates ({filteredAndSortedTemplates.length})</h3>
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="text"
+                  placeholder="Search templates..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-48 text-sm"
+                />
+              </div>
+            </div>
+            
             {templates.length === 0 ? (
               <p className="text-gray-500 text-sm">No templates saved yet.</p>
+            ) : filteredAndSortedTemplates.length === 0 ? (
+              <p className="text-gray-500 text-sm">No templates match your search.</p>
             ) : (
-              <div className="space-y-2">
-                {templates.map((template) => (
+              <div className="space-y-3">
+                {/* Sortable Header */}
+                <div className="grid grid-cols-12 gap-4 p-3 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
+                  <div 
+                    className="col-span-4 cursor-pointer hover:text-blue-600 flex items-center"
+                    onClick={() => handleSort("name")}
+                  >
+                    Name
+                    {sortBy === "name" && (
+                      <span className="ml-1">{sortOrder === "asc" ? "↑" : "↓"}</span>
+                    )}
+                  </div>
+                  <div 
+                    className="col-span-6 cursor-pointer hover:text-blue-600 flex items-center"
+                    onClick={() => handleSort("subject")}
+                  >
+                    Subject
+                    {sortBy === "subject" && (
+                      <span className="ml-1">{sortOrder === "asc" ? "↑" : "↓"}</span>
+                    )}
+                  </div>
+                  <div className="col-span-2 text-center">Actions</div>
+                </div>
+                
+                {/* Templates */}
+                {filteredAndSortedTemplates.map((template) => (
                   <div
                     key={template.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
+                    className="grid grid-cols-12 gap-4 p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors"
                   >
-                    <span 
-                      className="font-medium cursor-pointer hover:text-blue-600"
-                      onClick={() => handleEdit(template)}
-                    >
-                      {template.name}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(template.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      Delete
-                    </Button>
+                    <div className="col-span-4">
+                      <span 
+                        className="font-medium cursor-pointer hover:text-blue-600 text-sm"
+                        onClick={() => handleEdit(template)}
+                      >
+                        {template.name}
+                      </span>
+                    </div>
+                    <div className="col-span-6">
+                      <span className="text-sm text-gray-600 truncate block">
+                        {template.subject}
+                      </span>
+                    </div>
+                    <div className="col-span-2 flex justify-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(template)}
+                        className="text-xs"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(template.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs"
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -333,13 +526,66 @@ const TemplatesAndIDs = () => {
                 onChange={handleChange}
                 className="w-full"
               />
-              <textarea
-                name="body"
-                placeholder="Body"
-                value={template.body}
-                onChange={handleChange}
-                className="w-full border rounded p-2 min-h-[80px]"
-              />
+              <div className="w-full">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email Body</label>
+                <div className="border rounded-lg">
+                  {/* Formatting toolbar */}
+                  <div className="flex gap-1 p-2 bg-gray-50 border-b rounded-t-lg">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => formatText('bold')}
+                      className="text-xs px-2 py-1"
+                    >
+                      B
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => formatText('italic')}
+                      className="text-xs px-2 py-1"
+                    >
+                      I
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => formatText('underline')}
+                      className="text-xs px-2 py-1"
+                    >
+                      U
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => formatText('list')}
+                      className="text-xs px-2 py-1"
+                    >
+                      •
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => formatText('link')}
+                      className="text-xs px-2 py-1"
+                    >
+                      🔗
+                    </Button>
+                  </div>
+                  <textarea
+                    name="body"
+                    placeholder="Write your email content here... Use **bold**, *italic*, __underline__, • lists, and [links](url)"
+                    value={template.body}
+                    onChange={handleChange}
+                    className="w-full border-0 rounded-b-lg p-3 min-h-[120px] resize-y focus:ring-0 focus:outline-none"
+                  />
+                </div>
+              </div>
               <div className="flex gap-2 mt-2">
                 <Button onClick={handleUpdate} className="bg-blue-600 hover:bg-blue-700">
                   Update
@@ -369,9 +615,12 @@ const TemplatesAndIDs = () => {
                     </div>
                     <div>
                       <span className="text-sm font-medium text-blue-600">Body:</span>
-                      <p className="text-sm bg-white p-2 rounded border whitespace-pre-wrap">
-                        {replacePlaceholders(template.body, sampleEntryData)}
-                      </p>
+                      <div 
+                        className="text-sm bg-white p-2 rounded border"
+                        dangerouslySetInnerHTML={{ 
+                          __html: markdownToHtml(replacePlaceholders(template.body, sampleEntryData)) 
+                        }}
+                      />
                     </div>
                   </div>
                 </div>

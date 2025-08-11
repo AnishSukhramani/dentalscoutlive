@@ -456,7 +456,7 @@ export default function SupabaseTable() {
                       <DialogTitle>Edit Practice</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-2">
-                      {Object.keys(row).filter(key => key !== "id").map(key => (
+                      {Object.keys(row).filter(key => key !== "id" && key !== "email_sent_count" && key !== "tags").map(key => (
                         <Input
                           key={key}
                           name={key}
