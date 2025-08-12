@@ -130,6 +130,48 @@
     "title": "Agentic Call [beta]: Tag Context Windows (CRUD in Audience)",
     "description": "Allow each tag to have a 'context' text stored in app JSON when created/edited in Audience. Show this context in Agentic Call to guide the agent, and include it when exporting to Google Sheet.",
     "status": "todo"
+  },
+  {
+    "id": 52,
+    "title": "Rename 'Templates & IDs' component to 'Templates'",
+    "description": "In the side nav and routes, rename the existing 'Templates & IDs' component to 'Templates'. Ensure all imports, routes, links, and breadcrumbs reflect the new name. No functional changes to Templates are required in this task.",
+    "status": "todo"
+  },
+  {
+    "id": 53,
+    "title": "Create new 'IDs' component and route",
+    "description": "Add a new 'IDs' component to the side navigation and create a dedicated page/route. The component will manage sending identities (From email IDs) and related limits. Set up initial scaffolding with a basic table layout and placeholder panels for Dashboard, Limits, and History.",
+    "status": "todo"
+  },
+  {
+    "id": 54,
+    "title": "IDs: Load and list all email IDs from user.json",
+    "description": "In the 'IDs' component, read user.json and list every configured email ID (display: label, email address, provider if available). Include search/sort and basic actions column (view details). Do not mutate user.json in this task—read-only load for listing.",
+    "status": "todo"
+  },
+  {
+    "id": 55,
+    "title": "Per-ID daily send counter (email_sent_count_today) with 24h reset",
+    "description": "Introduce a dynamic per-email-ID counter tracking how many emails were sent today. Implement daily refresh logic (automatic reset every 24 hours based on last_reset_at or at local midnight). Persist fields needed for enforcement: emails_sent_today, last_reset_at, optional blocked_until. Keep storage minimal (e.g., app JSON or Supabase table), but do not expose these fields in any general edit modals.",
+    "status": "todo"
+  },
+  {
+    "id": 56,
+    "title": "Enforce per-ID daily limit with 24h block (direct send only)",
+    "description": "Add a configurable per-ID daily limit. When emails_sent_today exceeds the limit, set blocked_until = now + 24h and prevent DIRECT sends from that ID until the block expires. Scheduling rules: allow scheduling if the scheduled_at time is > 24h from now even while blocked. Draft flows must remain unaffected. Provide clear inline errors/tooltips in Outbound and any send entry points when a block prevents a direct send.",
+    "status": "todo"
+  },
+  {
+    "id": 57,
+    "title": "IDs UI: manual limit setting and override/unblock switch (dev/testing)",
+    "description": "On each ID's details panel, add controls to: (1) set/change the daily limit, (2) toggle an 'Override/Unblock' switch that immediately clears blocked_until and resets emails_sent_today for dev/testing. Gate these controls behind a 'Developer options' expander and annotate that behavior may change later.",
+    "status": "todo"
+  },
+  {
+    "id": 58,
+    "title": "IDs Dashboard: visualize usage, limits, and blocks",
+    "description": "Build a dashboard within the 'IDs' component showing for each ID: emails_sent_today, daily_limit, remaining sends, block status (Active/Until timestamp), next reset time, and a small sparkline/history of the past 7 days if available. Include a global banner when any ID is currently blocked and a quick link to that ID's details. Ensure data auto-refreshes on interval and after send events.",
+    "status": "todo"
   }
 ]
 
