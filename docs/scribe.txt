@@ -29,67 +29,34 @@ App Improvement Suggestions
 Upload file: Include google sheets integration
 
 Supabase Table
-    - fix: updated entry goes to the bottom - maintain relative order - in a particular case it went to the top. 
-    - fix: copy button copies a JSON format, not a table format of Excel (tab separated - look up)
-    - feat: fetch button backend 
-    - feat: undo delete/recycle bin/backup
-    - feat: keep the actions column fixed like a sticky column for ease of access, although we can convert them into icons and put them in fron near select column
-    - feat: remove duplicates (either here or the upload file component)
-    - fix: email_sent count should not be included in edit modal
-    - fix: email sent count? use and connect with the script : discard
-    - Error: Using custom pagination of say 1, when we jump back to a larger number say 10, the values are refetched and not shown until reloaded. - this error is inconsistent
-
+  - feat: fetch button backend 
+  - feat: undo delete/recycle bin/backup
+  - feat: keep the actions column fixed like a sticky column for ease of access, although we can convert them into icons and put them in fron near select column
+  - feat: remove duplicates (either here or the upload file component)
+  - Error: Using custom pagination of say 1, when we jump back to a larger number say 10, the values are refetched and not shown until reloaded. - this error is inconsistent
 
 Outbound component:
   - responsiveness
-  - search and group based on tag, group by multiple tags
-  - should display
-  - feat: Include live date and time with the accuracy of seconds in the PST - IST converter
   - figure out the scheduling logic and clear the UX of email queue status and scheduling status
-  - avoid scheduling in past/ the logic is fine but the UX should be changed
-  - draft feature
-  - bulk option - Agentic Call - populates the google sheet with data (name, email and phone number) the agent can then pick it up to perform outbound call. 
-    - If we make this an additional component we can configure the data populated in the sheet to provide more context for the call. We can launch specifically targetted call campagins: exampe a targeted call campagin for a specifc audience of DEO members 
 
 Newsletter Component: 
   - design plan and schedule newsletter campagin
   - very similar to templates component but with specific tool. and tuned ai generation prompts. 
 
-
 Templates and ID:
   - make the flow more robust
-  - 
-
   - UI/UX improvements
-  - text editor for emails
   - support for custom html email template design
   - AI template generator
   - pre-existing library with ready to use email templates
-  - Template management - folders [affects Outbound component]
-  - template health ratings and improvement Suggestions - spam avoidance check
   - Preview - detailed preview like the ones in google ads - Multiple devices like phone, tablet and desktop
-
-  - ID management:
-    - Limit email sent per day per email ID - first diplay and keep count, make it dynamic and refreshable daily (not manually), set custom limits, not exceeding max permisable count. 
-    - email id health management 
-    - check for email health parameters all we can use
-    - Make this a separate component
-    - sign up user emails IDs, to plug in and use for Outbound
-    - globally block an email ID after it reaches it's limit - block lasting for 24 hours - during block only scheduling should be available for times greater than 24 hours
-    - 
-
-
-Audience:
-  - folders based on tag
-  - tag management
-
-Agentic Call Outbound:
-
-add a tag array to each entry to create a targeted sub-group of audience 
 
 Research:
   - a research component loaded with dental practice data and behaviour and open rate analytics
   - to figure out best time, hooks and language improvements for the email. 
+
+Agentic Call:
+  - If we make this an additional component we can configure the data populated in the sheet to provide more context for the call. We can launch specifically targetted call campagins: exampe a targeted call campagin for a specifc audience of DEO members 
 
 
 ===================
@@ -149,3 +116,18 @@ Research:
 
 
 Slack integration
+
+
+Priority:
+  - fix: email sent count? use and connect with the script : discard
+  - draft feature
+  - template health ratings and improvement Suggestions - spam avoidance check
+  - Template management - folders [affects Outbound component]
+  - email open rates and tracking of other parameters
+  - ID management:
+    - Limit email sent per day per email ID - first diplay and keep count, make it dynamic and refreshable daily (not manually), set custom limits, not exceeding max permisable count. 
+    - email id health management 
+    - check for email health parameters all we can use
+    - Make this a separate component
+    - sign up user emails IDs, to plug in and use for Outbound
+    - globally block an email ID after it reaches it's limit - block lasting for 24 hours - during block only scheduling should be available for times greater than 24 hours
