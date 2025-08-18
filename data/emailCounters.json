@@ -1,0 +1,22 @@
+{
+  "emailCounters": [
+    {
+      "emailId": 1,
+      "email": "anishsukhramani@gmail.com",
+      "emailsSentToday": 5,
+      "dailyLimit": 5,
+      "lastResetAt": "2025-08-18T16:01:00.376Z",
+      "blockedUntil": "2025-08-19T16:01:54.940Z",
+      "isBlocked": true
+    },
+    {
+      "emailId": 2,
+      "email": "anishsukhramani1@gmail.com",
+      "emailsSentToday": 0,
+      "dailyLimit": 100,
+      "lastResetAt": "2025-08-18T16:01:00.376Z",
+      "blockedUntil": null,
+      "isBlocked": false
+    }
+  ]
+}

@@ -51,6 +51,9 @@ const TemplatesAndIDs = () => {
       case 'link':
         formattedText = `[${selectedText}](url)`;
         break;
+      case 'newline':
+        formattedText = '\n';
+        break;
       default:
         formattedText = selectedText;
     }
@@ -200,13 +203,78 @@ const TemplatesAndIDs = () => {
   const markdownToHtml = (text) => {
     if (!text) return '';
     
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-      .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
-      .replace(/__(.*?)__/g, '<u>$1</u>') // Underline
-      .replace(/•\s*(.*?)(?=\n|$)/g, '<li>$1</li>') // List items
-      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>') // Links
-      .replace(/\n/g, '<br>'); // Line breaks
+    let html = text;
+    
+    // Convert bold
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Convert italic
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // Convert underline
+    html = html.replace(/__(.*?)__/g, '<u>$1</u>');
+    
+    // Convert links
+    html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+    
+    // Convert lists - first split into lines
+    const lines = html.split('\n');
+    const processedLines = [];
+    let inList = false;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      if (line.trim().startsWith('•')) {
+        // This is a list item
+        if (!inList) {
+          processedLines.push('<ul>');
+          inList = true;
+        }
+        const listItem = line.replace(/•\s*(.*)/, '<li>$1</li>');
+        processedLines.push(listItem);
+      } else {
+        // This is not a list item
+        if (inList) {
+          processedLines.push('</ul>');
+          inList = false;
+        }
+        processedLines.push(line);
+      }
+    }
+    
+    // Close any open list
+    if (inList) {
+      processedLines.push('</ul>');
+    }
+    
+    // Join lines back together
+    html = processedLines.join('\n');
+    
+    // Convert remaining line breaks to <br> tags
+    html = html.replace(/\n/g, '<br>');
+    
+    return html;
+  };
+
+  // Function to handle Enter key in textarea to add line breaks
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const textarea = e.target;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const value = textarea.value;
+      
+      const newValue = value.substring(0, start) + '\n' + value.substring(end);
+      setTemplate({ ...template, body: newValue });
+      
+      // Set cursor position after the new line
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + 1, start + 1);
+      }, 0);
+    }
   };
 
   // Function to replace placeholders for preview
@@ -320,9 +388,18 @@ const TemplatesAndIDs = () => {
               onChange={handleChange}
               className="w-full"
             />
-            <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email Body</label>
-              <div className="border rounded-lg">
+                          <div className="w-full">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email Body</label>
+                <div className="text-xs text-gray-600 mb-2">
+                  <p><strong>Formatting Guide:</strong></p>
+                  <p>• <code>**text**</code> for <strong>bold</strong></p>
+                  <p>• <code>*text*</code> for <em>italic</em></p>
+                  <p>• <code>__text__</code> for <u>underline</u></p>
+                  <p>• <code>• item</code> for bullet lists</p>
+                  <p>• <code>[text](url)</code> for links</p>
+                  <p>• Press Enter or use the ↵ button for new lines</p>
+                </div>
+                <div className="border rounded-lg">
                 {/* Formatting toolbar */}
                 <div className="flex gap-1 p-2 bg-gray-50 border-b rounded-t-lg">
                   <Button
@@ -370,13 +447,25 @@ const TemplatesAndIDs = () => {
                   >
                     🔗
                   </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => formatText('newline')}
+                    className="text-xs px-2 py-1"
+                    title="Add new line"
+                  >
+                    ↵
+                  </Button>
                 </div>
                 <textarea
                   name="body"
-                  placeholder="Write your email content here... Use **bold**, *italic*, __underline__, • lists, and [links](url)"
+                  placeholder="Write your email content here... Use **bold**, *italic*, __underline__, • lists, and [links](url). Press Enter for new lines."
                   value={template.body}
                   onChange={handleChange}
-                  className="w-full border-0 rounded-b-lg p-3 min-h-[120px] resize-y focus:ring-0 focus:outline-none"
+                  onKeyDown={handleKeyDown}
+                  className="w-full border-0 rounded-b-lg p-3 min-h-[120px] resize-y focus:ring-0 focus:outline-none font-mono text-sm"
+                  style={{ whiteSpace: 'pre-wrap' }}
                 />
               </div>
             </div>
@@ -528,6 +617,15 @@ const TemplatesAndIDs = () => {
               />
               <div className="w-full">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Email Body</label>
+                <div className="text-xs text-gray-600 mb-2">
+                  <p><strong>Formatting Guide:</strong></p>
+                  <p>• <code>**text**</code> for <strong>bold</strong></p>
+                  <p>• <code>*text*</code> for <em>italic</em></p>
+                  <p>• <code>__text__</code> for <u>underline</u></p>
+                  <p>• <code>• item</code> for bullet lists</p>
+                  <p>• <code>[text](url)</code> for links</p>
+                  <p>• Press Enter or use the ↵ button for new lines</p>
+                </div>
                 <div className="border rounded-lg">
                   {/* Formatting toolbar */}
                   <div className="flex gap-1 p-2 bg-gray-50 border-b rounded-t-lg">
@@ -576,13 +674,25 @@ const TemplatesAndIDs = () => {
                     >
                       🔗
                     </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => formatText('newline')}
+                      className="text-xs px-2 py-1"
+                      title="Add new line"
+                    >
+                      ↵
+                    </Button>
                   </div>
                   <textarea
                     name="body"
-                    placeholder="Write your email content here... Use **bold**, *italic*, __underline__, • lists, and [links](url)"
+                    placeholder="Write your email content here... Use **bold**, *italic*, __underline__, • lists, and [links](url). Press Enter for new lines."
                     value={template.body}
                     onChange={handleChange}
-                    className="w-full border-0 rounded-b-lg p-3 min-h-[120px] resize-y focus:ring-0 focus:outline-none"
+                    onKeyDown={handleKeyDown}
+                    className="w-full border-0 rounded-b-lg p-3 min-h-[120px] resize-y focus:ring-0 focus:outline-none font-mono text-sm"
+                    style={{ whiteSpace: 'pre-wrap' }}
                   />
                 </div>
               </div>

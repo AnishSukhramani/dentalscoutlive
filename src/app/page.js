@@ -10,6 +10,7 @@ import UploadFile from "@/components/UploadFile";
 import SupabaseTable from "@/components/SupabaseTable";
 import Outbound from "@/components/Outbound";
 import TemplatesAndIDs from "@/components/TemplatesAndIDs";
+import IDs from "@/components/IDs";
 import Audience from "@/components/Audience";
 import AgenticCall from "@/components/AgenticCall";
 import { Menu } from "lucide-react";
@@ -28,6 +29,8 @@ export default function Home() {
         return <Outbound />;
       case "templates":
         return <TemplatesAndIDs />;
+      case "ids":
+        return <IDs />;
       case "audience":
         return <Audience />;
       case "agentic-call":
@@ -105,7 +108,20 @@ export default function Home() {
                 setSidebarOpen(false);
               }}
             >
-              Templates and IDs
+              Templates
+            </button>
+          </li>
+          <li>
+            <button
+              className={`w-full text-left p-2 rounded hover:bg-blue-100 transition-colors duration-200 ${
+                activeSection === "ids" ? "bg-blue-200" : ""
+              }`}
+              onClick={() => {
+                setActiveSection("ids");
+                setSidebarOpen(false);
+              }}
+            >
+              IDs
             </button>
           </li>
           <li>

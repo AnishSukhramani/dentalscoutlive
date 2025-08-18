@@ -342,6 +342,52 @@ const Outbound = () => {
 
   // Remove the separate fetchEmailCounts function since we're getting counts directly
 
+  // Check if email ID is blocked for direct sends
+  const checkEmailIdBlocked = async (senderEmail, sendMode, scheduledDate) => {
+    if (sendMode !== 'send') return { blocked: false, message: null };
+    
+    try {
+      // Find the user ID for the sender email
+      const selectedUser = users.find(user => user.email === senderEmail);
+      if (!selectedUser) {
+        return { blocked: false, message: null };
+      }
+
+      // Check if it's a direct send (not scheduled >24 hours in future)
+      const isDirectSend = !scheduledDate || (() => {
+        const scheduledTime = new Date(scheduledDate);
+        const now = new Date();
+        const hoursDiff = (scheduledTime - now) / (1000 * 60 * 60);
+        return hoursDiff <= 24;
+      })();
+
+      if (!isDirectSend) {
+        // Scheduled >24 hours in future, allow regardless of block
+        return { blocked: false, message: null };
+      }
+
+      // Check counter status for direct sends
+      const response = await fetch('/api/emailCounters');
+      if (response.ok) {
+        const data = await response.json();
+        const counter = data.emailCounters.find(c => c.emailId === selectedUser.id);
+        
+        if (counter && counter.isBlocked) {
+          const blockedUntil = new Date(counter.blockedUntil);
+          return { 
+            blocked: true, 
+            message: `Email ID is blocked until ${blockedUntil.toLocaleString()}. You can still schedule emails for more than 24 hours in the future.` 
+          };
+        }
+      }
+      
+      return { blocked: false, message: null };
+    } catch (error) {
+      console.error('Error checking email ID block status:', error);
+      return { blocked: false, message: null };
+    }
+  };
+
   // Handle sending email to a practice
   const handleSendEmail = async (practiceEmail) => {
     try {
@@ -367,6 +413,13 @@ const Outbound = () => {
       // Only proceed if send mode is 'send' (Send Directly) or 'draft' (Create Draft)
       if (sendMode !== 'send' && sendMode !== 'draft') {
         console.log('Send mode is not "send" or "draft", skipping email queue entry');
+        return;
+      }
+
+      // Check if email ID is blocked for direct sends
+      const blockCheck = await checkEmailIdBlocked(senderEmail, sendMode, scheduledDate);
+      if (blockCheck.blocked) {
+        alert(blockCheck.message);
         return;
       }
 
@@ -685,6 +738,15 @@ const Outbound = () => {
     if (bulkSendMode === 'send' && bulkScheduleType === 'schedule' && bulkScheduleDate) {
       if (isScheduledDateInPast(bulkScheduleDate)) {
         alert('Cannot schedule emails in the past. Please select a future date and time.');
+        return;
+      }
+    }
+
+    // Check if email ID is blocked for bulk direct sends
+    if (bulkSendMode === "send") {
+      const blockCheck = await checkEmailIdBlocked(bulkSender, bulkSendMode, bulkScheduleDate);
+      if (blockCheck.blocked) {
+        alert(blockCheck.message);
         return;
       }
     }

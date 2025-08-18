@@ -135,25 +135,25 @@
     "id": 52,
     "title": "Rename 'Templates & IDs' component to 'Templates'",
     "description": "In the side nav and routes, rename the existing 'Templates & IDs' component to 'Templates'. Ensure all imports, routes, links, and breadcrumbs reflect the new name. No functional changes to Templates are required in this task.",
-    "status": "todo"
+    "status": "completed"
   },
   {
     "id": 53,
     "title": "Create new 'IDs' component and route",
     "description": "Add a new 'IDs' component to the side navigation and create a dedicated page/route. The component will manage sending identities (From email IDs) and related limits. Set up initial scaffolding with a basic table layout and placeholder panels for Dashboard, Limits, and History.",
-    "status": "todo"
+    "status": "completed"
   },
   {
     "id": 54,
     "title": "IDs: Load and list all email IDs from user.json",
     "description": "In the 'IDs' component, read user.json and list every configured email ID (display: label, email address, provider if available). Include search/sort and basic actions column (view details). Do not mutate user.json in this task—read-only load for listing.",
-    "status": "todo"
+    "status": "completed"
   },
   {
     "id": 55,
     "title": "Per-ID daily send counter (email_sent_count_today) with 24h reset",
     "description": "Introduce a dynamic per-email-ID counter tracking how many emails were sent today. Implement daily refresh logic (automatic reset every 24 hours based on last_reset_at or at local midnight). Persist fields needed for enforcement: emails_sent_today, last_reset_at, optional blocked_until. Keep storage minimal (e.g., app JSON or Supabase table), but do not expose these fields in any general edit modals.",
-    "status": "todo"
+    "status": "completed"
   },
   {
     "id": 56,

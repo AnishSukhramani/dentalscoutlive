@@ -23,12 +23,75 @@ let EMAIL_CONFIGS = {};
 // ============================================================================
 
 /**
+ * Convert markdown-style formatting to HTML
+ * @param {string} text - The text with markdown formatting
+ * @returns {string} - HTML formatted text
+ */
+function markdownToHtml(text) {
+  if (!text) return '';
+  
+  let html = text;
+  
+  // Convert bold
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  
+  // Convert italic
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  
+  // Convert underline
+  html = html.replace(/__(.*?)__/g, '<u>$1</u>');
+  
+  // Convert links
+  html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+  
+  // Convert lists - first split into lines
+  const lines = html.split('\n');
+  const processedLines = [];
+  let inList = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    if (line.trim().startsWith('•')) {
+      // This is a list item
+      if (!inList) {
+        processedLines.push('<ul>');
+        inList = true;
+      }
+      const listItem = line.replace(/•\s*(.*)/, '<li>$1</li>');
+      processedLines.push(listItem);
+    } else {
+      // This is not a list item
+      if (inList) {
+        processedLines.push('</ul>');
+        inList = false;
+      }
+      processedLines.push(line);
+    }
+  }
+  
+  // Close any open list
+  if (inList) {
+    processedLines.push('</ul>');
+  }
+  
+  // Join lines back together
+  html = processedLines.join('\n');
+  
+  // Convert remaining line breaks to <br> tags
+  html = html.replace(/\n/g, '<br>');
+  
+  return html;
+}
+
+/**
  * Replace placeholders in email content with actual column values
  * @param {string} content - The email content (subject or body)
  * @param {object} entryData - The entry data from Supabase table
+ * @param {boolean} convertToHtml - Whether to convert markdown to HTML (default: false)
  * @returns {string} - Content with placeholders replaced
  */
-function replacePlaceholders(content, entryData) {
+function replacePlaceholders(content, entryData, convertToHtml = false) {
   if (!content || !entryData) return content;
 
   console.log('Entry data:', entryData);
@@ -96,6 +159,13 @@ function replacePlaceholders(content, entryData) {
       }
     });
   });
+  
+  // Convert markdown to HTML if requested
+  if (convertToHtml) {
+    console.log('\n🔄 Step 4: Converting markdown to HTML...');
+    replacedContent = markdownToHtml(replacedContent);
+    console.log('HTML conversion complete');
+  }
   
   console.log('\n✅ PLACEHOLDER REPLACEMENT COMPLETE');
   console.log('=====================================');
@@ -308,7 +378,7 @@ async function processSendEmail(entry, template) {
     console.log('Original body preview:', template.body.substring(0, 100) + '...');
     
     const processedSubject = replacePlaceholders(template.subject, entryData);
-    const processedBody = replacePlaceholders(template.body, entryData);
+    const processedBody = replacePlaceholders(template.body, entryData, true); // Convert to HTML for body
     
     console.log('Processed subject:', processedSubject);
     console.log('Processed body preview:', processedBody.substring(0, 100) + '...');
@@ -337,7 +407,7 @@ async function processSendEmail(entry, template) {
     } else {
       // Send immediately
       console.log('\n📤 Sending email immediately...');
-      await sendEmail(emailData);
+      await sendEmail(emailData, true); // Direct send
       await updateQueueEntryStatus(entry.id, 'sent', 'Email sent successfully');
       console.log(`✓ Email sent to ${entry.recipientEmail}`);
     }
@@ -365,7 +435,7 @@ async function processCreateDraft(entry, template) {
     
     // Replace placeholders in subject and body
     const processedSubject = replacePlaceholders(template.subject, entryData);
-    const processedBody = replacePlaceholders(template.body, entryData);
+    const processedBody = replacePlaceholders(template.body, entryData, true); // Convert to HTML for body
     
     const emailData = {
       to: entry.recipientEmail,
@@ -388,9 +458,60 @@ async function processCreateDraft(entry, template) {
 }
 
 /**
+ * Increment email counter for successful sends
+ */
+async function incrementEmailCounter(senderEmail, isDirectSend = true) {
+  try {
+    console.log(`\n📊 Incrementing email counter for ${senderEmail} (direct send: ${isDirectSend})`);
+    
+    // Find the user ID for the sender email
+    const user = Object.values(EMAIL_CONFIGS).find(config => config.email === senderEmail);
+    if (!user) {
+      console.log('User not found for email counter increment');
+      return;
+    }
+    
+    // Get user ID from user.json
+    const fs = require('fs').promises;
+    const path = require('path');
+    const userFilePath = path.join(process.cwd(), 'data', 'user.json');
+    
+    const userData = await fs.readFile(userFilePath, 'utf8');
+    const users = JSON.parse(userData);
+    const userRecord = users.users.find(u => u.email === senderEmail);
+    
+    if (!userRecord) {
+      console.log('User record not found for email counter increment');
+      return;
+    }
+    
+    // Update the email counter
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/emailCounters`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        emailId: userRecord.id,
+        isDirectSend: isDirectSend
+      }),
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      console.log(`✓ Email counter incremented for ${senderEmail}:`, result.counter);
+    } else {
+      console.error('Failed to increment email counter');
+    }
+  } catch (error) {
+    console.error('Error incrementing email counter:', error);
+  }
+}
+
+/**
  * Send email using configured SMTP
  */
-async function sendEmail(emailData) {
+async function sendEmail(emailData, isDirectSend = true) {
   try {
     console.log(`\n📧 Sending email to ${emailData.to} from ${emailData.senderEmail}`);
     console.log('SMTP Configuration:', {
@@ -421,6 +542,9 @@ async function sendEmail(emailData) {
     console.log(`✓ Email sent successfully to ${emailData.to}`);
     console.log('Message ID:', result.messageId);
     console.log('Response:', result.response);
+    
+    // Increment email counter for successful sends
+    await incrementEmailCounter(emailData.senderEmail, isDirectSend);
     
   } catch (error) {
     console.error(`❌ Error sending email to ${emailData.to}:`, error);
@@ -528,8 +652,8 @@ async function processScheduledEmails() {
       try {
         console.log(`Processing scheduled email ${scheduledEmail.id}`);
         
-        // Send the email
-        await sendEmail(scheduledEmail.emailData);
+        // Send the email (scheduled emails don't count as direct sends)
+        await sendEmail(scheduledEmail.emailData, false);
         
         // Update the queue entry status if it exists
         try {
@@ -751,5 +875,6 @@ module.exports = {
   getEmailConfigs,
   initializeEmailConfigs,
   replacePlaceholders,
+  markdownToHtml,
   TABLE_COLUMNS
 }; 
