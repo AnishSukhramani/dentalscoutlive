@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { Plus, Search, Edit, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Bold, Italic, Underline, List, Link, ArrowDownToLine, ChevronLeft, Reply, Trash, FolderDown, MoreHorizontal, SquareArrowOutUpRight, SquarePen } from "lucide-react";
 
 const TemplatesAndIDs = () => {
   const [showForm, setShowForm] = useState(false);
@@ -483,23 +484,122 @@ const TemplatesAndIDs = () => {
             
             {/* Preview Section */}
             {showPreview && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
-                <h4 className="font-medium text-gray-800 mb-2">Preview with Sample Data:</h4>
-                <div className="space-y-2">
-                  <div>
-                    <span className="text-sm font-medium text-gray-600">Subject:</span>
-                    <p className="text-sm bg-white p-2 rounded border">
-                      {replacePlaceholders(template.subject, sampleEntryData)}
-                    </p>
+              <div className="mt-4 space-y-4">
+                {/* Basic Preview */}
+                <div className="p-4 bg-gray-50 rounded-lg border">
+                  <h4 className="font-medium text-gray-800 mb-2">Preview with Sample Data:</h4>
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">Subject:</span>
+                      <p className="text-sm bg-white p-2 rounded border">
+                        {replacePlaceholders(template.subject, sampleEntryData)}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">Body:</span>
+                      <div 
+                        className="text-sm bg-white p-2 rounded border"
+                        dangerouslySetInnerHTML={{ 
+                          __html: markdownToHtml(replacePlaceholders(template.body, sampleEntryData)) 
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-600">Body:</span>
-                    <div 
-                      className="text-sm bg-white p-2 rounded border"
-                      dangerouslySetInnerHTML={{ 
-                        __html: markdownToHtml(replacePlaceholders(template.body, sampleEntryData)) 
-                      }}
-                    />
+                </div>
+                
+                {/* iPhone Device Preview */}
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="p-6">
+                    <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <Eye className="w-4 h-4" />
+                      iPhone Preview (45-character line limit)
+                    </h4>
+                    
+                    {/* iPhone Preview */}
+                    <div className="flex flex-col items-center">
+                      <div className="relative">
+                        {/* iPhone Frame - 13:6 aspect ratio (iPhone 16 Pro) */}
+                        <div className="w-[150px] h-[325px] bg-black rounded-[1.5rem] p-1 shadow-xl">
+                          <div className="w-full h-full bg-white rounded-[1.25rem] overflow-hidden relative">
+                            {/* Dynamic Island */}
+                            <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-8 h-2 bg-black rounded-full z-10"></div>
+                            
+                            {/* Status Bar */}
+                            <div className="h-4 bg-black rounded-t-[1.25rem] flex items-center justify-between px-4 text-white text-xs">
+                              <span>9:41</span>
+                              <div className="flex items-center gap-1">
+                                <div className="w-3 h-1.5 bg-white rounded-sm"></div>
+                                <div className="w-1 h-1 bg-white rounded-full"></div>
+                              </div>
+                            </div>
+                            
+                            {/* Nav Bar (Back, count, compose) */}
+                            <div className="bg-white px-2 py-1.5 border-b border-gray-200">
+                              <div className="flex items-center justify-between text-gray-900">
+                                <div className="flex items-center gap-1 text-blue-600">
+                                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                  <span className="text-xs font-medium">Mailboxes</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">6</span>
+                                  <svg className="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5A2.121 2.121 0 0 1 19 6v8a2 2 0 0 1-2 2H7l-4 4V6a2 2 0 0 1 2-2h7"/></svg>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Email Content */}
+                            <div className="p-0 bg-white h-full overflow-y-auto">
+                              <div className="px-3 pt-2">
+                                <div className="text-[10px] font-semibold text-gray-500 tracking-wide">1 NEW MESSAGE</div>
+                              </div>
+                              <div className="mx-3 mt-1 mb-2 rounded-md border border-gray-200 overflow-hidden">
+                                <div className="p-2 text-[10px] text-gray-700 leading-snug" style={{ maxWidth: '45ch' }}>
+                                  {replacePlaceholders(template.preview || 'Markus shared their impressions of 212 Opal Street. The property has prime location, a quiet atmosphere and a spacious backyard with an ocean view. However, it requires significant TLC, including repairing the stone wall and restoring the garden.', sampleEntryData)}
+                                </div>
+                              </div>
+                              <div className="px-3">
+                                {/* Email Header */}
+                                <div className="mb-4">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-8 h-8 bg-pink-200 rounded-full flex items-center justify-center">
+                                      <span className="text-pink-600 text-sm font-medium">M</span>
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="text-sm font-semibold text-gray-900">Markus Berget</div>
+                                      <div className="text-xs text-gray-500">To: Céline Mélard, Amy Byrne &gt;</div>
+                                    </div>
+                                    <div className="text-xs text-gray-500">Just Now</div>
+                                  </div>
+                                  <div className="text-sm font-semibold text-gray-900 underline">
+                                    {replacePlaceholders(template.subject, sampleEntryData)}
+                                  </div>
+                                </div>
+                                
+                                {/* Email Body */}
+                                <div className="text-sm text-gray-800 leading-relaxed" style={{ maxWidth: '45ch' }}>
+                                  <div 
+                                    dangerouslySetInnerHTML={{ 
+                                      __html: markdownToHtml(replacePlaceholders(template.body, sampleEntryData)) 
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Home Indicator */}
+                        <div className="w-16 h-0.5 bg-black rounded-full mx-auto mt-1.5"></div>
+                      </div>
+                      <div className="mt-1.5 text-xs font-medium text-gray-700">iPhone 16 Pro</div>
+                    </div>
+                    
+                    {/* Device Info */}
+                    <div className="mt-4 text-center">
+                      <p className="text-xs text-gray-600">
+                        Live preview with 45-character line limit on iPhone
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
