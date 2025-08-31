@@ -3,18 +3,18 @@
     {
       "emailId": 1,
       "email": "anishsukhramani@gmail.com",
-      "emailsSentToday": 5,
+      "emailsSentToday": 0,
       "dailyLimit": 5,
-      "lastResetAt": "2025-08-20T03:35:16.402Z",
-      "blockedUntil": "2025-08-21T03:35:58.988Z",
-      "isBlocked": true
+      "lastResetAt": "2025-08-31T05:53:08.584Z",
+      "blockedUntil": null,
+      "isBlocked": false
     },
     {
       "emailId": 2,
       "email": "anishsukhramani1@gmail.com",
-      "emailsSentToday": 6,
+      "emailsSentToday": 0,
       "dailyLimit": 100,
-      "lastResetAt": "2025-08-20T03:35:16.402Z",
+      "lastResetAt": "2025-08-31T05:53:08.584Z",
       "blockedUntil": null,
       "isBlocked": false
     }
