@@ -127,8 +127,12 @@
 /* Base layer */
 @layer base {
   html { font-feature-settings: "cv11","ss01"; font-variation-settings: "opsz" 18; }
-  body { @apply bg-background text-foreground antialiased; font-family: var(--font-sans);
-    line-height: 1.5; text-rendering: optimizeLegibility; }
+  body { 
+    @apply bg-background text-foreground antialiased; 
+    font-family: var(--font-sans);
+    line-height: 1.5; 
+    text-rendering: optimizeLegibility;
+  }
   * { @apply border-border; }
   
   
