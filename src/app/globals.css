@@ -91,26 +91,25 @@
 
 /* Liquid Glass primitive */
 .glass {
-  --_glass-blur: var(--glass-blur-regular);
-  backdrop-filter: blur(var(--_glass-blur));
-  -webkit-backdrop-filter: blur(var(--_glass-blur));
-  background: rgba(255,255,255,.12);
+  backdrop-filter: blur(22px) !important;
+  -webkit-backdrop-filter: blur(22px) !important;
+  background: rgba(142, 142, 142, 0.12);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-ambient);
   border: 1px solid rgba(255,255,255,.22);
   position: relative;
   transition: backdrop-filter var(--duration-base) var(--easing), box-shadow var(--duration-base) var(--easing), transform var(--duration-base) var(--easing);
 }
-:root .glass:hover { --_glass-blur: calc(var(--glass-blur-regular) + 2px); transform: translateY(-1px); }
-.glass:active { --_glass-blur: calc(var(--glass-blur-regular) - 3px); box-shadow: 0 4px 16px rgba(0,0,0,.18); transform: translateY(0); }
+:root .glass:hover { backdrop-filter: blur(22px) !important; transform: translateY(-1px); }
+.glass:active { backdrop-filter: blur(17px) !important; box-shadow: 0 4px 16px rgba(0,0,0,.18); transform: translateY(0); }
 
 @media (prefers-reduced-motion: reduce) {
   .glass { transition: none; }
 }
 
 :root.dark .glass { background: rgba(0,0,0,.12); border-color: rgba(255,255,255,.14); }
-.glass--thin   { --_glass-blur: var(--glass-blur-thin); }
-.glass--thick  { --_glass-blur: var(--glass-blur-thick); }
+.glass--thin   { backdrop-filter: blur(12px) !important; }
+.glass--thick  { backdrop-filter: blur(28px) !important; }
 .glass::after {
   content:""; position:absolute; inset:0; border-radius:inherit; box-shadow: var(--highlight-inner); pointer-events:none;
 }
@@ -164,5 +163,19 @@
   33.33% {
     background-color: transparent;
   }
+}
+
+/* Override Tailwind CSS specificity */
+.glass {
+  backdrop-filter: blur(var(--_glass-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--_glass-blur)) !important;
+}
+
+.glass--thin.glass--thin {
+  --_glass-blur: var(--glass-blur-thin) !important;
+}
+
+.glass--thick.glass--thick {
+  --_glass-blur: var(--glass-blur-thick) !important;
 }
 

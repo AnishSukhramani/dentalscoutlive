@@ -134,7 +134,7 @@ const UploadFile = () => {
 
 
   return (
-    <div className="max-w-xl mx-auto py-8 px-4">
+    <div className="glass max-w-xl mx-auto py-8 px-4">
       <Toaster position="top-center" richColors />
       <div className="mb-6 p-4 rounded-xl glass border flex flex-col gap-4">
         <h1 className="text-2xl font-bold mb-2">Upload Practice Data</h1>
