@@ -60,9 +60,9 @@
   --hairline-color: color-mix(in oklab, var(--surface-canvas-inverse) 12%, transparent);
 
   /* Liquid Glass tiers */
-  --glass-blur-thin: 12px;
+  /* --glass-blur-thin: 12px;
   --glass-blur-regular: 20px;
-  --glass-blur-thick: 28px;
+  --glass-blur-thick: 28px; */
 
   /* Radii & Shadows */
   --radius-xl: 22px; --radius-lg: 14px; --radius-md: 10px; --radius-sm: 8px;
@@ -92,13 +92,12 @@
 /* Liquid Glass primitive */
 .glass {
   backdrop-filter: blur(22px) !important;
-  -webkit-backdrop-filter: blur(22px) !important;
   background: rgba(142, 142, 142, 0.12);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-ambient);
   border: 1px solid rgba(255,255,255,.22);
   position: relative;
-  transition: backdrop-filter var(--duration-base) var(--easing), box-shadow var(--duration-base) var(--easing), transform var(--duration-base) var(--easing);
+  transition: box-shadow var(--duration-base) var(--easing), transform var(--duration-base) var(--easing);
 }
 :root .glass:hover { backdrop-filter: blur(22px) !important; transform: translateY(-1px); }
 .glass:active { backdrop-filter: blur(17px) !important; box-shadow: 0 4px 16px rgba(0,0,0,.18); transform: translateY(0); }
@@ -166,16 +165,16 @@
 }
 
 /* Override Tailwind CSS specificity */
-.glass {
+/* .glass {
   backdrop-filter: blur(var(--_glass-blur)) !important;
   -webkit-backdrop-filter: blur(var(--_glass-blur)) !important;
-}
-
+} */
+/* 
 .glass--thin.glass--thin {
   --_glass-blur: var(--glass-blur-thin) !important;
 }
 
 .glass--thick.glass--thick {
   --_glass-blur: var(--glass-blur-thick) !important;
-}
+} */
 
