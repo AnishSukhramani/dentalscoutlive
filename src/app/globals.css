@@ -149,3 +149,16 @@
 .toggle__input:checked + .toggle__track .toggle__ball { transform: translateX(18px); }
 .toggle__input:focus-visible + .toggle__track { outline: 2px solid color-mix(in oklab, var(--text-color) 60%, transparent); outline-offset: 2px; }
 
+/* Custom traveling wave animation for loading dots */
+@keyframes wave-green {
+  0%, 100% {
+    background-color: transparent;
+  }
+  16.67% {
+    background-color: #16a34a; /* Green color */
+  }
+  33.33% {
+    background-color: transparent;
+  }
+}
+
