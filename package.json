@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "chroma:check": "node scripts/chroma-check.js",
+    "visual:diff": "node scripts/visual-diff.js"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.2",
@@ -33,6 +35,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "playwright": "^1.55.0",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.4"
   }

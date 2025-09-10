@@ -340,33 +340,33 @@ const TemplatesAndIDs = () => {
   return (
     <div className="w-full max-w-2xl mx-auto p-4">
       {/* Supabase Table Columns Reference */}
-      <div className="bg-blue-50 rounded-lg shadow p-4 mb-4 border border-blue-200">
-        <h3 className="text-lg font-semibold text-blue-800 mb-3">Available Table Columns for Placeholders</h3>
-                 <p className="text-sm text-blue-700 mb-3">
-           Use these column names in square brackets as placeholders in your email templates. Multiple formats are supported:
-         </p>
-         <div className="text-xs text-blue-600 mb-3">
-           <p>• <code className="bg-blue-100 px-1 rounded">[first_name]</code> - Original format</p>
-           <p>• <code className="bg-green-100 px-1 rounded">[first name]</code> - With spaces</p>
-           <p>• <code className="bg-yellow-100 px-1 rounded">[firstname]</code> - No underscores</p>
-           <p>• <code className="bg-purple-100 px-1 rounded">[owner name]</code> - Special case for owner</p>
-           <p>• <code className="bg-purple-100 px-1 rounded">[phone number]</code> - Special case for phone</p>
-         </div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-           {tableColumns.map((column) => (
-             <div key={column.name} className="flex items-center gap-2 text-sm">
-               <div className="flex flex-col gap-1">
-                 <code className="bg-blue-100 px-2 py-1 rounded font-mono text-xs">[{column.name}]</code>
-                 <code className="bg-green-100 px-2 py-1 rounded font-mono text-xs">[{column.name.replace(/_/g, ' ')}]</code>
-                 <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-xs">[{column.name.replace(/_/g, '')}]</code>
-               </div>
-               <span className="text-gray-700">{column.description}</span>
-             </div>
-           ))}
-         </div>
+      <div className="glass rounded-lg shadow p-4 mb-4 border">
+        <h3 className="text-lg font-semibold mb-3">Available Table Columns for Placeholders</h3>
+        <p className="text-sm text-foreground/70 mb-3">
+          Use these column names in square brackets as placeholders in your email templates. Multiple formats are supported:
+        </p>
+        <div className="text-xs text-foreground/70 mb-3">
+          <p>• <code className="px-1 rounded bg-foreground/10">[first_name]</code> - Original format</p>
+          <p>• <code className="px-1 rounded bg-foreground/10">[first name]</code> - With spaces</p>
+          <p>• <code className="px-1 rounded bg-foreground/10">[firstname]</code> - No underscores</p>
+          <p>• <code className="px-1 rounded bg-foreground/10">[owner name]</code> - Special case for owner</p>
+          <p>• <code className="px-1 rounded bg-foreground/10">[phone number]</code> - Special case for phone</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {tableColumns.map((column) => (
+            <div key={column.name} className="flex items-center gap-2 text-sm">
+              <div className="flex flex-col gap-1">
+                <code className="px-2 py-1 rounded font-mono text-xs bg-foreground/10">[{column.name}]</code>
+                <code className="px-2 py-1 rounded font-mono text-xs bg-foreground/10">[{column.name.replace(/_/g, ' ')}]</code>
+                <code className="px-2 py-1 rounded font-mono text-xs bg-foreground/10">[{column.name.replace(/_/g, '')}]</code>
+              </div>
+              <span className="text-foreground/70">{column.description}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-4 mb-4 flex flex-col gap-4 w-full">
+      <div className="glass rounded-lg shadow p-4 mb-4 flex flex-col gap-4 w-full border">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">Templates</h2>
           <Button onClick={handleCreateClick}>
@@ -402,7 +402,7 @@ const TemplatesAndIDs = () => {
                 </div>
                 <div className="border rounded-lg">
                 {/* Formatting toolbar */}
-                <div className="flex gap-1 p-2 bg-gray-50 border-b rounded-t-lg">
+                <div className="flex gap-1 p-2 bg-foreground/5 border-b rounded-t-lg">
                   <Button
                     type="button"
                     variant="outline"
@@ -486,19 +486,19 @@ const TemplatesAndIDs = () => {
             {showPreview && (
               <div className="mt-4 space-y-4">
                 {/* Basic Preview */}
-                <div className="p-4 bg-gray-50 rounded-lg border">
-                  <h4 className="font-medium text-gray-800 mb-2">Preview with Sample Data:</h4>
+                <div className="p-4 bg-foreground/5 rounded-lg border">
+                  <h4 className="font-medium mb-2">Preview with Sample Data:</h4>
                   <div className="space-y-2">
                     <div>
-                      <span className="text-sm font-medium text-gray-600">Subject:</span>
-                      <p className="text-sm bg-white p-2 rounded border">
+                      <span className="text-sm font-medium text-foreground/70">Subject:</span>
+                      <p className="text-sm p-2 rounded border bg-background">
                         {replacePlaceholders(template.subject, sampleEntryData)}
                       </p>
                     </div>
                     <div>
-                      <span className="text-sm font-medium text-gray-600">Body:</span>
+                      <span className="text-sm font-medium text-foreground/70">Body:</span>
                       <div 
-                        className="text-sm bg-white p-2 rounded border"
+                        className="text-sm p-2 rounded border bg-background"
                         dangerouslySetInnerHTML={{ 
                           __html: markdownToHtml(replacePlaceholders(template.body, sampleEntryData)) 
                         }}
@@ -508,9 +508,9 @@ const TemplatesAndIDs = () => {
                 </div>
                 
                 {/* iPhone Device Preview */}
-                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 overflow-hidden">
+                <div className="glass rounded-xl border overflow-hidden">
                   <div className="p-6">
-                    <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
                       <Eye className="w-4 h-4" />
                       iPhone Preview (45-character line limit)
                     </h4>
@@ -535,14 +535,14 @@ const TemplatesAndIDs = () => {
                             
                             {/* Nav Bar (Back, count, compose) */}
                             <div className="bg-white px-2 py-1.5 border-b border-gray-200">
-                              <div className="flex items-center justify-between text-gray-900">
-                                <div className="flex items-center gap-1 text-blue-600">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1">
                                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                                   <span className="text-xs font-medium">Mailboxes</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">6</span>
-                                  <svg className="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5A2.121 2.121 0 0 1 19 6v8a2 2 0 0 1-2 2H7l-4 4V6a2 2 0 0 1 2-2h7"/></svg>
+                                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5A2.121 2.121 0 0 1 19 6v8a2 2 0 0 1-2 2H7l-4 4V6a2 2 0 0 1 2-2h7"/></svg>
                                 </div>
                               </div>
                             </div>
@@ -561,22 +561,22 @@ const TemplatesAndIDs = () => {
                                 {/* Email Header */}
                                 <div className="mb-4">
                                   <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-8 h-8 bg-pink-200 rounded-full flex items-center justify-center">
-                                      <span className="text-pink-600 text-sm font-medium">M</span>
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-foreground/10">
+                                      <span className="text-sm font-medium">M</span>
                                     </div>
                                     <div className="flex-1">
-                                      <div className="text-sm font-semibold text-gray-900">Markus Berget</div>
-                                      <div className="text-xs text-gray-500">To: Céline Mélard, Amy Byrne &gt;</div>
+                                      <div className="text-sm font-semibold">Markus Berget</div>
+                                      <div className="text-xs text-foreground/60">To: Céline Mélard, Amy Byrne &gt;</div>
                                     </div>
-                                    <div className="text-xs text-gray-500">Just Now</div>
+                                    <div className="text-xs text-foreground/60">Just Now</div>
                                   </div>
-                                  <div className="text-sm font-semibold text-gray-900 underline">
+                                  <div className="text-sm font-semibold underline">
                                     {replacePlaceholders(template.subject, sampleEntryData)}
                                   </div>
                                 </div>
                                 
                                 {/* Email Body */}
-                                <div className="text-sm text-gray-800 leading-relaxed" style={{ maxWidth: '45ch' }}>
+                                <div className="text-sm leading-relaxed" style={{ maxWidth: '45ch' }}>
                                   <div 
                                     dangerouslySetInnerHTML={{ 
                                       __html: markdownToHtml(replacePlaceholders(template.body, sampleEntryData)) 
@@ -591,12 +591,12 @@ const TemplatesAndIDs = () => {
                         {/* Home Indicator */}
                         <div className="w-16 h-0.5 bg-black rounded-full mx-auto mt-1.5"></div>
                       </div>
-                      <div className="mt-1.5 text-xs font-medium text-gray-700">iPhone 16 Pro</div>
+                      <div className="mt-1.5 text-xs font-medium text-foreground/70">iPhone 16 Pro</div>
                     </div>
                     
                     {/* Device Info */}
                     <div className="mt-4 text-center">
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-foreground/70">
                         Live preview with 45-character line limit on iPhone
                       </p>
                     </div>
@@ -624,15 +624,15 @@ const TemplatesAndIDs = () => {
             </div>
             
             {templates.length === 0 ? (
-              <p className="text-gray-500 text-sm">No templates saved yet.</p>
+              <p className="text-foreground/60 text-sm">No templates saved yet.</p>
             ) : filteredAndSortedTemplates.length === 0 ? (
-              <p className="text-gray-500 text-sm">No templates match your search.</p>
+              <p className="text-foreground/60 text-sm">No templates match your search.</p>
             ) : (
               <div className="space-y-3">
                 {/* Sortable Header */}
-                <div className="grid grid-cols-12 gap-4 p-3 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
+                <div className="grid grid-cols-12 gap-4 p-3 bg-foreground/5 rounded-lg text-sm font-medium text-foreground/70">
                   <div 
-                    className="col-span-4 cursor-pointer hover:text-blue-600 flex items-center"
+                    className="col-span-4 cursor-pointer hover:opacity-80 flex items-center"
                     onClick={() => handleSort("name")}
                   >
                     Name
@@ -641,7 +641,7 @@ const TemplatesAndIDs = () => {
                     )}
                   </div>
                   <div 
-                    className="col-span-6 cursor-pointer hover:text-blue-600 flex items-center"
+                    className="col-span-6 cursor-pointer hover:opacity-80 flex items-center"
                     onClick={() => handleSort("subject")}
                   >
                     Subject
@@ -656,18 +656,18 @@ const TemplatesAndIDs = () => {
                 {filteredAndSortedTemplates.map((template) => (
                   <div
                     key={template.id}
-                    className="grid grid-cols-12 gap-4 p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors"
+                    className="grid grid-cols-12 gap-4 p-3 bg-foreground/5 rounded-lg border hover:bg-foreground/8 transition-colors"
                   >
                     <div className="col-span-4">
                       <span 
-                        className="font-medium cursor-pointer hover:text-blue-600 text-sm"
+                        className="font-medium cursor-pointer hover:opacity-80 text-sm"
                         onClick={() => handleEdit(template)}
                       >
                         {template.name}
                       </span>
                     </div>
                     <div className="col-span-6">
-                      <span className="text-sm text-gray-600 truncate block">
+                      <span className="text-sm text-foreground/70 truncate block">
                         {template.subject}
                       </span>
                     </div>
@@ -684,7 +684,7 @@ const TemplatesAndIDs = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDelete(template.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs"
+                        className="text-xs hover:opacity-80"
                       >
                         Delete
                       </Button>
@@ -698,8 +698,8 @@ const TemplatesAndIDs = () => {
 
         {/* Edit Form */}
         {showEditForm && editingTemplate && (
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h3 className="text-md font-medium mb-3 text-blue-800">Edit Template: {editingTemplate.name}</h3>
+          <div className="mt-4 p-4 glass rounded-lg border">
+            <h3 className="text-md font-medium mb-3">Edit Template: {editingTemplate.name}</h3>
             <div className="flex flex-col gap-3">
               <Input
                 name="name"
@@ -728,7 +728,7 @@ const TemplatesAndIDs = () => {
                 </div>
                 <div className="border rounded-lg">
                   {/* Formatting toolbar */}
-                  <div className="flex gap-1 p-2 bg-gray-50 border-b rounded-t-lg">
+                  <div className="flex gap-1 p-2 bg-foreground/5 border-b rounded-t-lg">
                     <Button
                       type="button"
                       variant="outline"
@@ -797,7 +797,7 @@ const TemplatesAndIDs = () => {
                 </div>
               </div>
               <div className="flex gap-2 mt-2">
-                <Button onClick={handleUpdate} className="bg-blue-600 hover:bg-blue-700">
+                <Button onClick={handleUpdate}>
                   Update
                 </Button>
                 <Button 
@@ -814,19 +814,19 @@ const TemplatesAndIDs = () => {
               
               {/* Preview Section for Edit Form */}
               {showPreview && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <h4 className="font-medium text-blue-800 mb-2">Preview with Sample Data:</h4>
+                <div className="mt-4 p-4 glass rounded-lg border">
+                  <h4 className="font-medium mb-2">Preview with Sample Data:</h4>
                   <div className="space-y-2">
                     <div>
-                      <span className="text-sm font-medium text-blue-600">Subject:</span>
-                      <p className="text-sm bg-white p-2 rounded border">
+                      <span className="text-sm font-medium text-foreground/70">Subject:</span>
+                      <p className="text-sm bg-background p-2 rounded border">
                         {replacePlaceholders(template.subject, sampleEntryData)}
                       </p>
                     </div>
                     <div>
-                      <span className="text-sm font-medium text-blue-600">Body:</span>
+                      <span className="text-sm font-medium text-foreground/70">Body:</span>
                       <div 
-                        className="text-sm bg-white p-2 rounded border"
+                        className="text-sm bg-background p-2 rounded border"
                         dangerouslySetInnerHTML={{ 
                           __html: markdownToHtml(replacePlaceholders(template.body, sampleEntryData)) 
                         }}

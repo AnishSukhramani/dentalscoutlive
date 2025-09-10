@@ -141,7 +141,7 @@ const Outbound = () => {
     const regex = new RegExp(`(${searchQuery})`, "gi");
     return String(text).split(regex).map((part, i) =>
       part.toLowerCase() === searchQuery.toLowerCase() ? (
-        <span key={i} className="bg-yellow-200 font-semibold">{part}</span>
+        <span key={i} className="bg-foreground/10 font-semibold">{part}</span>
       ) : (
         part
       )
@@ -615,9 +615,9 @@ const Outbound = () => {
     return (
       <div className="flex flex-col md:flex-row md:items-center md:space-x-8 w-full md:w-auto mb-4">
         <div className="flex flex-col items-center mb-2 md:mb-0">
-          <span className="font-semibold text-xs text-gray-700">PST</span>
-          <span className="text-sm text-gray-600">{livePst.date}</span>
-          <span className="text-lg font-mono text-blue-700">{livePst.time}</span>
+          <span className="font-semibold text-xs text-foreground/70">PST</span>
+          <span className="text-sm text-foreground/60">{livePst.date}</span>
+          <span className="text-lg font-mono text-foreground/70">{livePst.time}</span>
           <input
             type="time"
             value={pstInput}
@@ -627,9 +627,9 @@ const Outbound = () => {
           />
         </div>
         <div className="flex flex-col items-center">
-          <span className="font-semibold text-xs text-gray-700">IST</span>
-          <span className="text-sm text-gray-600">{liveIst.date}</span>
-          <span className="text-lg font-mono text-green-700">{liveIst.time}</span>
+          <span className="font-semibold text-xs text-foreground/70">IST</span>
+          <span className="text-sm text-foreground/60">{liveIst.date}</span>
+          <span className="text-lg font-mono text-foreground/70">{liveIst.time}</span>
           <input
             type="time"
             value={istInput}
@@ -978,7 +978,7 @@ const Outbound = () => {
       <div className="p-4">
         <h1 className="text-2xl font-semibold mb-4">Outbound</h1>
         <div className="flex items-center justify-center py-8">
-          <p className="text-red-500">{error}</p>
+          <p className="text-foreground/70">{error}</p>
         </div>
       </div>
     );
@@ -989,8 +989,8 @@ const Outbound = () => {
       {/* Page header and PST/IST converter */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Outbound</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-semibold">Outbound</h1>
+          <p className="mt-1 text-foreground/70">
             Manage and send emails to your practice contacts
           </p>
         </div>
@@ -1013,7 +1013,7 @@ const Outbound = () => {
                 alert('Error processing email queue');
               }
             }}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
+            className="text-xs"
           >
             Process Email Queue
           </Button>
@@ -1022,24 +1022,24 @@ const Outbound = () => {
 
       {/* Queue Status Component */}
       <div className="mb-4">
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+        <div className="glass rounded-lg p-4 shadow-sm border">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-              <div className="w-3 h-3 rounded-full bg-blue-500 mr-2 animate-pulse"></div>
+            <h3 className="text-lg font-semibold flex items-center">
+              <div className="w-3 h-3 rounded-full mr-2 animate-pulse bg-foreground/60"></div>
               Email Queue Status
             </h3>
             <div className="flex items-center space-x-2">
               <Button
                 onClick={startProcessing}
                 disabled={isProcessing || queueStatus.totalInQueue === 0}
-                className="bg-green-600 hover:bg-green-700 text-white text-xs"
+                className="text-xs"
                 size="sm"
               >
                 {isProcessing ? 'Processing...' : 'Start Processing'}
               </Button>
               <Button
                 onClick={() => fetchQueueStatus(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
+                className="text-xs"
                 size="sm"
               >
                 Refresh
@@ -1047,7 +1047,7 @@ const Outbound = () => {
               <Button
                 onClick={processScheduledEmails}
                 disabled={scheduledEmailsStatus.total === 0}
-                className="bg-purple-600 hover:bg-purple-700 text-white text-xs"
+                className="text-xs"
                 size="sm"
               >
                 Process Scheduled
@@ -1056,60 +1056,56 @@ const Outbound = () => {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg p-3 border border-blue-100">
-              <div className="text-2xl font-bold text-blue-600">{queueStatus.totalInQueue}</div>
-              <div className="text-xs text-gray-600">Total in Queue</div>
+            <div className="rounded-lg p-3 border">
+              <div className="text-2xl font-bold">{queueStatus.totalInQueue}</div>
+              <div className="text-xs text-foreground/70">Total in Queue</div>
             </div>
-            <div className="bg-white rounded-lg p-3 border border-green-100">
-              <div className="text-2xl font-bold text-green-600">{queueStatus.processedCount}</div>
-              <div className="text-xs text-gray-600">Processed</div>
+            <div className="rounded-lg p-3 border">
+              <div className="text-2xl font-bold">{queueStatus.processedCount}</div>
+              <div className="text-xs text-foreground/70">Processed</div>
             </div>
-            <div className="bg-white rounded-lg p-3 border border-yellow-100">
-              <div className="text-2xl font-bold text-yellow-600">{queueStatus.pendingCount}</div>
-              <div className="text-xs text-gray-600">Pending</div>
+            <div className="rounded-lg p-3 border">
+              <div className="text-2xl font-bold">{queueStatus.pendingCount}</div>
+              <div className="text-xs text-foreground/70">Pending</div>
             </div>
-            <div className="bg-white rounded-lg p-3 border border-red-100">
-              <div className="text-2xl font-bold text-red-600">{queueStatus.failedCount}</div>
-              <div className="text-xs text-gray-600">Failed</div>
+            <div className="rounded-lg p-3 border">
+              <div className="text-2xl font-bold">{queueStatus.failedCount}</div>
+              <div className="text-xs text-foreground/70">Failed</div>
             </div>
           </div>
 
           {/* Scheduled Emails Status */}
           {scheduledEmailsStatus.total > 0 && (
-            <div className="mt-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-3">
+            <div className="mt-4 glass rounded-lg p-3 border">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-md font-semibold text-gray-800 flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>
+                <h4 className="text-md font-semibold flex items-center">
+                  <div className="w-3 h-3 rounded-full mr-2 bg-foreground/60"></div>
                   Scheduled Emails
                 </h4>
-                <Button
-                  onClick={fetchScheduledEmailsStatus}
-                  className="bg-purple-600 hover:bg-purple-700 text-white text-xs"
-                  size="sm"
-                >
+                <Button onClick={fetchScheduledEmailsStatus} size="sm" className="text-xs">
                   Refresh
                 </Button>
               </div>
               
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-white rounded-lg p-3 border border-purple-100">
-                  <div className="text-xl font-bold text-purple-600">{scheduledEmailsStatus.total}</div>
-                  <div className="text-xs text-gray-600">Total Scheduled</div>
+                <div className="rounded-lg p-3 border">
+                  <div className="text-xl font-bold">{scheduledEmailsStatus.total}</div>
+                  <div className="text-xs text-foreground/70">Total Scheduled</div>
                 </div>
-                <div className="bg-white rounded-lg p-3 border border-green-100">
-                  <div className="text-xl font-bold text-green-600">{scheduledEmailsStatus.upcoming}</div>
-                  <div className="text-xs text-gray-600">Upcoming</div>
+                <div className="rounded-lg p-3 border">
+                  <div className="text-xl font-bold">{scheduledEmailsStatus.upcoming}</div>
+                  <div className="text-xs text-foreground/70">Upcoming</div>
                 </div>
-                <div className="bg-white rounded-lg p-3 border border-orange-100">
-                  <div className="text-xl font-bold text-orange-600">{scheduledEmailsStatus.overdue}</div>
-                  <div className="text-xs text-gray-600">Overdue</div>
+                <div className="rounded-lg p-3 border">
+                  <div className="text-xl font-bold">{scheduledEmailsStatus.overdue}</div>
+                  <div className="text-xs text-foreground/70">Overdue</div>
                 </div>
               </div>
               
               {/* Scheduled Emails List */}
               {scheduledEmailsStatus.emails.length > 0 && (
                 <div className="mt-3">
-                  <h5 className="text-sm font-medium text-gray-700 mb-2">Scheduled Emails:</h5>
+                  <h5 className="text-sm font-medium text-foreground/70 mb-2">Scheduled Emails:</h5>
                   <div className="max-h-32 overflow-y-auto space-y-1">
                     {scheduledEmailsStatus.emails.slice(0, 5).map((email, index) => {
                       const scheduledTime = new Date(email.scheduledDate);
@@ -1117,27 +1113,21 @@ const Outbound = () => {
                       const isOverdue = scheduledTime <= now;
                       
                       return (
-                        <div key={email.id} className={`text-xs p-2 rounded border ${
-                          isOverdue 
-                            ? 'bg-orange-50 border-orange-200' 
-                            : 'bg-green-50 border-green-200'
-                        }`}>
+                        <div key={email.id} className={`text-xs p-2 rounded border bg-foreground/5`}>
                           <div className="flex justify-between items-center">
                             <span className="font-medium">{email.emailData.to}</span>
-                            <span className={`text-xs ${
-                              isOverdue ? 'text-orange-600' : 'text-green-600'
-                            }`}>
+                            <span className="text-xs text-foreground/70">
                               {isOverdue ? 'Overdue' : 'Scheduled'}
                             </span>
                           </div>
-                          <div className="text-gray-600">
+                          <div className="text-foreground/70">
                             {scheduledTime.toLocaleString()}
                           </div>
                         </div>
                       );
                     })}
                     {scheduledEmailsStatus.emails.length > 5 && (
-                      <div className="text-xs text-gray-500 text-center">
+                      <div className="text-xs text-foreground/60 text-center">
                         +{scheduledEmailsStatus.emails.length - 5} more scheduled emails
                       </div>
                     )}
@@ -1149,19 +1139,19 @@ const Outbound = () => {
 
           {/* Processing Status */}
           {isProcessing && (
-            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="mt-4 rounded-lg p-3 glass border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin mr-2"></div>
-                  <span className="text-sm font-medium text-blue-800">Processing emails...</span>
+                  <div className="w-4 h-4 border-2 rounded-full animate-spin mr-2" style={{borderColor:'currentColor', borderTopColor:'transparent'}}></div>
+                  <span className="text-sm font-medium">Processing emails...</span>
                 </div>
                 {getEstimatedTime() && (
-                  <span className="text-xs text-blue-600">ETA: {getEstimatedTime()}</span>
+                  <span className="text-xs text-foreground/70">ETA: {getEstimatedTime()}</span>
                 )}
               </div>
-              <div className="mt-2 bg-blue-200 rounded-full h-2">
+              <div className="mt-2 rounded-full h-2 bg-foreground/10">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="h-2 rounded-full transition-all duration-300 bg-foreground"
                   style={{ 
                     width: `${queueStatus.totalInQueue > 0 ? (queueStatus.processedCount / queueStatus.totalInQueue) * 100 : 0}%` 
                   }}
@@ -1172,10 +1162,10 @@ const Outbound = () => {
 
           {/* Alerts */}
           {queueStatus.hasFailedEntries && (
-            <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="mt-3 rounded-lg p-3 glass border">
               <div className="flex items-center">
-                <div className="w-4 h-4 text-red-500 mr-2">⚠️</div>
-                <span className="text-sm text-red-800">
+                <div className="w-4 h-4 mr-2">⚠️</div>
+                <span className="text-sm">
                   {queueStatus.failedCount} email(s) failed to process. Please check the queue and retry.
                 </span>
               </div>
@@ -1183,10 +1173,10 @@ const Outbound = () => {
           )}
 
           {queueStatus.hasUnprocessedEntries && queueStatus.totalInQueue > 0 && !isProcessing && (
-            <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <div className="mt-3 rounded-lg p-3 glass border">
               <div className="flex items-center">
-                <div className="w-4 h-4 text-yellow-500 mr-2">⚠️</div>
-                <span className="text-sm text-yellow-800">
+                <div className="w-4 h-4 mr-2">⚠️</div>
+                <span className="text-sm">
                   Queue is not empty. {queueStatus.pendingCount} email(s) pending. Process queue to clear it before starting a new batch.
                 </span>
               </div>
@@ -1195,7 +1185,7 @@ const Outbound = () => {
 
           {/* Last Updated */}
           {queueStatus.lastUpdated && (
-            <div className="mt-3 text-xs text-gray-500 text-center">
+            <div className="mt-3 text-xs text-foreground/60 text-center">
               Last updated: {new Date(queueStatus.lastUpdated).toLocaleTimeString()}
             </div>
           )}
@@ -1204,13 +1194,13 @@ const Outbound = () => {
 
       {/* Tags Gallery */}
       {tags.length > 0 && (
-        <div className="mb-4 bg-white p-4 rounded-lg shadow-sm border">
+        <div className="mb-4 glass p-4 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-900">Filter by Tags</h3>
+            <h3 className="text-lg font-semibold">Filter by Tags</h3>
             {selectedTags.length > 0 && (
               <button
                 onClick={clearTagFilters}
-                className="text-sm text-blue-600 hover:text-blue-800"
+                className="text-sm hover:opacity-80"
               >
                 Clear filters
               </button>
@@ -1218,18 +1208,18 @@ const Outbound = () => {
           </div>
           <div className="flex flex-wrap gap-2">
             {tags.map(tag => (
-              <button
-                key={tag}
-                onClick={() => handleTagSelect(tag)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                  selectedTags.includes(tag)
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                {tag}
-              </button>
-            ))}
+               <button
+                 key={tag}
+                 onClick={() => handleTagSelect(tag)}
+                 className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                   selectedTags.includes(tag)
+                     ? 'bg-foreground/10'
+                     : 'bg-foreground/5 hover:bg-foreground/8'
+                 }`}
+               >
+                 {tag}
+               </button>
+             ))}
           </div>
         </div>
       )}
@@ -1325,18 +1315,10 @@ const Outbound = () => {
                 type="datetime-local"
                 value={bulkScheduleDate}
                 onChange={handleBulkScheduleDate}
-                className={`w-[170px] h-8 text-xs ${
-                  isScheduledDateInPast(bulkScheduleDate) 
-                    ? 'border-red-300 focus:border-red-500' 
-                    : 'border-gray-300'
-                }`}
+                className="w-[170px] h-8 text-xs"
               />
               {bulkScheduleDate && (
-                <div className={`text-xs ${
-                  isScheduledDateInPast(bulkScheduleDate)
-                    ? 'text-red-600 font-medium'
-                    : 'text-green-600'
-                }`}>
+                <div className="text-xs text-foreground/70">
                   {isScheduledDateInPast(bulkScheduleDate) 
                     ? '⚠️ Past time - will send immediately' 
                     : `📅 ${getTimeUntilScheduled(bulkScheduleDate)}`
@@ -1348,7 +1330,6 @@ const Outbound = () => {
           {bulkSendMode === "send" && ((bulkScheduleType === "now") || (bulkScheduleType === "schedule" && bulkScheduleDate)) && (
             <Button 
               size="sm" 
-              className="bg-blue-600 text-white" 
               onClick={handleBulkSend}
               disabled={!bulkTemplate || !bulkSender}
             >
@@ -1358,7 +1339,6 @@ const Outbound = () => {
           {bulkSendMode === "draft" && bulkTemplate && bulkSender && selectedIds.size > 0 && (
             <Button 
               size="sm" 
-              className="bg-yellow-500 text-white"
               onClick={handleBulkSend}
             >
               Create {selectedIds.size} Draft{selectedIds.size > 1 ? 's' : ''}
@@ -1368,10 +1348,10 @@ const Outbound = () => {
       )}
 
       {/* Practices table */}
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
+      <div className="glass rounded-lg shadow overflow-x-auto">
         <Table className="min-w-[900px]">
           <TableHeader>
-            <TableRow className="bg-gray-50">
+            <TableRow>
               <TableHead className="w-8 text-xs px-2 py-1">
                 <Checkbox
                   checked={currentPageData.length > 0 && currentPageData.every((row) => selectedIds.has(row.email))}
@@ -1385,21 +1365,21 @@ const Outbound = () => {
                   aria-label="Select all"
                 />
               </TableHead>
-              <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1">Email</TableHead>
-              <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1">First Name</TableHead>
-              <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1 hidden md:table-cell">Tags</TableHead>
-              <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1 hidden md:table-cell">Email Count</TableHead>
-              <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1">Email Template</TableHead>
-              <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1 hidden md:table-cell">Sender Email</TableHead>
-              <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1">Send Mode</TableHead>
-              <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1">Schedule</TableHead>
-              <TableHead className="font-semibold text-gray-900 text-xs px-2 py-1">Action</TableHead>
+              <TableHead className="font-semibold text-xs px-2 py-1">Email</TableHead>
+              <TableHead className="font-semibold text-xs px-2 py-1">First Name</TableHead>
+              <TableHead className="font-semibold text-xs px-2 py-1 hidden md:table-cell">Tags</TableHead>
+              <TableHead className="font-semibold text-xs px-2 py-1 hidden md:table-cell">Email Count</TableHead>
+              <TableHead className="font-semibold text-xs px-2 py-1">Email Template</TableHead>
+              <TableHead className="font-semibold text-xs px-2 py-1 hidden md:table-cell">Sender Email</TableHead>
+              <TableHead className="font-semibold text-xs px-2 py-1">Send Mode</TableHead>
+              <TableHead className="font-semibold text-xs px-2 py-1">Schedule</TableHead>
+              <TableHead className="font-semibold text-xs px-2 py-1">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentPageData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-gray-500 text-xs">
+                <TableCell colSpan={9} className="text-center py-8 text-foreground/60 text-xs">
                   No practices found
                 </TableCell>
               </TableRow>
@@ -1407,7 +1387,7 @@ const Outbound = () => {
               currentPageData.map((practice, index) => (
                 <TableRow 
                   key={`${practice.email}-${index}`}
-                  className="hover:bg-gray-50 transition-colors"
+                  className="transition-colors"
                 >
                   <TableCell className="w-8 text-xs px-2 py-1">
                     <Checkbox
@@ -1416,25 +1396,25 @@ const Outbound = () => {
                       aria-label="Select row"
                     />
                   </TableCell>
-                  <TableCell className="font-medium text-gray-900 text-xs px-2 py-1">
+                  <TableCell className="font-medium text-xs px-2 py-1">
                     {highlightMatch(practice.email)}
                   </TableCell>
-                  <TableCell className="text-gray-700 text-xs px-2 py-1">
+                  <TableCell className="text-xs px-2 py-1">
                     {highlightMatch(practice.first_name || 'N/A')}
                   </TableCell>
-                  <TableCell className="text-gray-700 text-xs px-2 py-1 hidden md:table-cell">
+                  <TableCell className="text-xs px-2 py-1 hidden md:table-cell">
                     <div className="flex flex-wrap gap-1">
                       {practice.tags && practice.tags.map((tag, index) => (
                         <span
                           key={index}
-                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-foreground/10"
                         >
                           {tag}
                         </span>
                       ))}
                     </div>
                   </TableCell>
-                  <TableCell className="text-gray-700 text-xs px-2 py-1 hidden md:table-cell">
+                  <TableCell className="text-xs px-2 py-1 hidden md:table-cell">
                     {highlightMatch(emailCounts[practice.email] || 0)}
                   </TableCell>
                   <TableCell className="text-xs px-2 py-1">
@@ -1492,8 +1472,8 @@ const Outbound = () => {
                       <div className="space-y-3">
                         {/* Mode Indicator */}
                         <div className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span className="text-xs font-medium text-green-700">Send Directly</span>
+                          <div className="w-2 h-2 rounded-full bg-foreground/60"></div>
+                          <span className="text-xs font-medium">Send Directly</span>
                         </div>
                         
                         {/* Scheduling Options */}
@@ -1505,9 +1485,9 @@ const Outbound = () => {
                               name={`schedule-${practice.email}`}
                               checked={!scheduledDates[practice.email]}
                               onChange={() => handleScheduledDateChange(practice.email, '')}
-                              className="w-3 h-3 text-green-600"
+                              className="w-3 h-3"
                             />
-                            <label htmlFor={`immediate-${practice.email}`} className="text-xs text-gray-700">
+                            <label htmlFor={`immediate-${practice.email}`} className="text-xs">
                               Send Now
                             </label>
                           </div>
@@ -1523,9 +1503,9 @@ const Outbound = () => {
                                 const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
                                 handleScheduledDateChange(practice.email, tomorrow.toISOString().slice(0, 16));
                               }}
-                              className="w-3 h-3 text-green-600"
+                              className="w-3 h-3"
                             />
-                            <label htmlFor={`scheduled-${practice.email}`} className="text-xs text-gray-700">
+                            <label htmlFor={`scheduled-${practice.email}`} className="text-xs">
                               Schedule
                             </label>
                           </div>
@@ -1538,18 +1518,10 @@ const Outbound = () => {
                               type="datetime-local"
                               value={scheduledDates[practice.email]}
                               onChange={(e) => handleScheduledDateChange(practice.email, e.target.value)}
-                              className={`w-full text-xs ${
-                                isScheduledDateInPast(scheduledDates[practice.email]) 
-                                  ? 'border-red-300 focus:border-red-500' 
-                                  : 'border-gray-300'
-                              }`}
+                              className="w-full text-xs"
                             />
                             {scheduledDates[practice.email] && (
-                              <div className={`text-xs ${
-                                isScheduledDateInPast(scheduledDates[practice.email])
-                                  ? 'text-red-600 font-medium'
-                                  : 'text-green-600'
-                              }`}>
+                              <div className="text-xs text-foreground/70">
                                 {isScheduledDateInPast(scheduledDates[practice.email]) 
                                   ? '⚠️ Past time - will send immediately' 
                                   : `📅 ${getTimeUntilScheduled(scheduledDates[practice.email])}`
@@ -1561,23 +1533,17 @@ const Outbound = () => {
                       </div>
                     ) : sendModes[practice.email] === 'draft' ? (
                       <div className="space-y-3">
-                        {/* Mode Indicator */}
-                        <div className="flex items-center space-x-2">
-                          {/* <div className="w-2 h-2 bg-orange-500 rounded-full"></div> */}
-                          {/* <span className="text-xs font-medium text-orange-700">Create Draft</span> */}
-                        </div>
-                        
                         {/* Draft Info */}
-                        <div className="bg-orange-50 border border-orange-200 rounded-md p-2">
-                          <p className="text-xs text-orange-800">
+                        <div className="rounded-md p-2 bg-foreground/5 border">
+                          <p className="text-xs">
                             Email will be saved as draft 
                           </p>
                         </div>
                       </div>
                     ) : (
                       <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                        <span className="text-xs text-gray-500">Select mode</span>
+                        <div className="w-2 h-2 rounded-full bg-foreground/30"></div>
+                        <span className="text-xs text-foreground/60">Select mode</span>
                       </div>
                     )}
                   </TableCell>
@@ -1586,14 +1552,14 @@ const Outbound = () => {
                       sendModes[practice.email] === 'send' ? (
                         <Button
                           onClick={() => handleSendEmail(practice.email)}
-                          className="w-full bg-green-600 hover:bg-green-700 text-white text-xs py-1"
+                          className="w-full text-xs py-1"
                         >
                           {scheduledDates[practice.email] ? 'Schedule Email' : 'Send Now'}
                         </Button>
                       ) : sendModes[practice.email] === 'draft' ? (
                         <Button
                           onClick={() => handleSendEmail(practice.email)}
-                          className="w-full bg-yellow-400 hover:bg-orange-700 text-white text-xs py-1"
+                          className="w-full text-xs py-1"
                         >
                           Create Draft
                         </Button>
@@ -1609,7 +1575,7 @@ const Outbound = () => {
 
       {/* Pagination footer */}
       <div className="flex items-center justify-between flex-wrap gap-2 mt-2">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-foreground/70">
           Page {page} of {totalPages}
         </p>
         <div className="flex flex-wrap gap-1 items-center">
@@ -1648,7 +1614,7 @@ const Outbound = () => {
 
       {/* Summary */}
       {practices.length > 0 && (
-        <div className="mt-4 text-sm text-gray-600">
+        <div className="mt-4 text-sm text-foreground/70">
           Total practices: {practices.length}
         </div>
       )}

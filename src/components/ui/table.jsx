@@ -9,7 +9,7 @@ function Table({
   ...props
 }) {
   return (
-    (<div data-slot="table-container" className="relative w-full overflow-x-auto">
+    (<div data-slot="table-container" className="relative w-full overflow-x-auto glass glass--thick rounded-[var(--radius-xl)] border border-[color:var(--hairline-color)]">
       <table
         data-slot="table"
         className={cn("w-full caption-bottom text-sm", className)}
@@ -25,7 +25,7 @@ function TableHeader({
   return (
     (<thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
+      className={cn("sticky top-0 z-10 bg-background/80 backdrop-blur-[var(--glass-blur-thick)] [&_tr]:border-b hairline-true", className)}
       {...props} />)
   );
 }
@@ -62,7 +62,7 @@ function TableRow({
     (<tr
       data-slot="table-row"
       className={cn(
-        "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
+        "border-b transition-colors hover:bg-foreground/4 odd:bg-foreground/2",
         className
       )}
       {...props} />)
@@ -77,7 +77,7 @@ function TableHead({
     (<th
       data-slot="table-head"
       className={cn(
-        "text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "text-foreground h-11 px-3 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props} />)
@@ -92,7 +92,7 @@ function TableCell({
     (<td
       data-slot="table-cell"
       className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "px-3 py-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props} />)

@@ -91,7 +91,7 @@ export default function SupabaseTable() {
     const regex = new RegExp(`(${searchQuery})`, "gi");
     return String(text).split(regex).map((part, i) =>
       part.toLowerCase() === searchQuery.toLowerCase() ? (
-        <span key={i} className="bg-yellow-200 font-semibold">{part}</span>
+        <span key={i} className="bg-foreground/10 font-semibold">{part}</span>
       ) : (
         part
       )
@@ -264,7 +264,7 @@ export default function SupabaseTable() {
 
 
   if (loading) return <p className="p-4">Loading...</p>;
-  if (error) return <p className="p-4 text-red-500">Error loading data: {error.message}</p>;
+  if (error) return <p className="p-4">Error loading data: {error.message}</p>;
 
   return (
     <div className="p-4 max-w-full overflow-x-auto space-y-4">
@@ -306,7 +306,7 @@ export default function SupabaseTable() {
         />
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-green-600 hover:bg-green-700 text-white">
+            <Button>
               Create Entry
             </Button>
           </DialogTrigger>
@@ -334,7 +334,6 @@ export default function SupabaseTable() {
                   placeholder="Domain URL (required)"
                   value={createFormData.domain_url || ""}
                   onChange={handleCreateChange}
-                  className="border-red-300 focus:border-red-500"
                 />
               </div>
               <div>
@@ -379,7 +378,7 @@ export default function SupabaseTable() {
               <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleCreate} className="bg-green-600 hover:bg-green-700">
+              <Button onClick={handleCreate}>
                 Create Entry
               </Button>
             </DialogFooter>
@@ -388,7 +387,7 @@ export default function SupabaseTable() {
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="flex gap-2 items-center border p-2 rounded-md shadow bg-muted">
+        <div className="flex gap-2 items-center border p-2 rounded-md shadow bg-foreground/5">
           <Button variant="secondary" onClick={handleSelectAllPage}>Select All on Page</Button>
           <Button variant="secondary" onClick={handleSelectAllGlobal}>Select All Across Pages</Button>
           <Button onClick={handleClearSelection}>Clear Selection</Button>

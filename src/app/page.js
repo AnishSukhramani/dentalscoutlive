@@ -14,6 +14,7 @@ import IDs from "@/components/IDs";
 import Audience from "@/components/Audience";
 import AgenticCall from "@/components/AgenticCall";
 import { Menu } from "lucide-react";
+import Glass from "@/components/Glass";
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("upload");
@@ -41,10 +42,10 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-background text-foreground">
       {/* Sidebar toggle button for mobile */}
       <button
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white shadow-md rounded"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-[var(--radius-md)] glass"
         onClick={() => setSidebarOpen(!sidebarOpen)}
         aria-label="Toggle sidebar"
       >
@@ -53,116 +54,120 @@ export default function Home() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-full w-64 transform bg-gray-100 p-4 shadow-md transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${
+        className={`fixed top-0 left-0 z-40 h-full w-64 transform p-4 transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:flex md:flex-col`}
       >
-        <h2 className="text-2xl font-bold mb-6 text-blue-600">Neurality Health</h2>
-        <ul className="space-y-4">
-          <li>
-            <button
-              className={`w-full text-left p-2 rounded hover:bg-blue-100 transition-colors duration-200 ${
-                activeSection === "upload" ? "bg-blue-200" : ""
-              }`}
-              onClick={() => {
-                setActiveSection("upload");
-                setSidebarOpen(false);
-              }}
-            >
-              Upload File
-            </button>
-          </li>
-          <li>
-            <button
-              className={`w-full text-left p-2 rounded hover:bg-blue-100 transition-colors duration-200 ${
-                activeSection === "table" ? "bg-blue-200" : ""
-              }`}
-              onClick={() => {
-                setActiveSection("table");
-                setSidebarOpen(false);
-              }}
-            >
-              Supabase Table
-            </button>
-          </li>
-          <li>
-            <button
-              className={`w-full text-left p-2 rounded hover:bg-blue-100 transition-colors duration-200 ${
-                activeSection === "outbound" ? "bg-blue-200" : ""
-              }`}
-              onClick={() => {
-                setActiveSection("outbound");
-                setSidebarOpen(false);
-              }}
-            >
-              Outbound
-            </button>
-          </li>
-          <li>
-            <button
-              className={`w-full text-left p-2 rounded hover:bg-blue-100 transition-colors duration-200 ${
-                activeSection === "templates" ? "bg-blue-200" : ""
-              }`}
-              onClick={() => {
-                setActiveSection("templates");
-                setSidebarOpen(false);
-              }}
-            >
-              Templates
-            </button>
-          </li>
-          <li>
-            <button
-              className={`w-full text-left p-2 rounded hover:bg-blue-100 transition-colors duration-200 ${
-                activeSection === "ids" ? "bg-blue-200" : ""
-              }`}
-              onClick={() => {
-                setActiveSection("ids");
-                setSidebarOpen(false);
-              }}
-            >
-              IDs
-            </button>
-          </li>
-          <li>
-            <button
-              className={`w-full text-left p-2 rounded hover:bg-blue-100 transition-colors duration-200 ${
-                activeSection === "audience" ? "bg-blue-200" : ""
-              }`}
-              onClick={() => {
-                setActiveSection("audience");
-                setSidebarOpen(false);
-              }}
-            >
-              Audience
-            </button>
-          </li>
-          <li>
-            <button
-              className={`w-full text-left p-2 rounded hover:bg-blue-100 transition-colors duration-200 ${
-                activeSection === "agentic-call" ? "bg-blue-200" : ""
-              }`}
-              onClick={() => {
-                setActiveSection("agentic-call");
-                setSidebarOpen(false);
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <span>Agentic Call</span>
-                <span className="px-2 py-0.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-bold rounded-full border border-cyan-400/50 shadow-sm">
-                  BETA
-                </span>
-              </div>
-            </button>
-          </li>
-        </ul>
+        <Glass tier="thick" className="h-full w-full p-4">
+          <h2 className="text-2xl font-bold mb-6">
+            <span style={{color: '#2563eb'}}>Neurality</span> Health
+          </h2>
+          <ul className="space-y-2">
+            <li>
+              <button
+                className={`w-full text-left px-3 py-2 rounded-[var(--radius-md)] hover:bg-foreground/6 ${
+                  activeSection === "upload" ? "bg-foreground/10" : ""
+                }`}
+                onClick={() => {
+                  setActiveSection("upload");
+                  setSidebarOpen(false);
+                }}
+              >
+                Upload File
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full text-left px-3 py-2 rounded-[var(--radius-md)] hover:bg-foreground/6 ${
+                  activeSection === "table" ? "bg-foreground/10" : ""
+                }`}
+                onClick={() => {
+                  setActiveSection("table");
+                  setSidebarOpen(false);
+                }}
+              >
+                Supabase Table
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full text-left px-3 py-2 rounded-[var(--radius-md)] hover:bg-foreground/6 ${
+                  activeSection === "outbound" ? "bg-foreground/10" : ""
+                }`}
+                onClick={() => {
+                  setActiveSection("outbound");
+                  setSidebarOpen(false);
+                }}
+              >
+                Outbound
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full text-left px-3 py-2 rounded-[var(--radius-md)] hover:bg-foreground/6 ${
+                  activeSection === "templates" ? "bg-foreground/10" : ""
+                }`}
+                onClick={() => {
+                  setActiveSection("templates");
+                  setSidebarOpen(false);
+                }}
+              >
+                Templates
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full text-left px-3 py-2 rounded-[var(--radius-md)] hover:bg-foreground/6 ${
+                  activeSection === "ids" ? "bg-foreground/10" : ""
+                }`}
+                onClick={() => {
+                  setActiveSection("ids");
+                  setSidebarOpen(false);
+                }}
+              >
+                IDs
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full text-left px-3 py-2 rounded-[var(--radius-md)] hover:bg-foreground/6 ${
+                  activeSection === "audience" ? "bg-foreground/10" : ""
+                }`}
+                onClick={() => {
+                  setActiveSection("audience");
+                  setSidebarOpen(false);
+                }}
+              >
+                Audience
+              </button>
+            </li>
+            <li>
+              <button
+                className={`w-full text-left px-3 py-2 rounded-[var(--radius-md)] hover:bg-foreground/6 ${
+                  activeSection === "agentic-call" ? "bg-foreground/10" : ""
+                }`}
+                onClick={() => {
+                  setActiveSection("agentic-call");
+                  setSidebarOpen(false);
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <span>Agentic Call</span>
+                  <span className="px-2 py-0.5 text-xs font-bold rounded-full border border-[color:var(--hairline-color)]">
+                    BETA
+                  </span>
+                </div>
+              </button>
+            </li>
+          </ul>
+        </Glass>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 md:ml-0 p-0 bg-gray-50 overflow-y-auto">
-        <div className="max-w-auto mx-auto bg-white p-6 rounded shadow-md">
+      <main className="flex-1 ml-0 md:ml-0 p-4 overflow-y-auto">
+        <Glass className="max-w-auto mx-auto p-4">
           {renderContent()}
-        </div>
+        </Glass>
       </main>
     </div>
   );

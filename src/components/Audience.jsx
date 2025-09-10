@@ -299,14 +299,14 @@ export default function Audience() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Audience</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold">Audience</h1>
+          <p className="text-foreground/70">
             Manage practice contacts and tags
           </p>
         </div>
         <button
           onClick={refreshData}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 rounded-md glass"
         >
           Refresh Data
         </button>
@@ -314,13 +314,13 @@ export default function Audience() {
 
       {/* Tags Gallery */}
       {tags.length > 0 && (
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
+        <div className="glass p-4 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-900">Tags</h3>
+            <h3 className="text-lg font-semibold">Tags</h3>
             {selectedTags.length > 0 && (
               <button
                 onClick={clearTagFilters}
-                className="text-sm text-blue-600 hover:text-blue-800"
+                className="text-sm hover:opacity-80"
               >
                 Clear filters
               </button>
@@ -333,8 +333,8 @@ export default function Audience() {
                 onClick={() => handleTagSelect(tag)}
                 className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                   selectedTags.includes(tag)
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    ? 'bg-foreground/10'
+                    : 'bg-foreground/5 hover:bg-foreground/8'
                 }`}
               >
                 {tag}
@@ -346,80 +346,72 @@ export default function Audience() {
 
       {/* Bulk Actions Menu */}
       {showBulkActions && (
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+        <div className="bg-foreground/5 p-4 rounded-lg border">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-foreground/70">
                 {selectedRows.length} contact(s) selected
               </span>
               <button
                 onClick={clearSelection}
-                className="text-sm text-gray-600 hover:text-gray-800"
+                className="text-sm hover:opacity-80"
               >
                 Clear Selection
               </button>
             </div>
-                          <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => setShowCreateTag(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  Create Tag
-                </button>
-                <div className="relative">
-                  <select
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        addTagToSelected(e.target.value);
-                        e.target.value = '';
-                      }
-                    }}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Add existing tag...</option>
-                    {tags.map(tag => (
-                      <option key={tag} value={tag}>
-                        {tag}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="relative">
-                  <select
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        removeTagFromSelected(e.target.value);
-                        e.target.value = '';
-                      }
-                    }}
-                    className="px-3 py-2 border border-red-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    <option value="">Remove tag...</option>
-                    {tags.map(tag => (
-                      <option key={tag} value={tag}>
-                        {tag}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+            <div className="relative">
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    addTagToSelected(e.target.value);
+                    e.target.value = '';
+                  }
+                }}
+                className="px-3 py-2 border rounded-md focus:outline-none focus-visible:outline-2"
+              >
+                <option value="">Add existing tag...</option>
+                {tags.map(tag => (
+                  <option key={tag} value={tag}>
+                    {tag}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="relative">
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    removeTagFromSelected(e.target.value);
+                    e.target.value = '';
+                  }
+                }}
+                className="px-3 py-2 border rounded-md focus:outline-none focus-visible:outline-2"
+              >
+                <option value="">Remove tag...</option>
+                {tags.map(tag => (
+                  <option key={tag} value={tag}>
+                    {tag}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Create Tag Modal */}
           {showCreateTag && (
-            <div className="mt-4 p-4 bg-white rounded-lg border">
+            <div className="mt-4 p-4 glass rounded-lg border">
               <div className="flex items-center space-x-3">
                 <input
                   type="text"
                   value={newTagName}
                   onChange={(e) => setNewTagName(e.target.value)}
                   placeholder="Enter tag name"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus-visible:outline-2"
                   onKeyPress={(e) => e.key === 'Enter' && handleCreateTag()}
                 />
                 <button
                   onClick={handleCreateTag}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  className="px-4 py-2 rounded-md glass"
                 >
                   Create
                 </button>
@@ -428,7 +420,7 @@ export default function Audience() {
                     setShowCreateTag(false);
                     setNewTagName("");
                   }}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+                  className="px-4 py-2 rounded-md glass"
                 >
                   Cancel
                 </button>
@@ -439,7 +431,7 @@ export default function Audience() {
       )}
 
       {/* Contacts Table */}
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+      <div className="glass rounded-lg shadow-sm border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -449,7 +441,7 @@ export default function Audience() {
                     type="checkbox"
                     checked={selectedRows.length === filteredContacts.length && filteredContacts.length > 0}
                     onChange={handleSelectAll}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border"
                   />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -477,7 +469,7 @@ export default function Audience() {
                       type="checkbox"
                       checked={selectedRows.includes(contact.id)}
                       onChange={() => handleRowSelect(contact.id)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border"
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -497,7 +489,7 @@ export default function Audience() {
                       {contact.tags && contact.tags.map((tag, index) => (
                         <span
                           key={index}
-                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-foreground/10"
                         >
                           {tag}
                         </span>
