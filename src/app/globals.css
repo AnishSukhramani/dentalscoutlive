@@ -91,16 +91,22 @@
 
 /* Liquid Glass primitive */
 .glass {
-  backdrop-filter: blur(22px) !important;
-  background: rgba(142, 142, 142, 0.12);
+  backdrop-filter: blur(17px) !important;
+  background: rgba(0, 0, 0, 0.12);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-ambient);
   border: 1px solid rgba(255,255,255,.22);
   position: relative;
   transition: box-shadow var(--duration-base) var(--easing), transform var(--duration-base) var(--easing);
 }
-:root .glass:hover { backdrop-filter: blur(22px) !important; transform: translateY(-1px); }
-.glass:active { backdrop-filter: blur(17px) !important; box-shadow: 0 4px 16px rgba(0,0,0,.18); transform: translateY(0); }
+
+/* Override positioning for fixed elements like dialogs */
+.glass[data-slot="dialog-content"] {
+  position: fixed !important;
+}
+
+:root .glass:hover:not([data-slot="dialog-content"]) { backdrop-filter: blur(17px) !important; transform: translateY(-1px); }
+.glass:active:not([data-slot="dialog-content"]) { backdrop-filter: blur(17px) !important; box-shadow: 0 4px 16px rgba(0,0,0,.18); transform: translateY(0); }
 
 @media (prefers-reduced-motion: reduce) {
   .glass { transition: none; }
