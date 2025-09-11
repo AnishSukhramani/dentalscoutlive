@@ -38,7 +38,9 @@ function DialogOverlay({
     (<DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-foreground/50",
+        "fixed inset-0 z-50",
+        "bg-[rgba(0,0,0,0.75)]",
+        "backdrop-filter: blur(50px) !important",
         className
       )}
       {...props} />)
@@ -118,7 +120,7 @@ function DialogDescription({
   return (
     (<DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn("text-white text-sm", className)}
       {...props} />)
   );
 }

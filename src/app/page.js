@@ -42,7 +42,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen text-foreground" style={{backgroundImage: "url('/background.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundAttachment: "fixed"}}>
+    <div className="flex h-screen text-foreground" style={{backgroundImage: "url('/whitebg.jpg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundAttachment: "fixed"}}>
       {/* Sidebar toggle button for mobile */}
       <button
         className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-[var(--radius-md)] glass"

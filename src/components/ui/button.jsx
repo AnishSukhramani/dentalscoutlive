@@ -17,7 +17,7 @@ const buttonVariants = cva(
         // aliases for compatibility
         default: "bg-foreground/10 text-foreground hover:bg-foreground/14 active:bg-foreground/8",
         secondary: "bg-foreground/6 text-foreground hover:bg-foreground/10",
-        destructive: "border border-[color:var(--hairline-color)] text-foreground hover:bg-foreground/6",
+        destructive: "border-0 text-white bg-[rgba(220,38,38,0.15)] hover:bg-[rgba(220,38,38,0.25)] active:bg-[rgba(220,38,38,0.1)] backdrop-blur-[12px]",
       },
       size: {
         sm: "h-8 px-3 has-[>svg]:px-2.5",
