@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import AnimatedSearchInput from '@/components/ui/animated-search';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
@@ -1255,12 +1256,13 @@ const Outbound = () => {
           onChange={handleCustomEntriesChange}
           className="w-[70px] h-8 text-xs"
         />
-        <Input
+        <AnimatedSearchInput
           type="text"
-          placeholder="Search..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-[180px] h-8 text-xs"
+          placeholder="Search..."
+          suggestions={["Search emails", "Search names", "Search tags"]}
         />
       </div>
 

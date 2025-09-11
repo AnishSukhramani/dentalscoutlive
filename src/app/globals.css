@@ -91,7 +91,7 @@
 
 /* Liquid Glass primitive */
 .glass {
-  backdrop-filter: blur(7px) !important;
+  backdrop-filter: blur(22px) !important;
   background: #00163c1f;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-ambient);
@@ -105,7 +105,7 @@
   position: fixed !important;
 }
 
-:root .glass:hover:not([data-slot="dialog-content"]) { backdrop-filter: blur(7px) !important; transform: translateY(-1px); }
+:root .glass:hover:not([data-slot="dialog-content"]) { backdrop-filter: blur(22px) !important; transform: translateY(-1px); }
 .glass:active:not([data-slot="dialog-content"]) { backdrop-filter: blur(17px) !important; box-shadow: 0 4px 16px rgba(0,0,0,.18); transform: translateY(0); }
 
 @media (prefers-reduced-motion: reduce) {

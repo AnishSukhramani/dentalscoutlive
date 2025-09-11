@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import AnimatedSearchInput from "@/components/ui/animated-search";
 import {
   Dialog,
   DialogContent,
@@ -297,12 +298,13 @@ export default function SupabaseTable() {
           onChange={handleCustomEntriesChange}
           className="w-[100px]"
         />
-        <Input
+        <AnimatedSearchInput
           type="text"
-          placeholder="Search..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-[250px]"
+          placeholder="Search..."
+          suggestions={["Practice, domain, owner", "Email, phone", "Contact name"]}
         />
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>

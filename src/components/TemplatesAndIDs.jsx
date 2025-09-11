@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import AnimatedSearchInput from "@/components/ui/animated-search";
 import { Plus, Search, Edit, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Bold, Italic, Underline, List, Link, ArrowDownToLine, ChevronLeft, Reply, Trash, FolderDown, MoreHorizontal, SquareArrowOutUpRight, SquarePen } from "lucide-react";
 
 const TemplatesAndIDs = () => {
@@ -613,12 +614,13 @@ const TemplatesAndIDs = () => {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-md font-medium">Saved Templates ({filteredAndSortedTemplates.length})</h3>
               <div className="flex items-center space-x-2">
-                <Input
+                <AnimatedSearchInput
                   type="text"
-                  placeholder="Search templates..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-48 text-sm"
+                  placeholder="Search templates..."
+                  suggestions={["Search by name", "Search by subject"]}
                 />
               </div>
             </div>

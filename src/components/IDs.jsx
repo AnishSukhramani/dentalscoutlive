@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import AnimatedSearchInput from "@/components/ui/animated-search";
 
 const IDs = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -211,11 +212,12 @@ const IDs = () => {
             </div>
             <div className="p-4">
               <div className="flex justify-between items-center mb-4">
-                <Input
-                  placeholder="Search email IDs..."
+                <AnimatedSearchInput
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="max-w-sm"
+                  placeholder="Search email IDs..."
+                  suggestions={["Search by label", "Search by address"]}
                 />
               </div>
               <div className="overflow-x-auto">

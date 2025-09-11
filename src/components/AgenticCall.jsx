@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { createClient } from '@supabase/supabase-js';
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import AnimatedSearchInput from "@/components/ui/animated-search";
 import {
   Table,
   TableBody,
@@ -278,17 +279,13 @@ const AgenticCall = () => {
         <div className="relative glass rounded-lg p-4 border">
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
             <div className="relative flex-1">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <Input
+              <AnimatedSearchInput
                 type="text"
-                placeholder="Search practices..."
                 value={searchQuery}
                 onChange={handleSearch}
-                className="w-full md:w-80 pl-10"
+                className="w-full md:w-80"
+                placeholder="Search practices..."
+                suggestions={["Search by practice", "Search by owner", "Search by email"]}
               />
             </div>
             
