@@ -314,10 +314,10 @@ export default function SupabaseTable() {
               Create Entry
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md text-white">
             <DialogHeader>
               <DialogTitle>Create New Practice Entry</DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-[#7f7d7d]">
                 Fill in the details for the new practice entry. Domain URL is required.
               </DialogDescription>
             </DialogHeader>
@@ -379,7 +379,7 @@ export default function SupabaseTable() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+              <Button variant="glassred" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
               <StatefulButton

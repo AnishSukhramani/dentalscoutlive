@@ -13,8 +13,9 @@ import TemplatesAndIDs from "@/components/TemplatesAndIDs";
 import IDs from "@/components/IDs";
 import Audience from "@/components/Audience";
 import AgenticCall from "@/components/AgenticCall";
-import { Menu } from "lucide-react";
+import { Menu, FileUp, Table2, Rocket, LayoutTemplate, IdCard, Users, PhoneCall } from "lucide-react";
 import Glass from "@/components/Glass";
+import FloatingDock from "@/components/ui/floating-dock";
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("upload");
@@ -44,17 +45,21 @@ export default function Home() {
   return (
     <div className="flex h-screen text-foreground" style={{backgroundImage: "url('/whitebg.jpg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundAttachment: "fixed"}}>
       {/* Sidebar toggle button for mobile */}
-      <button
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-[var(--radius-md)] glass"
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        aria-label="Toggle sidebar"
-      >
-        <Menu />
-      </button>
+      {!sidebarOpen && (
+        <div className="md:hidden fixed top-3 left-3 z-[100] pointer-events-none">
+          <button
+            className="inline-flex items-center justify-center w-10 h-10 rounded-[var(--radius-md)] glass pointer-events-auto"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label="Toggle sidebar"
+          >
+            <Menu size={18} />
+          </button>
+        </div>
+      )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-full w-64 transform p-4 transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 h-full w-64 transform p-4 transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:flex md:flex-col`}
       >
@@ -162,13 +167,37 @@ export default function Home() {
           </ul>
         </Glass>
       </aside>
+      {/* Mobile overlay to close sidebar on outside click */}
+      {sidebarOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-[45] bg-black/10"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 md:ml-0 p-4 overflow-y-auto scrollbar-none">
+      <main className="flex-1 ml-0 md:ml-0 p-4 overflow-y-auto scrollbar-none pb-24 md:pb-28">
         <Glass className="h-full overflow-y-auto scrollbar-none max-w-auto mx-auto p-4">
           {renderContent()}
         </Glass>
       </main>
+      {/* Fixed bottom full-width dock wrapper */}
+      <div className="fixed bottom-4 inset-x-0 md:left-64 md:right-0 px-4 z-40">
+        <FloatingDock
+          items={[
+            { title: "Upload", icon: <FileUp size={22} />, href: "#" },
+            { title: "Table", icon: <Table2 size={22} />, href: "#" },
+            { title: "Outbound", icon: <Rocket size={22} />, href: "#" },
+            { title: "Templates", icon: <LayoutTemplate size={22} />, href: "#" },
+            { title: "IDs", icon: <IdCard size={22} />, href: "#" },
+            { title: "Audience", icon: <Users size={22} />, href: "#" },
+            { title: "Agentic Call", icon: <PhoneCall size={22} />, href: "#" },
+          ]}
+          desktopClassName=""
+          mobileClassName=""
+        />
+      </div>
     </div>
   );
 }

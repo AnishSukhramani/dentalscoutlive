@@ -156,6 +156,15 @@
   position: relative;
   /* transition: box-shadow var(--duration-base) var(--easing), transform var(--duration-base) var(--easing); */
 }
+.glass-rdbtn {
+  backdrop-filter: blur(22px) !important;
+  background: #740a0a20;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-ambient);
+  border: 1px solid rgba(134, 134, 134, 0.22);
+  position: relative;
+  /* transition: box-shadow var(--duration-base) var(--easing), transform var(--duration-base) var(--easing); */
+}
 .glass-grnbtn:hover {
   background: #16a34a;
 }

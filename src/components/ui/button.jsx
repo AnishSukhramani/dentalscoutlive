@@ -14,6 +14,7 @@ const buttonVariants = cva(
         outline: "border border-[color:var(--hairline-color)] bg-transparent text-foreground hover:bg-foreground/6",
         ghost: "hover:bg-foreground/6 text-foreground",
         link: "underline underline-offset-4 text-foreground hover:opacity-80",
+        glassred: "glass-rdbtn border-0 text-foreground",
         // aliases for compatibility
         default: "bg-foreground/10 text-foreground hover:bg-foreground/14 active:bg-foreground/8",
         secondary: "bg-foreground/6 text-foreground hover:bg-foreground/10",
