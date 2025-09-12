@@ -3,9 +3,9 @@
     {
       "emailId": 1,
       "email": "anishsukhramani@gmail.com",
-      "emailsSentToday": 1,
+      "emailsSentToday": 0,
       "dailyLimit": 5,
-      "lastResetAt": "2025-09-10T19:50:12.865Z",
+      "lastResetAt": "2025-09-12T06:45:01.048Z",
       "blockedUntil": null,
       "isBlocked": false
     },
@@ -14,7 +14,7 @@
       "email": "anishsukhramani1@gmail.com",
       "emailsSentToday": 0,
       "dailyLimit": 100,
-      "lastResetAt": "2025-09-10T19:50:12.865Z",
+      "lastResetAt": "2025-09-12T06:45:01.048Z",
       "blockedUntil": null,
       "isBlocked": false
     }

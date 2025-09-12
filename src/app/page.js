@@ -42,7 +42,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen text-foreground" style={{backgroundImage: "url('/darkbg.jpg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundAttachment: "fixed"}}>
+    <div className="flex h-screen text-foreground" style={{backgroundImage: "url('/whitebg.jpg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundAttachment: "fixed"}}>
       {/* Sidebar toggle button for mobile */}
       <button
         className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-[var(--radius-md)] glass"
@@ -59,7 +59,7 @@ export default function Home() {
         } md:flex md:flex-col`}
       >
         <Glass tier="thick" className="h-full w-full p-4">
-          <h2 className="text-2xl font-bold mb-6">
+          <h2 className="text-2xl font-heavy mb-6">
             <span style={{color: '#2563eb'}}>Neurality</span> Health
           </h2>
           <ul className="space-y-2">
@@ -164,8 +164,8 @@ export default function Home() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 md:ml-0 p-4 overflow-y-auto">
-        <Glass className="max-w-auto mx-auto p-4">
+      <main className="flex-1 ml-0 md:ml-0 p-4 overflow-y-auto scrollbar-none">
+        <Glass className="h-full overflow-y-auto scrollbar-none max-w-auto mx-auto p-4">
           {renderContent()}
         </Glass>
       </main>

@@ -3,6 +3,43 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* SF Pro Display Font Face Declarations
+ * 
+ * Font Weight Usage Guide:
+ * - font-heavy (700): Headings, Logos, and Subtitles - Use for main titles, brand names, section headers, and important labels
+ * - font-regular (400): Normal text - Use for body text, buttons, and general content
+ * - font-light (300): Underhighlighted text - Use for descriptions, captions, and secondary information
+ * 
+ * Available Font Files:
+ * - SF-Pro-Display-Heavy.otf (700 weight) 
+ * - SF-Pro-Display-Regular.otf (400 weight)
+ * - SF-Pro-Rounded-Light.otf (300 weight)
+ */
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('/fonts/SF-Pro-Display-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('/fonts/SF-Pro-Display-Heavy.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('/fonts/SF-Pro-Rounded-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Monochrome design tokens and Liquid Glass materials */
 @layer theme, base, components, utilities;
 
@@ -28,7 +65,7 @@
     --color-input: var(--hairline-color);
     --color-ring: color-mix(in oklab, var(--text-color) 60%, transparent);
 
-    --font-sans: "SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-sans: "SF Pro Display",-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif;
     --font-mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
 
     --radius-sm: var(--radius-sm);
@@ -56,7 +93,7 @@
   --surface-canvas: var(--white);
   --surface-canvas-inverse: var(--black);
   --surface-panel: color-mix(in oklab, var(--surface-canvas-inverse) 6%, transparent);
-  --text-color: var(--gray-900);
+  --text-color: var(--black);
   --hairline-color: color-mix(in oklab, var(--surface-canvas-inverse) 12%, transparent);
 
   /* Liquid Glass tiers */
@@ -70,7 +107,7 @@
   --highlight-inner: inset 0 1px 0 rgba(255,255,255,.25), inset 0 -1px 0 rgba(0,0,0,.12);
 
   /* Typography */
-  --font-sans: "SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-sans: "SF Pro Display",-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif;
 
   /* Spacing & Motion */
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px;
@@ -83,7 +120,7 @@
   :root {
     --surface-canvas: var(--black);
     --surface-canvas-inverse: var(--white);
-    --text-color: var(--gray-100);
+    --text-color: var(--black);
     --hairline-color: color-mix(in oklab, var(--surface-canvas-inverse) 14%, transparent);
     --surface-panel: color-mix(in oklab, var(--surface-canvas-inverse) 8%, transparent);
   }
@@ -91,13 +128,36 @@
 
 /* Liquid Glass primitive */
 .glass {
-  backdrop-filter: blur(22px) !important;
-  background: #00163c1f;
+  backdrop-filter: blur(4px) !important;
+  /* background: #00163c1f; */
+  background: #6d6f9523;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-ambient);
   border: 1px solid rgba(255,255,255,.22);
   position: relative;
-  transition: box-shadow var(--duration-base) var(--easing), transform var(--duration-base) var(--easing);
+  /* transition: box-shadow var(--duration-base) var(--easing), transform var(--duration-base) var(--easing); */
+}
+.glassdark {
+  backdrop-filter: blur(4px) !important;
+  /* background: #00163c1f; */
+  background: #0b121d9a;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-ambient);
+  border: 1px solid rgba(255,255,255,.22);
+  position: relative;
+  /* transition: box-shadow var(--duration-base) var(--easing), transform var(--duration-base) var(--easing); */
+}
+.glass-grnbtn {
+  backdrop-filter: blur(22px) !important;
+  background: #16a34abf;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-ambient);
+  border: 1px solid rgba(134, 134, 134, 0.22);
+  position: relative;
+  /* transition: box-shadow var(--duration-base) var(--easing), transform var(--duration-base) var(--easing); */
+}
+.glass-grnbtn:hover {
+  background: #16a34a;
 }
 
 /* Override positioning for fixed elements like dialogs */
@@ -105,7 +165,7 @@
   position: fixed !important;
 }
 
-:root .glass:hover:not([data-slot="dialog-content"]) { backdrop-filter: blur(22px) !important; transform: translateY(-1px); }
+:root .glass:hover:not([data-slot="dialog-content"]) { backdrop-filter: blur(4px) !important; transform: translateY(0px); }
 .glass:active:not([data-slot="dialog-content"]) { backdrop-filter: blur(17px) !important; box-shadow: 0 4px 16px rgba(0,0,0,.18); transform: translateY(0); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -140,12 +200,29 @@
   * { @apply border-border; }
   
   
-  h1{ font-size: 3rem; line-height:1.2; letter-spacing:-0.02em; }
-  h2{ font-size: 2.25rem; line-height:1.25; letter-spacing:-0.01em; }
-  h3{ font-size: 1.75rem; line-height:1.3; }
-  h4{ font-size: 1.5rem; line-height:1.35; }
-  h5{ font-size: 1.25rem; line-height:1.4; }
-  h6{ font-size: 1.125rem; line-height:1.45; }
+  h1{ font-size: 3rem; line-height:1.2; letter-spacing:-0.02em; font-weight: 700; } /* Heavy for main headings */
+  h2{ font-size: 2.25rem; line-height:1.25; letter-spacing:-0.01em; font-weight: 700; } /* Heavy for subtitles */
+  h3{ font-size: 1.75rem; line-height:1.3; font-weight: 700; } /* Heavy for smaller titles */
+  h4{ font-size: 1.5rem; line-height:1.35; font-weight: 400; } /* Regular for section headers */
+  h5{ font-size: 1.25rem; line-height:1.4; font-weight: 400; } /* Regular for subsection headers */
+  h6{ font-size: 1.125rem; line-height:1.45; font-weight: 300; } /* Light for small headers */
+}
+
+/* Utilities */
+@layer utilities {
+  /* Hide scrollbars while keeping scroll functionality */
+  .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-none::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  
+  /* SF Pro Display Font Weight Utilities */
+  .font-light { font-weight: 300; } /* SF Pro Rounded Light for descriptions */
+  .font-regular { font-weight: 400; } /* SF Pro Display Regular for normal text */
+  .font-heavy { font-weight: 700; } /* SF Pro Display Heavy for headings, logos, and subtitles */
+  
+  /* Custom Green Pulse Animation */
+  .animate-pulse-green { 
+    animation: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; 
+  }
 }
 
 /* Reusable Toggle (hidden checkbox + styled label) */
@@ -167,6 +244,18 @@
   }
   33.33% {
     background-color: transparent;
+  }
+}
+
+/* Custom green pulse animation */
+@keyframes pulse-green {
+  0%, 100% {
+    background-color: transparent;
+    opacity: 0.4;
+  }
+  50% {
+    background-color: #16a34a;
+    opacity: 1;
   }
 }
 

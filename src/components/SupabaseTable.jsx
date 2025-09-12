@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import { Input } from "@/components/ui/input";
 import AnimatedSearchInput from "@/components/ui/animated-search";
 import {
@@ -25,6 +26,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { Trash2, Edit3 } from "lucide-react";
 
 export default function SupabaseTable() {
   const [data, setData] = useState([]);
@@ -92,7 +94,7 @@ export default function SupabaseTable() {
     const regex = new RegExp(`(${searchQuery})`, "gi");
     return String(text).split(regex).map((part, i) =>
       part.toLowerCase() === searchQuery.toLowerCase() ? (
-        <span key={i} className="bg-foreground/10 font-semibold">{part}</span>
+        <span key={i} className="bg-foreground/10 font-heavy">{part}</span>
       ) : (
         part
       )
@@ -308,7 +310,7 @@ export default function SupabaseTable() {
         />
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="glass-grnbtn text-black">
               Create Entry
             </Button>
           </DialogTrigger>
@@ -380,9 +382,13 @@ export default function SupabaseTable() {
               <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleCreate}>
+              <StatefulButton
+                className="bg-green-500 glass-grnbtn hover:ring-green-500"
+                onClick={async () => { await handleCreate(); }}
+                type="button"
+              >
                 Create Entry
-              </Button>
+              </StatefulButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -448,8 +454,13 @@ export default function SupabaseTable() {
               <TableCell className="text-right space-x-2">
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(row)}>
-                      Edit
+                     <Button 
+                       variant="ghost" 
+                       size="icon" 
+                       className="text-amber-600 hover:bg-transparent transition-all duration-200"
+                       onClick={() => handleEdit(row)}
+                     >
+                      <Edit3 className="h-4 w-4" />
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-sm">
@@ -466,15 +477,25 @@ export default function SupabaseTable() {
                           onChange={handleChange}
                         />
                       ))}
-                      <Button onClick={handleUpdate} className="w-full">
+                      <StatefulButton
+                        className="w-full bg-green-500 glass-grnbtn hover:ring-green-500"
+                        onClick={async () => { await handleUpdate(); }}
+                        type="button"
+                      >
                         Update
-                      </Button>
+                      </StatefulButton>
                     </div>
                   </DialogContent>
                 </Dialog>
                 <Dialog open={deleteId === row.id} onOpenChange={(open) => setDeleteId(open ? row.id : null)}>
                   <DialogTrigger asChild>
-                    <Button variant="destructive" size="sm">Delete</Button>
+                     <Button 
+                       variant="ghost" 
+                       size="icon" 
+                       className="text-red-600 hover:bg-transparent transition-all duration-200"
+                     >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-sm">
                     <DialogHeader>

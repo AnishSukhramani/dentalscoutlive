@@ -391,8 +391,8 @@ const TemplatesAndIDs = () => {
               className="w-full"
             />
                           <div className="w-full">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Body</label>
-                <div className="text-xs text-gray-600 mb-2">
+                <label className="block text-sm font-medium text-black mb-2">Email Body</label>
+                <div className="text-xs text-black mb-2">
                   <p><strong>Formatting Guide:</strong></p>
                   <p>• <code>**text**</code> for <strong>bold</strong></p>
                   <p>• <code>*text*</code> for <em>italic</em></p>
@@ -526,7 +526,7 @@ const TemplatesAndIDs = () => {
                             <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-8 h-2 bg-black rounded-full z-10"></div>
                             
                             {/* Status Bar */}
-                            <div className="h-4 bg-black rounded-t-[1.25rem] flex items-center justify-between px-4 text-white text-xs">
+                            <div className="h-4 bg-black rounded-t-[1.25rem] flex items-center justify-between px-4 text-black text-xs">
                               <span>9:41</span>
                               <div className="flex items-center gap-1">
                                 <div className="w-3 h-1.5 bg-white rounded-sm"></div>
@@ -542,7 +542,7 @@ const TemplatesAndIDs = () => {
                                   <span className="text-xs font-medium">Mailboxes</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">6</span>
+                                  <span className="text-[10px] bg-gray-100 text-black px-1.5 py-0.5 rounded">6</span>
                                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5A2.121 2.121 0 0 1 19 6v8a2 2 0 0 1-2 2H7l-4 4V6a2 2 0 0 1 2-2h7"/></svg>
                                 </div>
                               </div>
@@ -551,10 +551,10 @@ const TemplatesAndIDs = () => {
                             {/* Email Content */}
                             <div className="p-0 bg-white h-full overflow-y-auto">
                               <div className="px-3 pt-2">
-                                <div className="text-[10px] font-semibold text-gray-500 tracking-wide">1 NEW MESSAGE</div>
+                                <div className="text-[10px] font-semibold text-black tracking-wide">1 NEW MESSAGE</div>
                               </div>
                               <div className="mx-3 mt-1 mb-2 rounded-md border border-gray-200 overflow-hidden">
-                                <div className="p-2 text-[10px] text-gray-700 leading-snug" style={{ maxWidth: '45ch' }}>
+                                <div className="p-2 text-[10px] text-black leading-snug" style={{ maxWidth: '45ch' }}>
                                   {replacePlaceholders(template.preview || 'Markus shared their impressions of 212 Opal Street. The property has prime location, a quiet atmosphere and a spacious backyard with an ocean view. However, it requires significant TLC, including repairing the stone wall and restoring the garden.', sampleEntryData)}
                                 </div>
                               </div>
@@ -718,8 +718,8 @@ const TemplatesAndIDs = () => {
                 className="w-full"
               />
               <div className="w-full">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Body</label>
-                <div className="text-xs text-gray-600 mb-2">
+                <label className="block text-sm font-medium text-black mb-2">Email Body</label>
+                <div className="text-xs text-black mb-2">
                   <p><strong>Formatting Guide:</strong></p>
                   <p>• <code>**text**</code> for <strong>bold</strong></p>
                   <p>• <code>*text*</code> for <em>italic</em></p>

@@ -967,7 +967,7 @@ const Outbound = () => {
       <div className="p-4">
         <h1 className="text-2xl font-semibold mb-4">Outbound</h1>
         <div className="flex items-center justify-center py-8">
-          <p className="text-gray-500">Loading practices...</p>
+          <p className="text-black">Loading practices...</p>
         </div>
       </div>
     );
@@ -1026,7 +1026,7 @@ const Outbound = () => {
         <div className="glass rounded-lg p-4 shadow-sm border">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold flex items-center">
-              <div className="w-3 h-3 rounded-full mr-2 animate-pulse bg-foreground/60"></div>
+              <div className="w-3 h-3 rounded-full mr-2 animate-pulse-green"></div>
               Email Queue Status
             </h3>
             <div className="flex items-center space-x-2">

@@ -1,14 +1,6 @@
 {
   "templates": [
     {
-      "id": "1753430998559",
-      "name": "First Send",
-      "subject": "Hello There",
-      "body": "Hello, [first_name]!\n\nWelcome to **Neurality Health AI**. We are excited to work with you.Here are some key points about our services:\n\n• **AI-Powered Solutions** for your practice\n• *Personalized* care recommendations\n• __Advanced__ analytics and insights\nYou can learn more at [our website](https://neuralityhealth.ai).\n\nBest regards,\nThe Neurality Team",
-      "createdAt": "2025-07-25T08:09:58.560Z",
-      "updatedAt": "2025-08-14T15:14:54.761Z"
-    },
-    {
       "id": "1754573500096",
       "name": "Mapping Test",
       "subject": "Hello [first_name]",

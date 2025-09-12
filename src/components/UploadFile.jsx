@@ -2,9 +2,9 @@
 import React from 'react'
 import { useState } from "react";
 // import { useEffect, useRef } from "react";
-import { Input } from "@/components/ui/input";
+import { FileUpload } from "@/components/ui/file-upload";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import * as XLSX from "xlsx"; 
 import Papa from "papaparse"; 
 import { supabase } from "@/lib/supabaseClient"; // ✅ Supabase client import
@@ -49,10 +49,7 @@ const UploadFile = () => {
   const handleMappingChange = (field, value) => { // ✅ Handler to update mapping state
     setColumnMapping((prev) => ({ ...prev, [field]: value }));
   };
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
+  const processFile = (file) => {
     const fileSize = (file.size / 1024).toFixed(2) + " KB";
 
     if (isCsv) {
@@ -88,6 +85,18 @@ const UploadFile = () => {
       };
       reader.readAsBinaryString(file);
     }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    processFile(file);
+  };
+
+  const handleFilesChange = (files) => {
+    const file = files && files[0];
+    if (!file) return;
+    processFile(file);
   };
   const isMappingComplete = columnMapping.practiceName && columnMapping.practiceUrl && columnMapping.ownerName; // ✅ Mapping completeness check
   const handleUpload = async () => {
@@ -137,7 +146,7 @@ const UploadFile = () => {
     <div className="glass max-w-xl mx-auto py-8 px-4">
       <Toaster position="top-center" richColors />
       <div className="mb-6 p-4 rounded-xl glass border flex flex-col gap-4">
-        <h1 className="text-2xl font-bold mb-2">Upload Practice Data</h1>
+        <h1 className="text-2xl font-heavy mb-2">Upload Practice Data</h1>
         <div className="flex items-center gap-4">
           <span className="text-base font-medium">Excel</span>
           <Switch id="file-toggle" checked={isCsv} onCheckedChange={handleToggleChange} />
@@ -147,14 +156,10 @@ const UploadFile = () => {
           <span className="text-base font-medium">Does the file have a header row?</span>
           <Switch id="header-toggle" checked={hasHeader} onCheckedChange={handleHeaderToggle} />
         </div>
-        <div className="flex flex-col gap-2 mt-2">
-          <label htmlFor="file-upload" className="block text-sm font-medium mb-2">Choose File</label>
-          <div className="relative group flex flex-col items-center justify-center border-2 border-dashed rounded-xl bg-background py-6 px-4 transition-all duration-200 cursor-pointer mb-1 shadow-sm border-[color:var(--hairline-color)] hover:opacity-80 focus-within:opacity-100">
-            <Input id="file-upload" type="file" accept={acceptedFileTypes} onChange={handleFileChange} className="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10" />
-            <span className="text-4xl mb-2 pointer-events-none">📁</span>
-            <span className="text-base font-medium mb-1 pointer-events-none">Click or drag file to upload</span>
-            <span className="text-xs text-gray-500 pointer-events-none">Accepted: {isCsv ? ".csv" : ".xls, .xlsx"}</span>
-          </div>
+        <div className="flex text-white flex-col gap-2 mt-2">
+          <span className="block text-black text-sm font-medium mb-2">Choose File</span>
+          <FileUpload accept={acceptedFileTypes} onChange={handleFilesChange} />
+          <span className="text-xs text-black">Accepted: {isCsv ? ".csv" : ".xls, .xlsx"}</span>
         </div>
         {fileMetrics && (
           <div className="bg-foreground/5 p-4 rounded-lg shadow-inner flex flex-col gap-1 mt-2 border">
@@ -294,23 +299,26 @@ const UploadFile = () => {
       )}
 
       <div className="flex justify-end">
-        <Button disabled={!isMappingComplete || uploading} onClick={handleUpload}>
-          {uploading ? (
-            <span className="flex items-center gap-2"><svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>Uploading...</span>
-          ) : (
-            "Upload"
-          )}
-        </Button>
+        <StatefulButton
+          className="bg-[#16a34a] glass-grnbtn hover:ring-green-500"
+          disabled={!isMappingComplete || uploading}
+          onClick={async () => {
+            await handleUpload();
+          }}
+          type="button"
+        >
+          Upload
+        </StatefulButton>
       </div>
 
-      {filteredJson && (
+      {/* {filteredJson && (
         <div className="mt-6 p-4 bg-foreground/5 border rounded-xl animate-fade-in">
           <h3 className="font-bold mb-2">Filtered JSON Output</h3>
           <pre className="text-xs whitespace-pre-wrap break-words">
             {JSON.stringify(filteredJson, null, 2)}
           </pre>
         </div>
-      )}
+      )} */}
     </div>
   )
 }

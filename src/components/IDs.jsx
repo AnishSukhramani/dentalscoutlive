@@ -189,17 +189,17 @@ const IDs = () => {
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white rounded-lg shadow p-4">
-              <h3 className="text-lg font-semibold text-gray-800">Total Email IDs</h3>
+              <h3 className="text-lg font-semibold text-black">Total Email IDs</h3>
               <p className="text-3xl font-bold">{emailIds.length}</p>
             </div>
             <div className="bg-white rounded-lg shadow p-4">
-              <h3 className="text-lg font-semibold text-gray-800">Active IDs</h3>
+              <h3 className="text-lg font-semibold text-black">Active IDs</h3>
               <p className="text-3xl font-bold">
                 {emailIds.filter(id => !id.isBlocked).length}
               </p>
             </div>
             <div className="bg-white rounded-lg shadow p-4">
-              <h3 className="text-lg font-semibold text-gray-800">Blocked IDs</h3>
+              <h3 className="text-lg font-semibold text-black">Blocked IDs</h3>
               <p className="text-3xl font-bold">
                 {emailIds.filter(id => id.isBlocked).length}
               </p>
@@ -310,7 +310,7 @@ const IDs = () => {
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold mb-4">Daily Limits Configuration</h3>
-        <p className="text-gray-600 mb-4">
+        <p className="text-black mb-4">
           Configure daily sending limits for each email ID. Limits are enforced to prevent rate limiting and maintain good sending reputation.
         </p>
         
@@ -340,7 +340,7 @@ const IDs = () => {
         {!loading && !error && (
           <div className="space-y-4">
             {emailIds.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-black">
                 No email IDs available to configure.
               </div>
             ) : (
@@ -349,8 +349,8 @@ const IDs = () => {
                   <div className="flex justify-between items-center">
                     <div className="flex-1">
                       <h4 className="font-medium">{emailId.label}</h4>
-                      <p className="text-sm text-gray-600">{emailId.email}</p>
-                      <div className="mt-2 text-sm text-gray-500">
+                      <p className="text-sm text-black">{emailId.email}</p>
+                      <div className="mt-2 text-sm text-black">
                         <span>Sent today: {emailId.emailsSentToday}/{emailId.dailyLimit}</span>
                         {emailId.isBlocked && (
                           <span className="ml-4">
@@ -398,7 +398,7 @@ const IDs = () => {
   const renderHistory = () => (
     <div className="bg-white rounded-lg shadow p-6">
       <h3 className="text-lg font-semibold mb-4">Sending History</h3>
-      <p className="text-gray-600 mb-4">
+      <p className="text-black mb-4">
         View historical data about email sending patterns and limit enforcement.
       </p>
       <div className="space-y-4">
@@ -407,7 +407,7 @@ const IDs = () => {
           <div className="grid grid-cols-7 gap-2">
             {Array.from({ length: 7 }, (_, i) => (
               <div key={i} className="text-center">
-                <div className="text-xs text-gray-600">Day {i + 1}</div>
+                <div className="text-xs text-black">Day {i + 1}</div>
                 <div className="text-sm font-medium">--</div>
               </div>
             ))}
@@ -415,7 +415,7 @@ const IDs = () => {
         </div>
         <div className="border rounded-lg p-4">
           <h4 className="font-medium mb-2">Recent Limit Events</h4>
-          <p className="text-gray-600 text-sm">No recent limit events to display.</p>
+          <p className="text-black text-sm">No recent limit events to display.</p>
         </div>
       </div>
     </div>
