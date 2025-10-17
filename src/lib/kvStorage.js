@@ -1,12 +1,79 @@
-// Dynamic import for Vercel KV to handle build-time issues
+// Vercel KV using REST API to avoid build-time import issues
 let kv;
-try {
-  const kvModule = require('@vercel/kv');
-  kv = kvModule.kv;
-} catch (error) {
-  console.warn('Vercel KV not available, using fallback storage');
-  // Fallback to in-memory storage for development
-  kv = {
+
+// Initialize KV storage
+if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+  // Use REST API directly to avoid import issues
+  kv = createKVFromRestAPI();
+  console.log('Using Vercel KV REST API');
+} else {
+  // Use fallback storage for development
+  console.log('Using fallback storage');
+  kv = createFallbackKV();
+}
+
+function createKVFromRestAPI() {
+  const baseUrl = process.env.KV_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN;
+  
+  return {
+    get: async (key) => {
+      try {
+        const response = await fetch(`${baseUrl}/get/${encodeURIComponent(key)}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.text();
+          return data === 'null' ? null : JSON.parse(data);
+        }
+        return null;
+      } catch (error) {
+        console.error('KV GET error:', error);
+        return null;
+      }
+    },
+    
+    set: async (key, value) => {
+      try {
+        const response = await fetch(`${baseUrl}/set/${encodeURIComponent(key)}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(value)
+        });
+        
+        return response.ok ? 'OK' : 'ERROR';
+      } catch (error) {
+        console.error('KV SET error:', error);
+        return 'ERROR';
+      }
+    },
+    
+    del: async (key) => {
+      try {
+        const response = await fetch(`${baseUrl}/del/${encodeURIComponent(key)}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        return response.ok ? 1 : 0;
+      } catch (error) {
+        console.error('KV DEL error:', error);
+        return 0;
+      }
+    }
+  };
+}
+
+function createFallbackKV() {
+  return {
     get: async (key) => {
       console.log(`KV GET (fallback): ${key}`);
       return null;
