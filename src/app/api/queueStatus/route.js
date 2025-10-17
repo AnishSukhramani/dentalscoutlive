@@ -1,37 +1,11 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+import { getEmailQueue, getProcessingStats } from '@/lib/kvStorage';
 
 export async function GET() {
   try {
-    const queueFilePath = path.join(process.cwd(), 'data', 'emailQueue.json');
-    const statsFilePath = path.join(process.cwd(), 'data', 'processingStats.json');
-    
-    // Read the email queue file
-    let queueData = { queue: [] };
-    try {
-      const queueContent = await fs.readFile(queueFilePath, 'utf8');
-      queueData = JSON.parse(queueContent);
-    } catch (error) {
-      // If file doesn't exist or is empty, use default
-      console.log('Queue file not found or empty, using default');
-    }
-
-    // Read the processing statistics file
-    let processingStats = {
-      totalProcessed: 0,
-      totalFailed: 0,
-      lastProcessingTime: null,
-      sessionProcessed: 0,
-      sessionFailed: 0
-    };
-    try {
-      const statsContent = await fs.readFile(statsFilePath, 'utf8');
-      processingStats = JSON.parse(statsContent);
-    } catch (error) {
-      // If file doesn't exist, use default
-      console.log('Processing stats file not found, using default');
-    }
+    // Read the email queue and processing stats from KV
+    const queueData = await getEmailQueue();
+    const processingStats = await getProcessingStats();
 
     // Calculate queue statistics
     const totalInQueue = queueData.queue.length;

@@ -1,4 +1,5 @@
 require('dotenv').config();
+import { getEmailQueue, setEmailQueue, getEmailTemplates, getEmailCounters, setEmailCounters, getProcessingStats, setProcessingStats, getScheduledEmails, setScheduledEmails, getFailedEmails, setFailedEmails } from './kvStorage.js';
 
 // ============================================================================
 // EMAIL PROCESSOR CONFIGURATION
@@ -182,12 +183,7 @@ function replacePlaceholders(content, entryData, convertToHtml = false) {
 async function initializeEmailConfigs() {
   try {
     console.log('Initializing email configurations...');
-    const fs = require('fs').promises;
-    const path = require('path');
-    const userFilePath = path.join(process.cwd(), 'data', 'user.json');
-    
-    const data = await fs.readFile(userFilePath, 'utf8');
-    const userData = JSON.parse(data);
+    const userData = await getUsers();
     
     EMAIL_CONFIGS = {};
     userData.users.forEach(user => {
@@ -471,13 +467,8 @@ async function incrementEmailCounter(senderEmail, isDirectSend = true) {
       return;
     }
     
-    // Get user ID from user.json
-    const fs = require('fs').promises;
-    const path = require('path');
-    const userFilePath = path.join(process.cwd(), 'data', 'user.json');
-    
-    const userData = await fs.readFile(userFilePath, 'utf8');
-    const users = JSON.parse(userData);
+    // Get user ID from KV storage
+    const users = await getUsers();
     const userRecord = users.users.find(u => u.email === senderEmail);
     
     if (!userRecord) {
@@ -566,18 +557,7 @@ async function scheduleEmail(entryId, emailData, scheduledDate) {
   
   try {
     // Read current scheduled emails
-    const fs = require('fs').promises;
-    const path = require('path');
-    const scheduledEmailsPath = path.join(process.cwd(), 'data', 'scheduledEmails.json');
-    
-    let scheduledEmails = [];
-    try {
-      const data = await fs.readFile(scheduledEmailsPath, 'utf8');
-      scheduledEmails = JSON.parse(data);
-    } catch (error) {
-      // File doesn't exist, start with empty array
-      scheduledEmails = [];
-    }
+    let scheduledEmails = await getScheduledEmails();
     
     // Add the new scheduled email
     const scheduledEmail = {
@@ -588,10 +568,10 @@ async function scheduleEmail(entryId, emailData, scheduledDate) {
       status: 'scheduled'
     };
     
-    scheduledEmails.push(scheduledEmail);
+    scheduledEmails.emails.push(scheduledEmail);
     
-    // Write back to file
-    await fs.writeFile(scheduledEmailsPath, JSON.stringify(scheduledEmails, null, 2));
+    // Write back to KV
+    await setScheduledEmails(scheduledEmails);
     
     console.log('Email scheduling details:', {
       entryId,
@@ -616,26 +596,15 @@ async function processScheduledEmails() {
     // Initialize email configurations first
     await initializeEmailConfigs();
     
-    const fs = require('fs').promises;
-    const path = require('path');
-    const scheduledEmailsPath = path.join(process.cwd(), 'data', 'scheduledEmails.json');
-    
     // Read scheduled emails
-    let scheduledEmails = [];
-    try {
-      const data = await fs.readFile(scheduledEmailsPath, 'utf8');
-      scheduledEmails = JSON.parse(data);
-    } catch (error) {
-      // File doesn't exist, nothing to process
-      return;
-    }
+    let scheduledEmails = await getScheduledEmails();
     
     const now = new Date();
     const emailsToSend = [];
     const remainingEmails = [];
     
     // Check which emails are due to be sent
-    for (const scheduledEmail of scheduledEmails) {
+    for (const scheduledEmail of scheduledEmails.emails) {
       const scheduledTime = new Date(scheduledEmail.scheduledDate);
       
       if (scheduledTime <= now) {
@@ -673,8 +642,8 @@ async function processScheduledEmails() {
       }
     }
     
-    // Update the scheduled emails file with remaining emails
-    await fs.writeFile(scheduledEmailsPath, JSON.stringify(remainingEmails, null, 2));
+    // Update the scheduled emails with remaining emails
+    await setScheduledEmails({ emails: remainingEmails });
     
     if (emailsToSend.length > 0) {
       console.log(`Processed ${emailsToSend.length} scheduled emails`);
@@ -725,11 +694,7 @@ async function createDraft(emailData) {
  */
 async function readEmailQueue() {
   try {
-    const fs = require('fs').promises;
-    const path = require('path');
-    const filePath = path.join(process.cwd(), 'data', 'emailQueue.json');
-    const data = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(data);
+    return await getEmailQueue();
   } catch (error) {
     console.error('Error reading email queue:', error);
     throw error;
@@ -741,11 +706,7 @@ async function readEmailQueue() {
  */
 async function readTemplates() {
   try {
-    const fs = require('fs').promises;
-    const path = require('path');
-    const filePath = path.join(process.cwd(), 'data', 'templates.json');
-    const data = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(data);
+    return await getEmailTemplates();
   } catch (error) {
     console.error('Error reading templates:', error);
     throw error;
@@ -759,13 +720,8 @@ async function updateQueueEntryStatus(entryId, status, message) {
   try {
     console.log(`Updating entry ${entryId} status to: ${status}`);
     
-    const fs = require('fs').promises;
-    const path = require('path');
-    const filePath = path.join(process.cwd(), 'data', 'emailQueue.json');
-    
     // Read current queue
-    const data = await fs.readFile(filePath, 'utf8');
-    const emailQueue = JSON.parse(data);
+    const emailQueue = await getEmailQueue();
     
     // Find and update the entry
     const entry = emailQueue.queue.find(e => e.id === entryId);
@@ -775,8 +731,8 @@ async function updateQueueEntryStatus(entryId, status, message) {
       entry.message = message;
     }
     
-    // Write back to file
-    await fs.writeFile(filePath, JSON.stringify(emailQueue, null, 2));
+    // Write back to KV
+    await setEmailQueue(emailQueue);
     console.log(`Entry ${entryId} status updated successfully`);
     
   } catch (error) {
@@ -792,13 +748,8 @@ async function removeProcessedEntries(processedEntryIds) {
   try {
     console.log(`Removing ${processedEntryIds.length} processed entries from queue file`);
     
-    const fs = require('fs').promises;
-    const path = require('path');
-    const filePath = path.join(process.cwd(), 'data', 'emailQueue.json');
-    
     // Read current queue
-    const data = await fs.readFile(filePath, 'utf8');
-    const emailQueue = JSON.parse(data);
+    const emailQueue = await getEmailQueue();
     
     // Filter out processed entries
     const originalCount = emailQueue.queue.length;
@@ -806,8 +757,8 @@ async function removeProcessedEntries(processedEntryIds) {
       !processedEntryIds.includes(entry.id)
     );
     
-    // Write back to file
-    await fs.writeFile(filePath, JSON.stringify(emailQueue, null, 2));
+    // Write back to KV
+    await setEmailQueue(emailQueue);
     
     console.log(`Removed ${originalCount - emailQueue.queue.length} entries from queue file`);
     
@@ -822,26 +773,8 @@ async function removeProcessedEntries(processedEntryIds) {
  */
 async function updateProcessingStats(processed, failed) {
   try {
-    const fs = require('fs').promises;
-    const path = require('path');
-    const statsFilePath = path.join(process.cwd(), 'data', 'processingStats.json');
-    
     // Read current stats
-    let stats = {
-      totalProcessed: 0,
-      totalFailed: 0,
-      lastProcessingTime: null,
-      sessionProcessed: 0,
-      sessionFailed: 0
-    };
-    
-    try {
-      const statsContent = await fs.readFile(statsFilePath, 'utf8');
-      stats = JSON.parse(statsContent);
-    } catch (error) {
-      // If file doesn't exist, use default
-      console.log('Processing stats file not found, creating new one');
-    }
+    let stats = await getProcessingStats();
     
     // Update stats
     stats.totalProcessed += processed;
@@ -850,8 +783,8 @@ async function updateProcessingStats(processed, failed) {
     stats.sessionFailed += failed;
     stats.lastProcessingTime = new Date().toISOString();
     
-    // Write back to file
-    await fs.writeFile(statsFilePath, JSON.stringify(stats, null, 2));
+    // Write back to KV
+    await setProcessingStats(stats);
     
     console.log(`Updated processing stats: +${processed} processed, +${failed} failed`);
     

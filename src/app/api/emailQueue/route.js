@@ -1,37 +1,9 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-const EMAIL_QUEUE_FILE_PATH = path.join(process.cwd(), 'data', 'emailQueue.json');
-
-const readEmailQueue = () => {
-  try {
-    const data = fs.readFileSync(EMAIL_QUEUE_FILE_PATH, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    return { queue: [] };
-  }
-};
-
-const writeEmailQueue = (emailQueue) => {
-  try {
-    // Ensure the data directory exists
-    const dataDir = path.dirname(EMAIL_QUEUE_FILE_PATH);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    
-    fs.writeFileSync(EMAIL_QUEUE_FILE_PATH, JSON.stringify(emailQueue, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Error writing email queue:', error);
-    return false;
-  }
-};
+import { getEmailQueue, setEmailQueue } from '@/lib/kvStorage';
 
 export async function GET() {
   try {
-    const emailQueueData = readEmailQueue();
+    const emailQueueData = await getEmailQueue();
     return NextResponse.json(emailQueueData);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to read email queue' }, { status: 500 });
@@ -47,7 +19,7 @@ export async function POST(request) {
     if (body.entries && Array.isArray(body.entries)) {
       console.log('Processing bulk entries:', body.entries.length);
       // Handle bulk entries
-      const emailQueueData = readEmailQueue();
+      const emailQueueData = await getEmailQueue();
       const newEntries = [];
       
       for (const entry of body.entries) {
@@ -90,7 +62,7 @@ export async function POST(request) {
       }
       
       console.log('Writing bulk entries to queue:', newEntries.length);
-      if (writeEmailQueue(emailQueueData)) {
+      if (await setEmailQueue(emailQueueData)) {
         console.log('Successfully wrote bulk entries to queue');
         return NextResponse.json({ 
           success: true, 
@@ -122,7 +94,7 @@ export async function POST(request) {
         return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
       }
       
-      const emailQueueData = readEmailQueue();
+      const emailQueueData = await getEmailQueue();
       const newQueueEntry = {
         id: Date.now().toString(),
         recipientEmail,
@@ -141,7 +113,7 @@ export async function POST(request) {
       
       emailQueueData.queue.push(newQueueEntry);
       
-      if (writeEmailQueue(emailQueueData)) {
+      if (await setEmailQueue(emailQueueData)) {
         console.log('Successfully wrote single entry to queue');
         return NextResponse.json(newQueueEntry);
       } else {

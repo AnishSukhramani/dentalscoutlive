@@ -1,37 +1,9 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-const TEMPLATES_FILE_PATH = path.join(process.cwd(), 'data', 'templates.json');
-
-const readTemplates = () => {
-  try {
-    const data = fs.readFileSync(TEMPLATES_FILE_PATH, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    return { templates: [] };
-  }
-};
-
-const writeTemplates = (templates) => {
-  try {
-    // Ensure the data directory exists
-    const dataDir = path.dirname(TEMPLATES_FILE_PATH);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    
-    fs.writeFileSync(TEMPLATES_FILE_PATH, JSON.stringify(templates, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Error writing templates:', error);
-    return false;
-  }
-};
+import { getEmailTemplates, setEmailTemplates } from '@/lib/kvStorage';
 
 export async function GET() {
   try {
-    const templatesData = readTemplates();
+    const templatesData = await getEmailTemplates();
     return NextResponse.json(templatesData);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to read templates' }, { status: 500 });
@@ -47,7 +19,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
     
-    const templatesData = readTemplates();
+    const templatesData = await getEmailTemplates();
     const newTemplate = {
       id: Date.now().toString(),
       name,
@@ -58,7 +30,7 @@ export async function POST(request) {
     
     templatesData.templates.push(newTemplate);
     
-    if (writeTemplates(templatesData)) {
+    if (await setEmailTemplates(templatesData)) {
       return NextResponse.json(newTemplate);
     } else {
       return NextResponse.json({ error: 'Failed to save template' }, { status: 500 });
@@ -77,12 +49,12 @@ export async function DELETE(request) {
       return NextResponse.json({ error: 'Template ID is required' }, { status: 400 });
     }
     
-    const templatesData = readTemplates();
+    const templatesData = await getEmailTemplates();
     templatesData.templates = templatesData.templates.filter(
       template => template.id !== id
     );
     
-    if (writeTemplates(templatesData)) {
+    if (await setEmailTemplates(templatesData)) {
       return NextResponse.json({ success: true });
     } else {
       return NextResponse.json({ error: 'Failed to delete template' }, { status: 500 });
