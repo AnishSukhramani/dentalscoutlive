@@ -12,7 +12,7 @@
     {
       "emailId": 2,
       "email": "anishsukhramani1@gmail.com",
-      "emailsSentToday": 0,
+      "emailsSentToday": 1,
       "dailyLimit": 100,
       "lastResetAt": "2025-10-17T17:58:56.478Z",
       "blockedUntil": null,
