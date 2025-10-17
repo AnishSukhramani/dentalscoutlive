@@ -1395,6 +1395,7 @@ const Outbound = () => {
                     <Checkbox
                       checked={selectedIds.has(practice.email)}
                       onCheckedChange={(checked) => handleSelect(practice.email, checked)}
+                      className="border-black"
                       aria-label="Select row"
                     />
                   </TableCell>

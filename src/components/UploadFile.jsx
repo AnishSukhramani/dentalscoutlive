@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabaseClient"; // ✅ Supabase client import
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 
 const UploadFile = () => {
@@ -98,6 +99,7 @@ const UploadFile = () => {
     if (!file) return;
     processFile(file);
   };
+  const hasFile = Boolean(fileMetrics);
   const isMappingComplete = columnMapping.practiceName && columnMapping.practiceUrl && columnMapping.ownerName; // ✅ Mapping completeness check
   const handleUpload = async () => {
     const { practiceName, practiceUrl, ownerName, email, phone, firstName } = columnMapping;
@@ -143,162 +145,227 @@ const UploadFile = () => {
 
 
   return (
-    <div className="glass max-w-xl mx-auto py-8 px-4">
+    <div className="max-w-6xl mx-auto py-8 px-4">
       <Toaster position="top-center" richColors />
-      <div className="mb-6 p-4 rounded-xl glass border flex flex-col gap-4">
-        <h1 className="text-2xl font-heavy mb-2">Upload Practice Data</h1>
-        <div className="flex items-center gap-4">
-          <span className="text-base font-medium">Excel</span>
-          <Switch id="file-toggle" checked={isCsv} onCheckedChange={handleToggleChange} />
-          <span className="text-base font-medium">CSV</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-base font-medium">Does the file have a header row?</span>
-          <Switch id="header-toggle" checked={hasHeader} onCheckedChange={handleHeaderToggle} />
-        </div>
-        <div className="flex text-white flex-col gap-2 mt-2">
-          <span className="block text-black text-sm font-medium mb-2">Choose File</span>
-          <FileUpload accept={acceptedFileTypes} onChange={handleFilesChange} />
-          <span className="text-xs text-black">Accepted: {isCsv ? ".csv" : ".xls, .xlsx"}</span>
-        </div>
-        {fileMetrics && (
-          <div className="bg-foreground/5 p-4 rounded-lg shadow-inner flex flex-col gap-1 mt-2 border">
-            <p><strong>File Size:</strong> {fileMetrics.fileSize}</p>
-            <p><strong>Number of Entries:</strong> {fileMetrics.numRows}</p>
-            <p><strong>Columns:</strong> {fileMetrics.columnNames.join(", ")}</p>
-          </div>
-        )}
-      </div>
 
-      {/* MAPPING UI: Shown only after file loaded */}
-      {fileMetrics?.columnNames?.length > 0 && (
-        <div className="space-y-4 glass p-6 border rounded-xl shadow mb-6 animate-fade-in">
-          <h2 className="font-semibold text-lg mb-2">Map Required Fields</h2>
-          <div className="grid grid-cols-1 gap-4">
-            {/* Required fields */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Practice Name Column <span className="opacity-70">*</span></label>
-              <select
-                className="w-full border rounded-lg px-3 py-2 focus-visible:outline-2 transition-all duration-150"
-                value={columnMapping.practiceName}
-                onChange={(e) => handleMappingChange("practiceName", e.target.value)}
-              >
-                <option value="">-- Select Column --</option>
-                {fileMetrics.columnNames.map((col, idx) => (
-                  <option key={idx} value={col}>{col}</option>
-                ))}
-              </select>
+      {!hasFile ? (
+        <div className="max-w-xl mx-auto">
+          <div className="p-4 rounded-xl glass border flex flex-col gap-4">
+            <h1 className="text-2xl font-heavy mb-2">Upload Practice Data</h1>
+            <div className="flex items-center gap-4">
+              <span className="text-base font-medium">Excel</span>
+              <Switch id="file-toggle" checked={isCsv} onCheckedChange={handleToggleChange} />
+              <span className="text-base font-medium">CSV</span>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Practice Website URL Column <span className="opacity-70">*</span></label>
-              <select
-                className="w-full border rounded-lg px-3 py-2 focus-visible:outline-2 transition-all duration-150"
-                value={columnMapping.practiceUrl}
-                onChange={(e) => handleMappingChange("practiceUrl", e.target.value)}
-              >
-                <option value="">-- Select Column --</option>
-                {fileMetrics.columnNames.map((col, idx) => (
-                  <option key={idx} value={col}>{col}</option>
-                ))}
-              </select>
+            <div className="flex items-center gap-4">
+              <span className="text-base font-medium">Does the file have a header row?</span>
+              <Switch id="header-toggle" checked={hasHeader} onCheckedChange={handleHeaderToggle} />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Owner Full Name Column <span className="opacity-70">*</span></label>
-              <select
-                className="w-full border rounded-lg px-3 py-2 focus-visible:outline-2 transition-all duration-150"
-                value={columnMapping.ownerName}
-                onChange={(e) => handleMappingChange("ownerName", e.target.value)}
-              >
-                <option value="">-- Select Column --</option>
-                {fileMetrics.columnNames.map((col, idx) => (
-                  <option key={idx} value={col}>{col}</option>
-                ))}
-              </select>
+            <div className="flex text-white flex-col gap-2 mt-2">
+              <span className="block text-black text-sm font-medium mb-2">Choose File</span>
+              <FileUpload accept={acceptedFileTypes} onChange={handleFilesChange} />
+              <span className="text-xs text-black">Accepted: {isCsv ? ".csv" : ".xls, .xlsx"}</span>
             </div>
           </div>
-          {/* Expandable Additional Mapping */}
-          <div className="mt-6">
-            <button
-              type="button"
-              className="flex items-center gap-2 font-semibold focus:outline-none hover:underline"
-              onClick={() => setShowAdditional((v) => !v)}
-              aria-expanded={showAdditional}
-            >
-              {showAdditional ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              Additional Mapping (optional)
-            </button>
-            {showAdditional && (
-              <div className="mt-4 p-4 bg-foreground/5 border rounded-lg shadow-inner space-y-4 animate-fade-in">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email Column</label>
-                  <select
-                    className="w-full border rounded-lg px-3 py-2 focus-visible:outline-2 transition-all duration-150"
-                    value={columnMapping.email}
-                    onChange={(e) => handleMappingChange("email", e.target.value)}
-                  >
-                    <option value="">-- None --</option>
-                    {fileMetrics.columnNames.map((col, idx) => (
-                      <option key={idx} value={col}>{col}</option>
-                    ))}
-                  </select>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <div className="p-4 rounded-xl glass border flex flex-col gap-4">
+              <h1 className="text-2xl font-heavy mb-2">Upload Practice Data</h1>
+              <div className="flex items-center gap-4">
+                <span className="text-base font-medium">Excel</span>
+                <Switch id="file-toggle" checked={isCsv} onCheckedChange={handleToggleChange} />
+                <span className="text-base font-medium">CSV</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-base font-medium">Does the file have a header row?</span>
+                <Switch id="header-toggle" checked={hasHeader} onCheckedChange={handleHeaderToggle} />
+              </div>
+              <div className="flex text-white flex-col gap-2 mt-2">
+                <span className="block text-black text-sm font-medium mb-2">Choose File</span>
+                <FileUpload accept={acceptedFileTypes} onChange={handleFilesChange} />
+                <span className="text-xs text-black">Accepted: {isCsv ? ".csv" : ".xls, .xlsx"}</span>
+              </div>
+              {fileMetrics && (
+                <div className="bg-foreground/5 p-4 rounded-lg shadow-inner flex flex-col gap-1 mt-2 border md:hidden">
+                  <p><strong>File Size:</strong> {fileMetrics.fileSize}</p>
+                  <p><strong>Number of Entries:</strong> {fileMetrics.numRows}</p>
+                  <p><strong>Columns:</strong> {fileMetrics.columnNames.join(", ")}</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Phone Number Column</label>
-                  <select
-                    className="w-full border rounded-lg px-3 py-2 focus-visible:outline-2 transition-all duration-150"
-                    value={columnMapping.phone}
-                    onChange={(e) => handleMappingChange("phone", e.target.value)}
-                  >
-                    <option value="">-- None --</option>
-                    {fileMetrics.columnNames.map((col, idx) => (
-                      <option key={idx} value={col}>{col}</option>
+              )}
+            </div>
+
+            {/* Desktop: File Preview under upload card */}
+            {filePreview.length > 0 && (
+              <div className="hidden md:block scrollbar-none overflow-auto glass rounded-xl shadow p-6 border animate-fade-in mt-4">
+                <h2 className="font-semibold mb-2">File Preview (first 5 rows)</h2>
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr>
+                      {fileMetrics?.columnNames?.map((col, idx) => (
+                        <th key={idx} className="border px-2 py-1 bg-foreground/5">{col}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filePreview.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-foreground/6 transition-colors">
+                        {fileMetrics.columnNames.map((col, colIdx) => (
+                          <td key={colIdx} className="border px-2 py-1">{row[col] ?? ""}</td>
+                        ))}
+                      </tr>
                     ))}
-                  </select>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-6">
+            {/* Desktop: File Metrics at top of right column */}
+            {fileMetrics && (
+              <div className="hidden md:block bg-foreground/5 p-4 rounded-xl shadow-inner border">
+                <p><strong>File Size:</strong> {fileMetrics.fileSize}</p>
+                <p><strong>Number of Entries:</strong> {fileMetrics.numRows}</p>
+                <p><strong>Columns:</strong> {fileMetrics.columnNames.join(", ")}</p>
+              </div>
+            )}
+            {/* MAPPING UI: Shown only after file loaded */}
+            {fileMetrics?.columnNames?.length > 0 && (
+              <div className="space-y-4 glass p-6 border rounded-xl shadow animate-fade-in">
+                <h2 className="font-semibold text-lg mb-2">Map Required Fields</h2>
+                <div className="grid grid-cols-1 gap-4">
+                  {/* Required fields */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Practice Name Column <span className="opacity-70">*</span></label>
+                    <Select value={columnMapping.practiceName || undefined} onValueChange={(v) => handleMappingChange("practiceName", v)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="-- Select Column --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fileMetrics.columnNames.map((col, idx) => (
+                          <SelectItem key={idx} value={col}>{col}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Practice Website URL Column <span className="opacity-70">*</span></label>
+                    <Select value={columnMapping.practiceUrl || undefined} onValueChange={(v) => handleMappingChange("practiceUrl", v)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="-- Select Column --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fileMetrics.columnNames.map((col, idx) => (
+                          <SelectItem key={idx} value={col}>{col}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Owner Full Name Column <span className="opacity-70">*</span></label>
+                    <Select value={columnMapping.ownerName || undefined} onValueChange={(v) => handleMappingChange("ownerName", v)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="-- Select Column --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fileMetrics.columnNames.map((col, idx) => (
+                          <SelectItem key={idx} value={col}>{col}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">First Name Column</label>
-                  <select
-                    className="w-full border rounded-lg px-3 py-2 focus-visible:outline-2 transition-all duration-150"
-                    value={columnMapping.firstName}
-                    onChange={(e) => handleMappingChange("firstName", e.target.value)}
+                {/* Expandable Additional Mapping */}
+                <div className="mt-6">
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 font-semibold focus:outline-none hover:underline"
+                    onClick={() => setShowAdditional((v) => !v)}
+                    aria-expanded={showAdditional}
                   >
-                    <option value="">-- None --</option>
-                    {fileMetrics.columnNames.map((col, idx) => (
-                      <option key={idx} value={col}>{col}</option>
-                    ))}
-                  </select>
+                    {showAdditional ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    Additional Mapping (optional)
+                  </button>
+                  {showAdditional && (
+                    <div className="mt-4 p-4 bg-foreground/5 border rounded-lg shadow-inner space-y-4 animate-fade-in">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Email Column</label>
+                        <Select value={columnMapping.email === "" ? "__none__" : columnMapping.email} onValueChange={(v) => handleMappingChange("email", v === "__none__" ? "" : v)}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="-- None --" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">-- None --</SelectItem>
+                            {fileMetrics.columnNames.map((col, idx) => (
+                              <SelectItem key={idx} value={col}>{col}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Phone Number Column</label>
+                        <Select value={columnMapping.phone === "" ? "__none__" : columnMapping.phone} onValueChange={(v) => handleMappingChange("phone", v === "__none__" ? "" : v)}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="-- None --" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">-- None --</SelectItem>
+                            {fileMetrics.columnNames.map((col, idx) => (
+                              <SelectItem key={idx} value={col}>{col}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">First Name Column</label>
+                        <Select value={columnMapping.firstName === "" ? "__none__" : columnMapping.firstName} onValueChange={(v) => handleMappingChange("firstName", v === "__none__" ? "" : v)}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="-- None --" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">-- None --</SelectItem>
+                            {fileMetrics.columnNames.map((col, idx) => (
+                              <SelectItem key={idx} value={col}>{col}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
                 </div>
+              </div>
+            )}
+
+            {filePreview.length > 0 && (
+              <div className="md:hidden scrollbar-none overflow-auto glass rounded-xl shadow p-6 border animate-fade-in">
+                <h2 className="font-semibold mb-2">File Preview (first 5 rows)</h2>
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr>
+                      {fileMetrics?.columnNames?.map((col, idx) => (
+                        <th key={idx} className="border px-2 py-1 bg-foreground/5">{col}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filePreview.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-foreground/6 transition-colors">
+                        {fileMetrics.columnNames.map((col, colIdx) => (
+                          <td key={colIdx} className="border px-2 py-1">{row[col] ?? ""}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {filePreview.length > 0 && (
-        <div className="overflow-auto glass rounded-xl shadow p-6 border mb-6 animate-fade-in">
-          <h2 className="font-semibold mb-2">File Preview (first 5 rows)</h2>
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr>
-                {fileMetrics?.columnNames?.map((col, idx) => (
-                  <th key={idx} className="border px-2 py-1 bg-foreground/5">{col}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filePreview.map((row, idx) => (
-                <tr key={idx} className="hover:bg-foreground/6 transition-colors">
-                  {fileMetrics.columnNames.map((col, colIdx) => (
-                    <td key={colIdx} className="border px-2 py-1">{row[col] ?? ""}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <div className="flex justify-end">
+      <div className="flex justify-end mt-4">
         <StatefulButton
           className="bg-[#16a34a] glass-grnbtn hover:ring-green-500"
           disabled={!isMappingComplete || uploading}

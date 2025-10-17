@@ -325,6 +325,7 @@ export default function SupabaseTable() {
               <div>
                 <label className="text-sm font-medium">Practice Name</label>
                 <Input
+                  className="text-[#b2b1b1]"
                   name="practice_name"
                   placeholder="Practice Name"
                   value={createFormData.practice_name || ""}
@@ -379,7 +380,7 @@ export default function SupabaseTable() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="glassred" onClick={() => setIsCreateDialogOpen(false)}>
+              <Button variant="glassred" className="text-[#b2b1b1]" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
               <StatefulButton
@@ -408,13 +409,13 @@ export default function SupabaseTable() {
               <Button variant="destructive">Delete</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader>
+              <DialogHeader className="text-[#b2b1b1]">
                 <DialogTitle>Confirm Deletion</DialogTitle>
-                <DialogDescription>This action cannot be undone.</DialogDescription>
+                <DialogDescription className="text-[#c1bfbf]">This action cannot be undone.</DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <Button variant="outline">Cancel</Button>
-                <Button variant="destructive" onClick={handleBulkDelete}>Confirm</Button>
+                <Button variant="outline" className="text-[#b2b1b1]">Cancel</Button>
+                <Button variant="destructive" className="text-[#b2b1b1]" onClick={handleBulkDelete}>Confirm</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -443,6 +444,7 @@ export default function SupabaseTable() {
                 <Checkbox
                   checked={selectedIds.has(row.id)}
                   onCheckedChange={(checked) => handleSelect(row.id, checked)}
+                  className="border-black"
                 />
               </TableCell>
               <TableCell>{highlightMatch(row.practice_name)}</TableCell>
@@ -464,12 +466,13 @@ export default function SupabaseTable() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-sm">
-                    <DialogHeader>
+                    <DialogHeader className="text-[#b2b1b1]">
                       <DialogTitle>Edit Practice</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-2">
                       {Object.keys(row).filter(key => key !== "id" && key !== "email_sent_count" && key !== "tags").map(key => (
                         <Input
+                          className="text-[#b2b1b1]"
                           key={key}
                           name={key}
                           placeholder={key}
@@ -498,16 +501,16 @@ export default function SupabaseTable() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-sm">
-                    <DialogHeader>
+                    <DialogHeader className="text-[#b2b1b1]">
                       <DialogTitle>Are you sure?</DialogTitle>
-                      <DialogDescription>
+                      <DialogDescription className="text-[#c1bfbf]">
                         This action cannot be undone. This will permanently delete the entry.
                       </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
                       <div className="flex justify-end space-x-2">
-                        <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => handleDelete(row.id)}>Confirm</Button>
+                        <Button variant="outline" className="text-[#b2b1b1]" onClick={() => setDeleteId(null)}>Cancel</Button>
+                        <Button variant="destructive" className="text-[#b2b1b1]" onClick={() => handleDelete(row.id)}>Confirm</Button>
                       </div>
                     </DialogFooter>
                   </DialogContent>

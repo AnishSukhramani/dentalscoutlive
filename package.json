@@ -24,6 +24,7 @@
     "dotenv": "^17.2.1",
     "framer-motion": "^12.23.12",
     "googleapis": "^155.0.1",
+    "html2canvas": "^1.4.1",
     "lucide-react": "^0.525.0",
     "motion": "^12.23.12",
     "next": "15.3.4",
