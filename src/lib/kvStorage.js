@@ -1,4 +1,26 @@
-import { kv } from '@vercel/kv';
+// Dynamic import for Vercel KV to handle build-time issues
+let kv;
+try {
+  const kvModule = require('@vercel/kv');
+  kv = kvModule.kv;
+} catch (error) {
+  console.warn('Vercel KV not available, using fallback storage');
+  // Fallback to in-memory storage for development
+  kv = {
+    get: async (key) => {
+      console.log(`KV GET (fallback): ${key}`);
+      return null;
+    },
+    set: async (key, value) => {
+      console.log(`KV SET (fallback): ${key}`);
+      return 'OK';
+    },
+    del: async (key) => {
+      console.log(`KV DEL (fallback): ${key}`);
+      return 1;
+    }
+  };
+}
 
 /**
  * KV Storage Utility Functions

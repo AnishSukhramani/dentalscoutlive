@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getEmailQueue, getProcessingStats } from '@/lib/kvStorage';
+const { getEmailQueue, getProcessingStats } = require('@/lib/kvStorage');
 
 export async function GET() {
   try {

@@ -1,5 +1,5 @@
 require('dotenv').config();
-import { getEmailQueue, setEmailQueue, getEmailTemplates, getEmailCounters, setEmailCounters, getProcessingStats, setProcessingStats, getScheduledEmails, setScheduledEmails, getFailedEmails, setFailedEmails } from './kvStorage.js';
+const { getEmailQueue, setEmailQueue, getEmailTemplates, getEmailCounters, setEmailCounters, getProcessingStats, setProcessingStats, getScheduledEmails, setScheduledEmails, getFailedEmails, setFailedEmails } = require('./kvStorage.js');
 
 // ============================================================================
 // EMAIL PROCESSOR CONFIGURATION

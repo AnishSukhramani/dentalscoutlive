@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUsers } from '@/lib/kvStorage';
+const { getUsers } = require('@/lib/kvStorage');
 
 export async function GET() {
   try {
