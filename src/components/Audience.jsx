@@ -333,7 +333,7 @@ export default function Audience() {
                 onClick={() => handleTagSelect(tag)}
                 className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                   selectedTags.includes(tag)
-                    ? 'bg-foreground/10'
+                    ? 'bg-green-500 text-white hover:bg-green-600'
                     : 'bg-foreground/5 hover:bg-foreground/8'
                 }`}
               >
@@ -395,6 +395,12 @@ export default function Audience() {
                 ))}
               </select>
             </div>
+            <button
+              onClick={() => setShowCreateTag(true)}
+              className="px-4 py-2 rounded-md glass hover:opacity-80 transition-opacity"
+            >
+              Create New Tag
+            </button>
           </div>
 
           {/* Create Tag Modal */}
