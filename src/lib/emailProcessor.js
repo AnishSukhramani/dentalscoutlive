@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { getEmailQueue, setEmailQueue, getEmailTemplates, getEmailCounters, setEmailCounters, getProcessingStats, setProcessingStats, getScheduledEmails, setScheduledEmails, getFailedEmails, setFailedEmails } = require('./kvStorage.js');
+const { getEmailQueue, setEmailQueue, getEmailTemplates, getEmailCounters, setEmailCounters, getProcessingStats, setProcessingStats, getScheduledEmails, setScheduledEmails, getFailedEmails, setFailedEmails, initializeStorage } = require('./kvStorage.js');
 
 // ============================================================================
 // EMAIL PROCESSOR CONFIGURATION
@@ -217,6 +217,11 @@ async function processEmailQueue() {
   try {
     console.log('=== Starting email queue processing ===');
     console.log('Timestamp:', new Date().toISOString());
+    
+    // Initialize storage and migrate data if needed
+    console.log('Step 0: Initializing storage...');
+    await initializeStorage();
+    console.log('✓ Storage initialized successfully');
     
     // Initialize email configurations
     console.log('Step 1: Initializing email configurations...');
