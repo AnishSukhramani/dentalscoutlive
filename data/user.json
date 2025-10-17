@@ -11,6 +11,36 @@
       "name": "Anish Secondary",
       "email": "anishsukhramani1@gmail.com",
       "password": "process.env.GMAIL_APP_PASSWORD_2"
+    },
+    {
+      "id": 3,
+      "name": "biz",
+      "email": "rahul@neuralityhealth.biz",
+      "password": "process.env.GMAIL_APP_PASSWORD_3"
+    },
+    {
+      "id": 4,
+      "name": "info",
+      "email": "rahul@neuralityhealth.info",
+      "password": "process.env.GMAIL_APP_PASSWORD_4"
+    },
+    {
+      "id": 5,
+      "name": "net",
+      "email": "rahul@neuralityhealth.net",
+      "password": "process.env.GMAIL_APP_PASSWORD_5"
+    },
+    {
+      "id": 6,
+      "name": "org",
+      "email": "rahul@neuralityhealth.org",
+      "password": "process.env.GMAIL_APP_PASSWORD_6"
+    },
+    {
+      "id": 7,
+      "name": "co",
+      "email": "rahul@neuralityhealth.co",
+      "password": "process.env.GMAIL_APP_PASSWORD_7"
     }
   ]
 }
