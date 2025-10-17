@@ -153,4 +153,4 @@ export async function POST(request) {
     console.error('Error in emailQueue API:', error);
     return NextResponse.json({ error: 'Failed to create email queue entry' }, { status: 500 });
   }
-} 
+}

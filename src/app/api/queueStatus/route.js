@@ -54,20 +54,14 @@ export async function GET() {
         failedCount,
         pendingCount,
         hasFailedEntries,
-        hasUnprocessedEntries,
-        lastUpdated: new Date().toISOString()
-      }
+        hasUnprocessedEntries
+      },
+      processingStats,
+      timestamp: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error('Error getting queue status:', error);
-    
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: error.message 
-      },
-      { status: 500 }
-    );
+    console.error('Error fetching queue status:', error);
+    return NextResponse.json({ error: 'Failed to fetch queue status' }, { status: 500 });
   }
-} 
+}

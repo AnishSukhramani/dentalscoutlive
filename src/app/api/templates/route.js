@@ -90,4 +90,4 @@ export async function DELETE(request) {
   } catch (error) {
     return NextResponse.json({ error: 'Failed to delete template' }, { status: 500 });
   }
-} 
+}
