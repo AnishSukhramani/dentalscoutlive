@@ -1197,27 +1197,64 @@ const Outbound = () => {
       {tags.length > 0 && (
         <div className="mb-4 glass p-4 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold">Filter by Tags</h3>
+            <div className="flex items-center gap-3">
+              <h3 className="text-lg font-semibold">Filter by Tags</h3>
+              {selectedTags.length > 0 && (
+                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+                  {selectedTags.length} filter{selectedTags.length > 1 ? 's' : ''} active
+                </span>
+              )}
+            </div>
             {selectedTags.length > 0 && (
               <button
                 onClick={clearTagFilters}
-                className="text-sm hover:opacity-80"
+                className="text-sm text-red-600 hover:text-red-800 hover:opacity-80 transition-colors"
               >
-                Clear filters
+                Clear all filters
               </button>
             )}
           </div>
+          
+          {/* Filter status indicator */}
+          {selectedTags.length > 0 && (
+            <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-md">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-blue-800">
+                  🔍 Filtering by: {selectedTags.join(', ')} 
+                  <span className="ml-2 font-medium">
+                    ({filteredPractices.length} of {practices.length} practices)
+                  </span>
+                </span>
+                <button
+                  onClick={clearTagFilters}
+                  className="text-xs text-blue-600 hover:text-blue-800 underline"
+                >
+                  Clear filters
+                </button>
+              </div>
+            </div>
+          )}
+          
           <div className="flex flex-wrap gap-2">
+            <div className="w-full mb-2">
+              <p className="text-xs text-gray-600">
+                💡 Click on tags to filter practices
+              </p>
+            </div>
             {tags.map(tag => (
                <button
                  key={tag}
                  onClick={() => handleTagSelect(tag)}
-                 className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                 className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${
                    selectedTags.includes(tag)
-                     ? 'bg-foreground/10'
-                     : 'bg-foreground/5 hover:bg-foreground/8'
+                     ? 'bg-green-500 text-white hover:bg-green-600 shadow-md transform scale-105'
+                     : 'bg-foreground/5 hover:bg-foreground/8 hover:shadow-sm'
                  }`}
+                 title={selectedTags.includes(tag) ? 'Click to remove filter' : 'Click to add filter'}
                >
+                 {selectedTags.includes(tag) && (
+                   <span className="mr-1">✓</span>
+                 )}
                  {tag}
                </button>
              ))}
@@ -1351,6 +1388,26 @@ const Outbound = () => {
 
       {/* Practices table */}
       <div className="glass rounded-lg shadow overflow-x-auto">
+        {/* Filter Status Indicator */}
+        {selectedTags.length > 0 && (
+          <div className="px-4 py-3 bg-blue-50 border-b border-blue-200">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-blue-800">
+                🔍 Filtering by tags: {selectedTags.join(', ')} 
+                <span className="ml-2 font-medium">
+                  ({filteredPractices.length} of {practices.length} practices)
+                </span>
+              </span>
+              <button
+                onClick={clearTagFilters}
+                className="text-xs text-blue-600 hover:text-blue-800 underline"
+              >
+                Clear all filters
+              </button>
+            </div>
+          </div>
+        )}
+        
         <Table className="min-w-[900px]">
           <TableHeader>
             <TableRow>

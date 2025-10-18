@@ -515,6 +515,52 @@ async function incrementEmailCounter(senderEmail, isDirectSend = true) {
 }
 
 /**
+ * Increment email count for a practice in the practices table
+ */
+async function incrementPracticeEmailCount(recipientEmail) {
+  try {
+    console.log(`\n📊 Incrementing email count for practice: ${recipientEmail}`);
+    
+    // Update the email_sent_count in the practices table
+    const { data, error } = await supabase
+      .from('practices')
+      .select('email_sent_count')
+      .eq('email', recipientEmail)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching practice email count:', error);
+      return;
+    }
+    
+    if (!data) {
+      console.log(`Practice with email ${recipientEmail} not found`);
+      return;
+    }
+    
+    const currentCount = data.email_sent_count || 0;
+    const newCount = currentCount + 1;
+    
+    console.log(`Current count: ${currentCount}, new count: ${newCount}`);
+    
+    // Update the count
+    const { error: updateError } = await supabase
+      .from('practices')
+      .update({ email_sent_count: newCount })
+      .eq('email', recipientEmail);
+    
+    if (updateError) {
+      console.error('Error updating practice email count:', updateError);
+    } else {
+      console.log(`✓ Email count updated for ${recipientEmail}: ${newCount}`);
+    }
+    
+  } catch (error) {
+    console.error('Error incrementing practice email count:', error);
+  }
+}
+
+/**
  * Send email using configured SMTP
  */
 async function sendEmail(emailData, isDirectSend = true) {
@@ -551,6 +597,9 @@ async function sendEmail(emailData, isDirectSend = true) {
     
     // Increment email counter for successful sends
     await incrementEmailCounter(emailData.senderEmail, isDirectSend);
+    
+    // Increment email count for the practice
+    await incrementPracticeEmailCount(emailData.to);
     
   } catch (error) {
     console.error(`❌ Error sending email to ${emailData.to}:`, error);

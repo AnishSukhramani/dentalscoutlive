@@ -18,6 +18,11 @@ export default function Audience() {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [newTagName, setNewTagName] = useState("");
   const [showCreateTag, setShowCreateTag] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [selectAllPages, setSelectAllPages] = useState(false);
 
   // Fetch contacts from Supabase
   const fetchContacts = async () => {
@@ -99,12 +104,28 @@ export default function Audience() {
     });
   };
 
-  // Handle select all
+  // Handle select all (current page only)
   const handleSelectAll = () => {
-    if (selectedRows.length === contacts.length) {
-      setSelectedRows([]);
+    if (isCurrentPageSelected) {
+      // Deselect current page
+      const currentPageIds = currentPageContacts.map(contact => contact.id);
+      setSelectedRows(prev => prev.filter(id => !currentPageIds.includes(id)));
     } else {
-      setSelectedRows(contacts.map(contact => contact.id));
+      // Select current page
+      const currentPageIds = currentPageContacts.map(contact => contact.id);
+      setSelectedRows(prev => [...new Set([...prev, ...currentPageIds])]);
+    }
+    setSelectAllPages(false);
+  };
+
+  // Handle select all pages
+  const handleSelectAllPages = () => {
+    if (selectAllPages) {
+      setSelectedRows([]);
+      setSelectAllPages(false);
+    } else {
+      setSelectedRows(allContactIds);
+      setSelectAllPages(true);
     }
   };
 
@@ -294,10 +315,55 @@ export default function Audience() {
     return selectedTags.some(tag => contactTags.includes(tag));
   });
 
+  // Pagination calculations
+  const totalItems = filteredContacts.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPageContacts = filteredContacts.slice(startIndex, endIndex);
+
+  // Get all contact IDs for cross-page selection
+  const allContactIds = filteredContacts.map(contact => contact.id);
+  const isAllSelected = selectAllPages || (selectedRows.length === allContactIds.length && allContactIds.length > 0);
+  const isCurrentPageSelected = currentPageContacts.every(contact => selectedRows.includes(contact.id));
+
   // Clear selection
   const clearSelection = () => {
     setSelectedRows([]);
     setShowBulkActions(false);
+    setSelectAllPages(false);
+  };
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  // Handle items per page change
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      const startPage = Math.max(1, currentPage - 2);
+      const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+    
+    return pages;
   };
 
   // Update bulk actions visibility
@@ -388,6 +454,7 @@ export default function Audience() {
             <div className="flex items-center space-x-4">
               <span className="text-sm font-medium text-foreground/70">
                 {selectedRows.length} contact(s) selected
+                {selectAllPages && ` (across all ${totalPages} pages)`}
               </span>
               <button
                 onClick={clearSelection}
@@ -499,12 +566,28 @@ export default function Audience() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left">
-                  <input
-                    type="checkbox"
-                    checked={filteredContacts && selectedRows.length === filteredContacts.length && filteredContacts.length > 0}
-                    onChange={handleSelectAll}
-                    className="rounded border"
-                  />
+                  <div className="flex flex-col space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={isCurrentPageSelected}
+                        onChange={handleSelectAll}
+                        className="rounded border"
+                        title="Select all on current page"
+                      />
+                      <span className="text-xs text-gray-600">Current page</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={selectAllPages}
+                        onChange={handleSelectAllPages}
+                        className="rounded border"
+                        title="Select all across all pages"
+                      />
+                      <span className="text-xs text-gray-600">All pages</span>
+                    </div>
+                  </div>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                   Email
@@ -524,7 +607,7 @@ export default function Audience() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredContacts && filteredContacts.map((contact) => (
+              {currentPageContacts && currentPageContacts.map((contact) => (
                 <tr key={contact.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
@@ -564,7 +647,7 @@ export default function Audience() {
           </table>
         </div>
         
-        {filteredContacts && filteredContacts.length === 0 && (
+        {currentPageContacts && currentPageContacts.length === 0 && (
           <div className="text-center py-8 text-black">
             {selectedTags && selectedTags.length > 0 
               ? "No contacts found with the selected tags."
@@ -573,6 +656,96 @@ export default function Audience() {
           </div>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="glass p-4 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            {/* Items per page selector */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-600">Show:</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                className="px-2 py-1 border rounded text-sm"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span className="text-sm text-gray-600">per page</span>
+            </div>
+
+            {/* Page info */}
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} contacts
+              {selectAllPages && (
+                <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                  All pages selected
+                </span>
+              )}
+            </div>
+
+            {/* Page navigation */}
+            <div className="flex items-center space-x-2">
+              {/* Previous button */}
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+
+              {/* Page numbers */}
+              <div className="flex space-x-1">
+                {getPageNumbers().map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`px-3 py-1 text-sm border rounded ${
+                      currentPage === pageNum
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+              </div>
+
+              {/* Next button */}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+
+          {/* Selection summary */}
+          {selectedRows.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">
+                  {selectedRows.length} contact(s) selected
+                  {selectAllPages && ` (across all ${totalPages} pages)`}
+                </span>
+                <button
+                  onClick={clearSelection}
+                  className="text-sm text-red-600 hover:text-red-800"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
