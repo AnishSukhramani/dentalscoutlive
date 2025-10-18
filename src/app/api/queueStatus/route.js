@@ -1,46 +1,60 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
+
+// Check for required environment variables
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  console.error('❌ NEXT_PUBLIC_SUPABASE_URL is required');
+}
+
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('❌ SUPABASE_SERVICE_ROLE_KEY is required');
+  console.error('💡 Add SUPABASE_SERVICE_ROLE_KEY to your .env file');
+}
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export async function GET() {
   try {
-    const queueFilePath = path.join(process.cwd(), 'data', 'emailQueue.json');
-    const statsFilePath = path.join(process.cwd(), 'data', 'processingStats.json');
-    
-    // Read the email queue file
-    let queueData = { queue: [] };
-    try {
-      const queueContent = await fs.readFile(queueFilePath, 'utf8');
-      queueData = JSON.parse(queueContent);
-    } catch (error) {
-      // If file doesn't exist or is empty, use default
-      console.log('Queue file not found or empty, using default');
+    // Get email queue from Supabase
+    const { data: queue, error: queueError } = await supabase
+      .from('email_queue')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (queueError) throw queueError;
+
+    // Get processing stats from Supabase
+    const { data: stats, error: statsError } = await supabase
+      .from('email_processing_stats')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (statsError && statsError.code !== 'PGRST116') {
+      throw statsError;
     }
 
-    // Read the processing statistics file
-    let processingStats = {
-      totalProcessed: 0,
-      totalFailed: 0,
-      lastProcessingTime: null,
-      sessionProcessed: 0,
-      sessionFailed: 0
+    // Use default stats if none exist
+    const processingStats = stats || {
+      total_processed: 0,
+      total_failed: 0,
+      session_processed: 0,
+      session_failed: 0,
+      last_processing_time: null
     };
-    try {
-      const statsContent = await fs.readFile(statsFilePath, 'utf8');
-      processingStats = JSON.parse(statsContent);
-    } catch (error) {
-      // If file doesn't exist, use default
-      console.log('Processing stats file not found, using default');
-    }
 
     // Calculate queue statistics
-    const totalInQueue = queueData.queue.length;
-    const currentProcessedCount = queueData.queue.filter(entry => entry.status === 'sent' || entry.status === 'processed' || entry.status === 'scheduled').length;
-    const failedCount = queueData.queue.filter(entry => entry.status === 'failed').length;
-    const pendingCount = queueData.queue.filter(entry => !entry.status || entry.status === 'pending').length;
+    const totalInQueue = queue?.length || 0;
+    const currentProcessedCount = queue?.filter(entry => entry.status === 'sent' || entry.status === 'processed' || entry.status === 'scheduled').length || 0;
+    const failedCount = queue?.filter(entry => entry.status === 'failed').length || 0;
+    const pendingCount = queue?.filter(entry => !entry.status || entry.status === 'pending').length || 0;
 
     // Use the processing stats for processed count since entries are removed after processing
-    const processedCount = processingStats.sessionProcessed + currentProcessedCount;
+    const processedCount = processingStats.session_processed + currentProcessedCount;
 
     // Check if there are any failed entries that need attention
     const hasFailedEntries = failedCount > 0;
@@ -56,6 +70,13 @@ export async function GET() {
         hasFailedEntries,
         hasUnprocessedEntries,
         lastUpdated: new Date().toISOString()
+      },
+      processingStats: {
+        totalProcessed: processingStats.total_processed,
+        totalFailed: processingStats.total_failed,
+        sessionProcessed: processingStats.session_processed,
+        sessionFailed: processingStats.session_failed,
+        lastProcessingTime: processingStats.last_processing_time
       }
     });
 
