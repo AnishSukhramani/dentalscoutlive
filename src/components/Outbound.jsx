@@ -437,7 +437,7 @@ const Outbound = () => {
         recipientName: practice.first_name || 'N/A',
         templateId,
         senderEmail,
-        senderName: selectedUser.name,
+        senderName: selectedUser.displayName || selectedUser.name,
         senderPassword: selectedUser.password,
         sendMode,
         scheduledDate: scheduledDate || null,
@@ -775,7 +775,7 @@ const Outbound = () => {
         recipientName: practice.owner_name || 'N/A',
         templateId: bulkTemplate,
         senderEmail: bulkSender,
-        senderName: user.name,
+        senderName: user.displayName || user.name,
         sendMode: bulkSendMode,
         scheduledDate: bulkSendMode === 'send' && bulkScheduleType === 'schedule' ? bulkScheduleDate : null,
         // Include the full practice data for placeholder replacement
