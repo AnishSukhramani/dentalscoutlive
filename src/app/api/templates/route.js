@@ -1,39 +1,21 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-const TEMPLATES_FILE_PATH = path.join(process.cwd(), 'data', 'templates.json');
-
-const readTemplates = () => {
-  try {
-    const data = fs.readFileSync(TEMPLATES_FILE_PATH, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    return { templates: [] };
-  }
-};
-
-const writeTemplates = (templates) => {
-  try {
-    // Ensure the data directory exists
-    const dataDir = path.dirname(TEMPLATES_FILE_PATH);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    
-    fs.writeFileSync(TEMPLATES_FILE_PATH, JSON.stringify(templates, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Error writing templates:', error);
-    return false;
-  }
-};
+import { supabase } from '@/lib/supabaseClient';
 
 export async function GET() {
   try {
-    const templatesData = readTemplates();
-    return NextResponse.json(templatesData);
+    const { data: templates, error } = await supabase
+      .from('email_templates')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching templates:', error);
+      return NextResponse.json({ error: 'Failed to fetch templates' }, { status: 500 });
+    }
+
+    return NextResponse.json({ templates: templates || [] });
   } catch (error) {
+    console.error('Error in GET /api/templates:', error);
     return NextResponse.json({ error: 'Failed to read templates' }, { status: 500 });
   }
 }
@@ -47,23 +29,29 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
     
-    const templatesData = readTemplates();
     const newTemplate = {
       id: Date.now().toString(),
       name,
       subject,
       body: templateBody,
-      createdAt: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
     
-    templatesData.templates.push(newTemplate);
+    const { data, error } = await supabase
+      .from('email_templates')
+      .insert([newTemplate])
+      .select()
+      .single();
     
-    if (writeTemplates(templatesData)) {
-      return NextResponse.json(newTemplate);
-    } else {
+    if (error) {
+      console.error('Error creating template:', error);
       return NextResponse.json({ error: 'Failed to save template' }, { status: 500 });
     }
+    
+    return NextResponse.json(data);
   } catch (error) {
+    console.error('Error in POST /api/templates:', error);
     return NextResponse.json({ error: 'Failed to create template' }, { status: 500 });
   }
 }
@@ -77,17 +65,19 @@ export async function DELETE(request) {
       return NextResponse.json({ error: 'Template ID is required' }, { status: 400 });
     }
     
-    const templatesData = readTemplates();
-    templatesData.templates = templatesData.templates.filter(
-      template => template.id !== id
-    );
+    const { error } = await supabase
+      .from('email_templates')
+      .delete()
+      .eq('id', id);
     
-    if (writeTemplates(templatesData)) {
-      return NextResponse.json({ success: true });
-    } else {
+    if (error) {
+      console.error('Error deleting template:', error);
       return NextResponse.json({ error: 'Failed to delete template' }, { status: 500 });
     }
+    
+    return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('Error in DELETE /api/templates:', error);
     return NextResponse.json({ error: 'Failed to delete template' }, { status: 500 });
   }
 } 

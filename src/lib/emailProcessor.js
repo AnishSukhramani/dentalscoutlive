@@ -1,8 +1,14 @@
 require('dotenv').config();
+const { createClient } = require('@supabase/supabase-js');
 
 // ============================================================================
 // EMAIL PROCESSOR CONFIGURATION
 // ============================================================================
+
+// Initialize Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Supabase table columns reference for placeholder replacement
 const TABLE_COLUMNS = [
@@ -737,15 +743,21 @@ async function readEmailQueue() {
 }
 
 /**
- * Read templates from JSON file
+ * Read templates from Supabase
  */
 async function readTemplates() {
   try {
-    const fs = require('fs').promises;
-    const path = require('path');
-    const filePath = path.join(process.cwd(), 'data', 'templates.json');
-    const data = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(data);
+    const { data: templates, error } = await supabase
+      .from('email_templates')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error reading templates from Supabase:', error);
+      throw error;
+    }
+
+    return { templates: templates || [] };
   } catch (error) {
     console.error('Error reading templates:', error);
     throw error;

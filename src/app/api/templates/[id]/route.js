@@ -1,33 +1,5 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-const TEMPLATES_FILE_PATH = path.join(process.cwd(), 'data', 'templates.json');
-
-const readTemplates = () => {
-  try {
-    const data = fs.readFileSync(TEMPLATES_FILE_PATH, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    return { templates: [] };
-  }
-};
-
-const writeTemplates = (templates) => {
-  try {
-    // Ensure the data directory exists
-    const dataDir = path.dirname(TEMPLATES_FILE_PATH);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    
-    fs.writeFileSync(TEMPLATES_FILE_PATH, JSON.stringify(templates, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Error writing templates:', error);
-    return false;
-  }
-};
+import { supabase } from '@/lib/supabaseClient';
 
 export async function PUT(request, { params }) {
   try {
@@ -39,28 +11,29 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
     
-    const templatesData = readTemplates();
-    const templateIndex = templatesData.templates.findIndex(template => template.id === id);
+    const { data, error } = await supabase
+      .from('email_templates')
+      .update({
+        name,
+        subject,
+        body: templateBody,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
     
-    if (templateIndex === -1) {
-      return NextResponse.json({ error: 'Template not found' }, { status: 404 });
-    }
-    
-    // Update the template
-    templatesData.templates[templateIndex] = {
-      ...templatesData.templates[templateIndex],
-      name,
-      subject,
-      body: templateBody,
-      updatedAt: new Date().toISOString()
-    };
-    
-    if (writeTemplates(templatesData)) {
-      return NextResponse.json(templatesData.templates[templateIndex]);
-    } else {
+    if (error) {
+      console.error('Error updating template:', error);
+      if (error.code === 'PGRST116') {
+        return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+      }
       return NextResponse.json({ error: 'Failed to update template' }, { status: 500 });
     }
+    
+    return NextResponse.json(data);
   } catch (error) {
+    console.error('Error in PUT /api/templates/[id]:', error);
     return NextResponse.json({ error: 'Failed to update template' }, { status: 500 });
   }
 } 

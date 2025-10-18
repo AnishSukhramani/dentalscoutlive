@@ -14,6 +14,7 @@ export default function Audience() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [tags, setTags] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
+  const [tagsLoading, setTagsLoading] = useState(true);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [newTagName, setNewTagName] = useState("");
   const [showCreateTag, setShowCreateTag] = useState(false);
@@ -41,18 +42,32 @@ export default function Audience() {
     }
   };
 
-  // Fetch tags from the tags.json file via API
+  // Fetch tags from the tags API
   const fetchTags = async () => {
     try {
+      setTagsLoading(true);
       const response = await fetch('/api/tags');
       if (response.ok) {
         const data = await response.json();
+        console.log('Tags API response:', data); // Debug log
         setTags(data.tags || []);
+        
+        // Preserve selectedTags by filtering out any that no longer exist
+        setSelectedTags(prev => {
+          const availableTags = data.tags || [];
+          const filtered = prev.filter(tag => availableTags.includes(tag));
+          console.log('Preserving selectedTags:', { prev, filtered, availableTags });
+          return filtered;
+        });
       } else {
         console.error('Error fetching tags:', response.statusText);
+        setTags([]); // Ensure tags is always an array
       }
     } catch (error) {
       console.error('Error fetching tags:', error);
+      setTags([]); // Ensure tags is always an array
+    } finally {
+      setTagsLoading(false);
     }
   };
 
@@ -181,6 +196,9 @@ export default function Audience() {
       // Update local tags state with the new tag
       setTags(result.tags);
 
+      // Preserve existing selectedTags when new tags are added
+      // The selectedTags state will be maintained automatically
+
       // Add tag to selected contacts
       if (selectedRows.length > 0) {
         const selectedContacts = contacts.filter(contact => selectedRows.includes(contact.id));
@@ -269,8 +287,8 @@ export default function Audience() {
   };
 
   // Filter contacts based on selected tags
-  const filteredContacts = contacts.filter(contact => {
-    if (selectedTags.length === 0) return true;
+  const filteredContacts = (contacts || []).filter(contact => {
+    if (!selectedTags || selectedTags.length === 0) return true;
     
     const contactTags = contact.tags || [];
     return selectedTags.some(tag => contactTags.includes(tag));
@@ -313,28 +331,47 @@ export default function Audience() {
       </div>
 
       {/* Tags Gallery */}
-      {tags.length > 0 && (
+      {tagsLoading ? (
+        <div className="glass p-4 rounded-lg shadow-sm border">
+          <div className="text-center py-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-2 text-sm text-gray-600">Loading tags...</p>
+          </div>
+        </div>
+      ) : tags && tags.length > 0 ? (
         <div className="glass p-4 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold">Tags</h3>
-            {selectedTags.length > 0 && (
+            <div className="flex items-center gap-3">
+              <h3 className="text-lg font-semibold">Tags</h3>
+              {selectedTags && selectedTags.length > 0 && (
+                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                  {selectedTags.length} filter{selectedTags.length > 1 ? 's' : ''} active
+                </span>
+              )}
+            </div>
+            {selectedTags && selectedTags.length > 0 && (
               <button
                 onClick={clearTagFilters}
-                className="text-sm hover:opacity-80"
+                className="text-sm hover:opacity-80 text-red-600 hover:text-red-800"
               >
                 Clear filters
               </button>
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            {tags.map(tag => (
+            <div className="w-full mb-2">
+              <p className="text-xs text-gray-600">
+                💡 Click on tags to filter contacts
+              </p>
+            </div>
+            {tags && tags.map(tag => (
               <button
                 key={tag}
                 onClick={() => handleTagSelect(tag)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
                   selectedTags.includes(tag)
-                    ? 'bg-green-500 text-white hover:bg-green-600'
-                    : 'bg-foreground/5 hover:bg-foreground/8'
+                    ? 'bg-green-500 text-white hover:bg-green-600 shadow-md'
+                    : 'bg-foreground/5 hover:bg-foreground/8 hover:shadow-sm'
                 }`}
               >
                 {tag}
@@ -342,7 +379,7 @@ export default function Audience() {
             ))}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Bulk Actions Menu */}
       {showBulkActions && (
@@ -370,7 +407,7 @@ export default function Audience() {
                 className="px-3 py-2 border rounded-md focus:outline-none focus-visible:outline-2"
               >
                 <option value="">Add existing tag...</option>
-                {tags.map(tag => (
+                {tags && tags.map(tag => (
                   <option key={tag} value={tag}>
                     {tag}
                   </option>
@@ -388,7 +425,7 @@ export default function Audience() {
                 className="px-3 py-2 border rounded-md focus:outline-none focus-visible:outline-2"
               >
                 <option value="">Remove tag...</option>
-                {tags.map(tag => (
+                {tags && tags.map(tag => (
                   <option key={tag} value={tag}>
                     {tag}
                   </option>
@@ -438,6 +475,25 @@ export default function Audience() {
 
       {/* Contacts Table */}
       <div className="glass rounded-lg shadow-sm border overflow-hidden">
+        {/* Filter Status */}
+        {selectedTags && selectedTags.length > 0 && (
+          <div className="px-6 py-3 bg-blue-50 border-b border-blue-200">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-blue-800">
+                🔍 Filtering by: {selectedTags.join(', ')} 
+                <span className="ml-2 font-medium">
+                  ({filteredContacts ? filteredContacts.length : 0} of {contacts ? contacts.length : 0} contacts)
+                </span>
+              </span>
+              <button
+                onClick={clearTagFilters}
+                className="text-xs text-blue-600 hover:text-blue-800 underline"
+              >
+                Clear all filters
+              </button>
+            </div>
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -445,7 +501,7 @@ export default function Audience() {
                 <th className="px-6 py-3 text-left">
                   <input
                     type="checkbox"
-                    checked={selectedRows.length === filteredContacts.length && filteredContacts.length > 0}
+                    checked={filteredContacts && selectedRows.length === filteredContacts.length && filteredContacts.length > 0}
                     onChange={handleSelectAll}
                     className="rounded border"
                   />
@@ -468,7 +524,7 @@ export default function Audience() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredContacts.map((contact) => (
+              {filteredContacts && filteredContacts.map((contact) => (
                 <tr key={contact.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
@@ -508,9 +564,9 @@ export default function Audience() {
           </table>
         </div>
         
-        {filteredContacts.length === 0 && (
+        {filteredContacts && filteredContacts.length === 0 && (
           <div className="text-center py-8 text-black">
-            {selectedTags.length > 0 
+            {selectedTags && selectedTags.length > 0 
               ? "No contacts found with the selected tags."
               : "No contacts found."
             }
