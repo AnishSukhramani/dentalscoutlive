@@ -491,7 +491,7 @@ async function incrementEmailCounter(senderEmail, isDirectSend = true) {
       return;
     }
     
-    // Update the email counter
+    // Update the email counter via API (now uses Supabase)
     const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/emailCounters`, {
       method: 'POST',
       headers: {
