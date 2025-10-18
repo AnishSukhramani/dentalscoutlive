@@ -306,18 +306,18 @@ async function processEmailQueue() {
  */
 async function processQueueEntry(entry, templates) {
   try {
-    console.log(`\n🔍 Processing entry ${entry.id} for ${entry.recipientEmail}`);
+    console.log(`\n🔍 Processing entry ${entry.id} for ${entry.recipient_email}`);
     console.log('Entry details:');
     console.log('  - ID:', entry.id);
-    console.log('  - Recipient:', entry.recipientEmail);
-    console.log('  - Template ID:', entry.templateId);
-    console.log('  - Send Mode:', entry.sendMode);
-    console.log('  - Sender Email:', entry.senderEmail);
-    console.log('  - Entry Data:', JSON.stringify(entry.entryData || {}, null, 2));
+    console.log('  - Recipient:', entry.recipient_email);
+    console.log('  - Template ID:', entry.template_id);
+    console.log('  - Send Mode:', entry.send_mode);
+    console.log('  - Sender Email:', entry.sender_email);
+    console.log('  - Entry Data:', JSON.stringify(entry.entry_data || {}, null, 2));
     
     // Find the template
     console.log('\n📋 Looking for template...');
-    const template = templates.templates.find(t => t.id === entry.templateId);
+    const template = templates.templates.find(t => t.id === entry.template_id);
     if (!template) {
       console.error(`❌ Template not found for entry ${entry.id}`);
       console.error('Available template IDs:', templates.templates.map(t => t.id));
@@ -331,8 +331,8 @@ async function processQueueEntry(entry, templates) {
     
     // Check if sender email is configured
     console.log('\n📧 Checking sender email configuration...');
-    if (!EMAIL_CONFIGS[entry.senderEmail]) {
-      console.error(`❌ Sender email ${entry.senderEmail} not configured`);
+    if (!EMAIL_CONFIGS[entry.sender_email]) {
+      console.error(`❌ Sender email ${entry.sender_email} not configured`);
       console.error('Available sender emails:', Object.keys(EMAIL_CONFIGS));
       await updateQueueEntryStatus(entry.id, 'failed', 'Sender email not configured');
       return false;
@@ -340,8 +340,8 @@ async function processQueueEntry(entry, templates) {
     console.log('✓ Sender email configured');
     
     // Process based on send mode
-    console.log(`\n🚀 Processing based on send mode: ${entry.sendMode}`);
-    switch (entry.sendMode) {
+    console.log(`\n🚀 Processing based on send mode: ${entry.send_mode}`);
+    switch (entry.send_mode) {
       case 'send':
         console.log('📤 Sending email immediately...');
         await processSendEmail(entry, template);
@@ -373,8 +373,8 @@ async function processSendEmail(entry, template) {
     
     // Get the entry data from Supabase for placeholder replacement
     console.log('\n📊 Getting entry data for placeholder replacement...');
-    const entryData = entry.entryData || entry || {};
-    console.log('Entry data source:', entry.entryData ? 'entryData field' : 'entry itself');
+    const entryData = entry.entry_data || entry || {};
+    console.log('Entry data source:', entry.entry_data ? 'entry_data field' : 'entry itself');
     console.log('Entry data keys:', Object.keys(entryData));
     console.log('Full entry data:', JSON.stringify(entryData, null, 2));
     
@@ -390,12 +390,12 @@ async function processSendEmail(entry, template) {
     console.log('Processed body preview:', processedBody.substring(0, 100) + '...');
     
     const emailData = {
-      to: entry.recipientEmail,
+      to: entry.recipient_email,
       subject: processedSubject,
       body: processedBody,
-      senderEmail: entry.senderEmail,
-      senderName: entry.senderName,
-      recipientName: entry.recipientName
+      senderEmail: entry.sender_email,
+      senderName: entry.sender_name,
+      recipientName: entry.recipient_name
     };
     
     console.log('\n📧 Email data prepared:');
@@ -404,18 +404,18 @@ async function processSendEmail(entry, template) {
     console.log('  - From:', emailData.senderEmail);
     console.log('  - Sender Name:', emailData.senderName);
     
-    if (entry.scheduledDate) {
+    if (entry.scheduled_date) {
       // Schedule the email
       console.log('\n⏰ Scheduling email...');
-      await scheduleEmail(entry.id, emailData, entry.scheduledDate);
+      await scheduleEmail(entry.id, emailData, entry.scheduled_date);
       await updateQueueEntryStatus(entry.id, 'scheduled', 'Email scheduled for sending');
-      console.log(`✓ Email scheduled for ${entry.scheduledDate}`);
+      console.log(`✓ Email scheduled for ${entry.scheduled_date}`);
     } else {
       // Send immediately
       console.log('\n📤 Sending email immediately...');
       await sendEmail(emailData, true); // Direct send
       await updateQueueEntryStatus(entry.id, 'sent', 'Email sent successfully');
-      console.log(`✓ Email sent to ${entry.recipientEmail}`);
+      console.log(`✓ Email sent to ${entry.recipient_email}`);
     }
     
   } catch (error) {
@@ -434,8 +434,8 @@ async function processCreateDraft(entry, template) {
     console.log(`Creating draft for entry ${entry.id}`);
     
     // Get the entry data from Supabase for placeholder replacement
-    // Try to get entryData first, fallback to the entry itself
-    const entryData = entry.entryData || entry || {};
+    // Try to get entry_data first, fallback to the entry itself
+    const entryData = entry.entry_data || entry || {};
     
     console.log('Processing entry with data keys:', Object.keys(entryData));
     
@@ -444,17 +444,17 @@ async function processCreateDraft(entry, template) {
     const processedBody = replacePlaceholders(template.body, entryData, true); // Convert to HTML for body
     
     const emailData = {
-      to: entry.recipientEmail,
+      to: entry.recipient_email,
       subject: processedSubject,
       body: processedBody,
-      senderEmail: entry.senderEmail,
-      senderName: entry.senderName,
-      recipientName: entry.recipientName
+      senderEmail: entry.sender_email,
+      senderName: entry.sender_name,
+      recipientName: entry.recipient_name
     };
     
     await createDraft(emailData);
     await updateQueueEntryStatus(entry.id, 'draft_created', 'Draft created successfully');
-    console.log(`Draft created for ${entry.recipientEmail}`);
+    console.log(`Draft created for ${entry.recipient_email}`);
     
   } catch (error) {
     console.error(`Error creating draft for entry ${entry.id}:`, error);
@@ -571,33 +571,16 @@ async function scheduleEmail(entryId, emailData, scheduledDate) {
   console.log(`Scheduling email for entry ${entryId} at ${scheduledDate}`);
   
   try {
-    // Read current scheduled emails
-    const fs = require('fs').promises;
-    const path = require('path');
-    const scheduledEmailsPath = path.join(process.cwd(), 'data', 'scheduledEmails.json');
-    
-    let scheduledEmails = [];
-    try {
-      const data = await fs.readFile(scheduledEmailsPath, 'utf8');
-      scheduledEmails = JSON.parse(data);
-    } catch (error) {
-      // File doesn't exist, start with empty array
-      scheduledEmails = [];
-    }
-    
-    // Add the new scheduled email
-    const scheduledEmail = {
-      id: entryId,
-      emailData,
-      scheduledDate,
-      createdAt: new Date().toISOString(),
-      status: 'scheduled'
-    };
-    
-    scheduledEmails.push(scheduledEmail);
-    
-    // Write back to file
-    await fs.writeFile(scheduledEmailsPath, JSON.stringify(scheduledEmails, null, 2));
+    const { error } = await supabase
+      .from('scheduled_emails')
+      .insert([{
+        id: entryId,
+        email_data: emailData,
+        scheduled_date: scheduledDate,
+        status: 'scheduled'
+      }]);
+
+    if (error) throw error;
     
     console.log('Email scheduling details:', {
       entryId,
@@ -622,44 +605,35 @@ async function processScheduledEmails() {
     // Initialize email configurations first
     await initializeEmailConfigs();
     
-    const fs = require('fs').promises;
-    const path = require('path');
-    const scheduledEmailsPath = path.join(process.cwd(), 'data', 'scheduledEmails.json');
+    const now = new Date();
     
-    // Read scheduled emails
-    let scheduledEmails = [];
-    try {
-      const data = await fs.readFile(scheduledEmailsPath, 'utf8');
-      scheduledEmails = JSON.parse(data);
-    } catch (error) {
-      // File doesn't exist, nothing to process
+    // Get emails that are due to be sent
+    const { data: scheduledEmails, error } = await supabase
+      .from('scheduled_emails')
+      .select('*')
+      .lte('scheduled_date', now.toISOString())
+      .eq('status', 'scheduled');
+
+    if (error) throw error;
+    
+    if (!scheduledEmails || scheduledEmails.length === 0) {
+      console.log('No scheduled emails to process');
       return;
     }
     
-    const now = new Date();
-    const emailsToSend = [];
-    const remainingEmails = [];
-    
-    // Check which emails are due to be sent
+    // Process each scheduled email
     for (const scheduledEmail of scheduledEmails) {
-      const scheduledTime = new Date(scheduledEmail.scheduledDate);
-      
-      if (scheduledTime <= now) {
-        // Email is due to be sent
-        emailsToSend.push(scheduledEmail);
-      } else {
-        // Email is not due yet, keep it in the list
-        remainingEmails.push(scheduledEmail);
-      }
-    }
-    
-    // Send emails that are due
-    for (const scheduledEmail of emailsToSend) {
       try {
         console.log(`Processing scheduled email ${scheduledEmail.id}`);
         
         // Send the email (scheduled emails don't count as direct sends)
-        await sendEmail(scheduledEmail.emailData, false);
+        await sendEmail(scheduledEmail.email_data, false);
+        
+        // Update status to sent
+        await supabase
+          .from('scheduled_emails')
+          .update({ status: 'sent' })
+          .eq('id', scheduledEmail.id);
         
         // Update the queue entry status if it exists
         try {
@@ -679,13 +653,7 @@ async function processScheduledEmails() {
       }
     }
     
-    // Update the scheduled emails file with remaining emails
-    await fs.writeFile(scheduledEmailsPath, JSON.stringify(remainingEmails, null, 2));
-    
-    if (emailsToSend.length > 0) {
-      console.log(`Processed ${emailsToSend.length} scheduled emails`);
-    }
-    
+    console.log(`Processed ${scheduledEmails.length} scheduled emails`);
   } catch (error) {
     console.error('Error processing scheduled emails:', error);
   }
@@ -727,15 +695,18 @@ async function createDraft(emailData) {
 }
 
 /**
- * Read email queue from JSON file
+ * Read email queue from Supabase
  */
 async function readEmailQueue() {
   try {
-    const fs = require('fs').promises;
-    const path = require('path');
-    const filePath = path.join(process.cwd(), 'data', 'emailQueue.json');
-    const data = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(data);
+    const { data: queue, error } = await supabase
+      .from('email_queue')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+    
+    return { queue: queue || [] };
   } catch (error) {
     console.error('Error reading email queue:', error);
     throw error;
@@ -771,26 +742,18 @@ async function updateQueueEntryStatus(entryId, status, message) {
   try {
     console.log(`Updating entry ${entryId} status to: ${status}`);
     
-    const fs = require('fs').promises;
-    const path = require('path');
-    const filePath = path.join(process.cwd(), 'data', 'emailQueue.json');
+    const { error } = await supabase
+      .from('email_queue')
+      .update({
+        status,
+        processed_at: new Date().toISOString(),
+        message
+      })
+      .eq('id', entryId);
+
+    if (error) throw error;
     
-    // Read current queue
-    const data = await fs.readFile(filePath, 'utf8');
-    const emailQueue = JSON.parse(data);
-    
-    // Find and update the entry
-    const entry = emailQueue.queue.find(e => e.id === entryId);
-    if (entry) {
-      entry.status = status;
-      entry.processedAt = new Date().toISOString();
-      entry.message = message;
-    }
-    
-    // Write back to file
-    await fs.writeFile(filePath, JSON.stringify(emailQueue, null, 2));
     console.log(`Entry ${entryId} status updated successfully`);
-    
   } catch (error) {
     console.error('Error updating queue entry status:', error);
     throw error;
@@ -798,31 +761,20 @@ async function updateQueueEntryStatus(entryId, status, message) {
 }
 
 /**
- * Remove processed entries from the queue file
+ * Remove processed entries from the queue
  */
 async function removeProcessedEntries(processedEntryIds) {
   try {
-    console.log(`Removing ${processedEntryIds.length} processed entries from queue file`);
+    console.log(`Removing ${processedEntryIds.length} processed entries from queue`);
     
-    const fs = require('fs').promises;
-    const path = require('path');
-    const filePath = path.join(process.cwd(), 'data', 'emailQueue.json');
+    const { error } = await supabase
+      .from('email_queue')
+      .delete()
+      .in('id', processedEntryIds);
+
+    if (error) throw error;
     
-    // Read current queue
-    const data = await fs.readFile(filePath, 'utf8');
-    const emailQueue = JSON.parse(data);
-    
-    // Filter out processed entries
-    const originalCount = emailQueue.queue.length;
-    emailQueue.queue = emailQueue.queue.filter(entry => 
-      !processedEntryIds.includes(entry.id)
-    );
-    
-    // Write back to file
-    await fs.writeFile(filePath, JSON.stringify(emailQueue, null, 2));
-    
-    console.log(`Removed ${originalCount - emailQueue.queue.length} entries from queue file`);
-    
+    console.log(`Removed ${processedEntryIds.length} entries from queue`);
   } catch (error) {
     console.error('Error removing processed entries:', error);
     throw error;
@@ -834,42 +786,58 @@ async function removeProcessedEntries(processedEntryIds) {
  */
 async function updateProcessingStats(processed, failed) {
   try {
-    const fs = require('fs').promises;
-    const path = require('path');
-    const statsFilePath = path.join(process.cwd(), 'data', 'processingStats.json');
-    
-    // Read current stats
-    let stats = {
-      totalProcessed: 0,
-      totalFailed: 0,
-      lastProcessingTime: null,
-      sessionProcessed: 0,
-      sessionFailed: 0
-    };
-    
-    try {
-      const statsContent = await fs.readFile(statsFilePath, 'utf8');
-      stats = JSON.parse(statsContent);
-    } catch (error) {
-      // If file doesn't exist, use default
-      console.log('Processing stats file not found, creating new one');
+    // Get current stats
+    const { data: currentStats, error: fetchError } = await supabase
+      .from('email_processing_stats')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    let stats;
+    if (fetchError && fetchError.code === 'PGRST116') {
+      // No stats exist, create new record
+      stats = {
+        total_processed: 0,
+        total_failed: 0,
+        session_processed: 0,
+        session_failed: 0
+      };
+    } else if (fetchError) {
+      throw fetchError;
+    } else {
+      stats = currentStats;
     }
     
     // Update stats
-    stats.totalProcessed += processed;
-    stats.totalFailed += failed;
-    stats.sessionProcessed += processed;
-    stats.sessionFailed += failed;
-    stats.lastProcessingTime = new Date().toISOString();
+    const updatedStats = {
+      total_processed: (stats.total_processed || 0) + processed,
+      total_failed: (stats.total_failed || 0) + failed,
+      session_processed: (stats.session_processed || 0) + processed,
+      session_failed: (stats.session_failed || 0) + failed,
+      last_processing_time: new Date().toISOString()
+    };
     
-    // Write back to file
-    await fs.writeFile(statsFilePath, JSON.stringify(stats, null, 2));
+    if (stats.id) {
+      // Update existing record
+      const { error } = await supabase
+        .from('email_processing_stats')
+        .update(updatedStats)
+        .eq('id', stats.id);
+      
+      if (error) throw error;
+    } else {
+      // Create new record
+      const { error } = await supabase
+        .from('email_processing_stats')
+        .insert([updatedStats]);
+      
+      if (error) throw error;
+    }
     
     console.log(`Updated processing stats: +${processed} processed, +${failed} failed`);
-    
   } catch (error) {
     console.error('Error updating processing stats:', error);
-    throw error;
   }
 }
 

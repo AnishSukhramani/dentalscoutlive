@@ -1,39 +1,33 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
 
-const EMAIL_QUEUE_FILE_PATH = path.join(process.cwd(), 'data', 'emailQueue.json');
+// Check for required environment variables
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  console.error('❌ NEXT_PUBLIC_SUPABASE_URL is required');
+}
 
-const readEmailQueue = () => {
-  try {
-    const data = fs.readFileSync(EMAIL_QUEUE_FILE_PATH, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    return { queue: [] };
-  }
-};
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('❌ SUPABASE_SERVICE_ROLE_KEY is required');
+  console.error('💡 Add SUPABASE_SERVICE_ROLE_KEY to your .env file');
+}
 
-const writeEmailQueue = (emailQueue) => {
-  try {
-    // Ensure the data directory exists
-    const dataDir = path.dirname(EMAIL_QUEUE_FILE_PATH);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    
-    fs.writeFileSync(EMAIL_QUEUE_FILE_PATH, JSON.stringify(emailQueue, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Error writing email queue:', error);
-    return false;
-  }
-};
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export async function GET() {
   try {
-    const emailQueueData = readEmailQueue();
-    return NextResponse.json(emailQueueData);
+    const { data: queue, error } = await supabase
+      .from('email_queue')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    return NextResponse.json({ queue: queue || [] });
   } catch (error) {
+    console.error('Error reading email queue:', error);
     return NextResponse.json({ error: 'Failed to read email queue' }, { status: 500 });
   }
 }
@@ -46,108 +40,72 @@ export async function POST(request) {
     // Check if this is a bulk operation
     if (body.entries && Array.isArray(body.entries)) {
       console.log('Processing bulk entries:', body.entries.length);
-      // Handle bulk entries
-      const emailQueueData = readEmailQueue();
-      const newEntries = [];
       
+      // Validate all entries first
       for (const entry of body.entries) {
-        const { 
-          recipientEmail, 
-          recipientName, 
-          templateId, 
-          senderEmail, 
-          senderName,
-          senderPassword,
-          sendMode, 
-          scheduledDate,
-          emailCount,
-          entryData
-        } = entry;
-        
-        if (!recipientEmail || !templateId || !senderEmail || !sendMode) {
+        if (!entry.recipientEmail || !entry.templateId || !entry.senderEmail || !entry.sendMode) {
           console.error('Missing required fields in bulk entry:', entry);
           return NextResponse.json({ error: 'Missing required fields in bulk entry' }, { status: 400 });
         }
-        
-        const newQueueEntry = {
-          id: entry.id || Date.now().toString(),
-          recipientEmail,
-          recipientName: recipientName || 'N/A',
-          templateId,
-          senderEmail,
-          senderName: senderName || 'N/A',
-          senderPassword: senderPassword || 'N/A',
-          sendMode,
-          scheduledDate: scheduledDate || null,
-          emailCount: emailCount || 0,
-          entryData: entryData || {},
-          status: 'pending',
-          createdAt: new Date().toISOString()
-        };
-        
-        emailQueueData.queue.push(newQueueEntry);
-        newEntries.push(newQueueEntry);
       }
       
-      console.log('Writing bulk entries to queue:', newEntries.length);
-      if (writeEmailQueue(emailQueueData)) {
-        console.log('Successfully wrote bulk entries to queue');
-        return NextResponse.json({ 
-          success: true, 
-          message: `Added ${newEntries.length} entries to email queue`,
-          entries: newEntries 
-        });
-      } else {
-        console.error('Failed to write bulk entries to queue');
-        return NextResponse.json({ error: 'Failed to save bulk email queue entries' }, { status: 500 });
-      }
+      // Insert bulk entries into Supabase
+      const { data, error } = await supabase
+        .from('email_queue')
+        .insert(body.entries.map(entry => ({
+          id: entry.id || Date.now().toString(),
+          recipient_email: entry.recipientEmail,
+          recipient_name: entry.recipientName || 'N/A',
+          template_id: entry.templateId,
+          sender_email: entry.senderEmail,
+          sender_name: entry.senderName || 'N/A',
+          sender_password: entry.senderPassword || 'N/A',
+          send_mode: entry.sendMode,
+          scheduled_date: entry.scheduledDate || null,
+          email_count: entry.emailCount || 0,
+          entry_data: entry.entryData || {},
+          status: 'pending'
+        })));
+
+      if (error) throw error;
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: `Added ${body.entries.length} entries to email queue`,
+        entries: data 
+      });
     } else {
       console.log('Processing single entry');
-      // Handle single entry (existing logic)
-      const { 
-        recipientEmail, 
-        recipientName, 
-        templateId, 
-        senderEmail, 
-        senderName,
-        senderPassword,
-        sendMode, 
-        scheduledDate,
-        emailCount,
-        entryData
-      } = body;
       
-      if (!recipientEmail || !templateId || !senderEmail || !sendMode) {
+      // Validate single entry
+      if (!body.recipientEmail || !body.templateId || !body.senderEmail || !body.sendMode) {
         console.error('Missing required fields in single entry:', body);
         return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
       }
       
-      const emailQueueData = readEmailQueue();
-      const newQueueEntry = {
-        id: Date.now().toString(),
-        recipientEmail,
-        recipientName: recipientName || 'N/A',
-        templateId,
-        senderEmail,
-        senderName: senderName || 'N/A',
-        senderPassword: senderPassword || 'N/A',
-        sendMode,
-        scheduledDate: scheduledDate || null,
-        emailCount: emailCount || 0,
-        entryData: entryData || {},
-        status: 'pending',
-        createdAt: new Date().toISOString()
-      };
+      // Insert single entry into Supabase
+      const { data, error } = await supabase
+        .from('email_queue')
+        .insert([{
+          id: Date.now().toString(),
+          recipient_email: body.recipientEmail,
+          recipient_name: body.recipientName || 'N/A',
+          template_id: body.templateId,
+          sender_email: body.senderEmail,
+          sender_name: body.senderName || 'N/A',
+          sender_password: body.senderPassword || 'N/A',
+          send_mode: body.sendMode,
+          scheduled_date: body.scheduledDate || null,
+          email_count: body.emailCount || 0,
+          entry_data: body.entryData || {},
+          status: 'pending'
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
       
-      emailQueueData.queue.push(newQueueEntry);
-      
-      if (writeEmailQueue(emailQueueData)) {
-        console.log('Successfully wrote single entry to queue');
-        return NextResponse.json(newQueueEntry);
-      } else {
-        console.error('Failed to write single entry to queue');
-        return NextResponse.json({ error: 'Failed to save email queue entry' }, { status: 500 });
-      }
+      return NextResponse.json(data);
     }
   } catch (error) {
     console.error('Error in emailQueue API:', error);
