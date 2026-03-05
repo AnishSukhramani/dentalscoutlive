@@ -174,7 +174,7 @@
   position: fixed !important;
 }
 
-:root .glass:hover:not([data-slot="dialog-content"]) { backdrop-filter: blur(4px) !important; transform: translateY(0px); }
+.glass:hover:not([data-slot="dialog-content"]) { transform: translateY(0px); }
 .glass:active:not([data-slot="dialog-content"]) { backdrop-filter: blur(17px) !important; box-shadow: 0 4px 16px rgba(0,0,0,.18); transform: translateY(0); }
 
 @media (prefers-reduced-motion: reduce) {

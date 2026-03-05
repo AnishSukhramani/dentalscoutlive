@@ -7,7 +7,7 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 /**
  * Floating Dock (Aceternity-style) with Liquid Glass skin
  * Props:
- * - items: { title: string; icon: React.ReactNode; href: string }[]
+ * - items: { title: string; icon: React.ReactNode; href?: string; onClick?: () => void }[]
  * - desktopClassName?: string
  * - mobileClassName?: string
  */
@@ -36,22 +36,31 @@ export function FloatingDockDesktop({ items = [], className }) {
         }}
         onMouseLeave={() => mouseX.set(Infinity)}
       >
-        {items.map((item) => (
-          <a
-            key={item.title}
-            href={item.href ?? "#"}
-            className={cn(
-              "relative flex flex-col items-center justify-end",
-              "px-2 py-1"
-            )}
-            aria-label={item.title}
-            title={item.title}
-          >
-            <IconContainer title={item.title} mouseX={mouseX}>
-              {item.icon}
-            </IconContainer>
-          </a>
-        ))}
+        {items.map((item) => {
+          const handleClick = (e) => {
+            if (item.onClick) {
+              e.preventDefault();
+              item.onClick();
+            }
+          };
+          return (
+            <a
+              key={item.title}
+              href={item.href ?? "#"}
+              onClick={handleClick}
+              className={cn(
+                "relative flex flex-col items-center justify-end",
+                "px-2 py-1"
+              )}
+              aria-label={item.title}
+              title={item.title}
+            >
+              <IconContainer title={item.title} mouseX={mouseX}>
+                {item.icon}
+              </IconContainer>
+            </a>
+          );
+        })}
       </div>
     </div>
   );
@@ -67,17 +76,26 @@ export function FloatingDockMobile({ items = [], className }) {
         "px-2 py-2"
       )}>
         <nav className="flex items-center justify-between">
-          {items.map((item) => (
-            <a
-              key={item.title}
-              href={item.href ?? "#"}
-              className="flex items-center justify-center"
-              aria-label={item.title}
-              title={item.title}
-            >
-              <IconStatic size="sm">{item.icon}</IconStatic>
-            </a>
-          ))}
+          {items.map((item) => {
+            const handleClick = (e) => {
+              if (item.onClick) {
+                e.preventDefault();
+                item.onClick();
+              }
+            };
+            return (
+              <a
+                key={item.title}
+                href={item.href ?? "#"}
+                onClick={handleClick}
+                className="flex items-center justify-center"
+                aria-label={item.title}
+                title={item.title}
+              >
+                <IconStatic size="sm">{item.icon}</IconStatic>
+              </a>
+            );
+          })}
         </nav>
       </div>
     </div>

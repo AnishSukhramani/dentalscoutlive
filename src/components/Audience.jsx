@@ -88,6 +88,31 @@ export default function Audience() {
     }
   };
 
+  // Manually sync email replies and then refresh contacts/tags
+  const syncReplies = async () => {
+    try {
+      const response = await fetch('/api/syncReplies', {
+        method: 'POST',
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        const message = result.error || 'Failed to sync replies';
+        toast.error(`Sync replies failed: ${message}`);
+        return;
+      }
+
+      await refreshData();
+
+      toast.success(
+        `Replies synced. Updated ${result.updatedPractices || 0} contact${(result.updatedPractices || 0) === 1 ? '' : 's'}.`
+      );
+    } catch (error) {
+      console.error('Error syncing replies:', error);
+      toast.error('Error syncing replies. Please try again.');
+    }
+  };
+
   useEffect(() => {
     fetchContacts();
     fetchTags();
@@ -388,12 +413,20 @@ export default function Audience() {
             Manage practice contacts and tags
           </p>
         </div>
-        <button
-          onClick={refreshData}
-          className="px-4 py-2 rounded-md glass"
-        >
-          Refresh Data
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={refreshData}
+            className="px-4 py-2 rounded-md glass"
+          >
+            Refresh Data
+          </button>
+          <button
+            onClick={syncReplies}
+            className="px-4 py-2 rounded-md glass"
+          >
+            Sync Replies
+          </button>
+        </div>
       </div>
 
       {/* Tags Gallery */}
@@ -604,6 +637,9 @@ export default function Audience() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                   Tags
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -640,6 +676,18 @@ export default function Audience() {
                         </span>
                       ))}
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                    {(() => {
+                      const emailCount = contact.email_sent_count || 0;
+                      if (emailCount === 0) {
+                        return <span className="text-gray-500">Unsent</span>;
+                      }
+                      if (contact.reply_meta && contact.reply_meta.has_replied) {
+                        return <span className="text-green-700">Replied</span>;
+                      }
+                      return <span className="text-gray-700">No reply</span>;
+                    })()}
                   </td>
                 </tr>
               ))}

@@ -44,8 +44,8 @@ export default function Home() {
 
   return (
     <div className="flex h-screen text-foreground" style={{backgroundImage: "url('/whitebg.jpg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundAttachment: "fixed"}}>
-      {/* Sidebar toggle button for mobile */}
-      {!sidebarOpen && (
+      {/* Sidebar toggle button for mobile (disabled in favor of dock) */}
+      {/* {!sidebarOpen && (
         <div className="md:hidden fixed top-3 left-3 z-[100] pointer-events-none">
           <button
             className="inline-flex items-center justify-center w-10 h-10 rounded-[var(--radius-md)] glass pointer-events-auto"
@@ -55,7 +55,7 @@ export default function Home() {
             <Menu size={18} />
           </button>
         </div>
-      )}
+      )} */}
 
       {/* Sidebar */}
       <aside
@@ -177,22 +177,22 @@ export default function Home() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 md:ml-0 p-4 overflow-y-auto scrollbar-none pb-24 md:pb-28">
+      <main className="flex-1 ml-0 md:ml-0 p-4 overflow-y-auto scrollbar-none pb-24 md:pb-0">
         <Glass className="h-full overflow-y-auto scrollbar-none max-w-auto mx-auto p-4">
           {renderContent()}
         </Glass>
       </main>
-      {/* Fixed bottom full-width dock wrapper */}
-      <div className="fixed bottom-4 inset-x-0 md:left-64 md:right-0 px-4 z-40">
+      {/* Fixed bottom full-width dock wrapper (mobile-only; hidden when sidebar is visible) */}
+      <div className="fixed bottom-4 inset-x-0 px-4 z-40 md:hidden">
         <FloatingDock
           items={[
-            { title: "Upload", icon: <FileUp size={22} />, href: "#" },
-            { title: "Table", icon: <Table2 size={22} />, href: "#" },
-            { title: "Outbound", icon: <Rocket size={22} />, href: "#" },
-            { title: "Templates", icon: <LayoutTemplate size={22} />, href: "#" },
-            { title: "IDs", icon: <IdCard size={22} />, href: "#" },
-            { title: "Audience", icon: <Users size={22} />, href: "#" },
-            { title: "Agentic Call", icon: <PhoneCall size={22} />, href: "#" },
+            { title: "Upload", icon: <FileUp size={22} />, href: "#", onClick: () => setActiveSection("upload") },
+            { title: "Table", icon: <Table2 size={22} />, href: "#", onClick: () => setActiveSection("table") },
+            { title: "Outbound", icon: <Rocket size={22} />, href: "#", onClick: () => setActiveSection("outbound") },
+            { title: "Templates", icon: <LayoutTemplate size={22} />, href: "#", onClick: () => setActiveSection("templates") },
+            { title: "IDs", icon: <IdCard size={22} />, href: "#", onClick: () => setActiveSection("ids") },
+            { title: "Audience", icon: <Users size={22} />, href: "#", onClick: () => setActiveSection("audience") },
+            { title: "Agentic Call", icon: <PhoneCall size={22} />, href: "#", onClick: () => setActiveSection("agentic-call") },
           ]}
           desktopClassName=""
           mobileClassName=""

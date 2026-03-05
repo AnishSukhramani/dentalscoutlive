@@ -275,7 +275,7 @@ const Outbound = () => {
 
         const { data, error: fetchError } = await supabase
           .from('practices')
-          .select('email, first_name, email_sent_count, owner_name, id, practice_name, domain_url, phone_number, tags')
+          .select('email, first_name, email_sent_count, owner_name, id, practice_name, domain_url, phone_number, tags, reply_meta')
           .not('email', 'is', null)
           .order('practice_name', { ascending: true })
           .order('id', { ascending: true });
@@ -943,6 +943,53 @@ const Outbound = () => {
     }
   };
 
+  // Manually sync email replies from the IMAP inbox into practices.reply_meta
+  const syncReplies = async () => {
+    try {
+      const response = await fetch('/api/syncReplies', {
+        method: 'POST',
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        const message = result.error || 'Failed to sync replies';
+        toast.error(`Sync replies failed: ${message}`);
+        return;
+      }
+
+      // Refresh practices so Status column reflects latest reply_meta
+      try {
+        const { data, error } = await supabase
+          .from('practices')
+          .select('email, first_name, email_sent_count, owner_name, id, practice_name, domain_url, phone_number, tags, reply_meta')
+          .not('email', 'is', null)
+          .order('practice_name', { ascending: true })
+          .order('id', { ascending: true });
+
+        if (!error && data) {
+          setPractices(data);
+
+          const counts = {};
+          data.forEach(practice => {
+            if (practice.email) {
+              counts[practice.email] = practice.email_sent_count || 0;
+            }
+          });
+          setEmailCounts(counts);
+        }
+      } catch (refreshError) {
+        console.error('Error refreshing practices after reply sync:', refreshError);
+      }
+
+      toast.success(
+        `Replies synced. Updated ${result.updatedPractices || 0} practice${(result.updatedPractices || 0) === 1 ? '' : 's'}.`
+      );
+    } catch (error) {
+      console.error('Error syncing replies:', error);
+      toast.error('Error syncing replies. Please try again.');
+    }
+  };
+
   const getEstimatedTime = () => {
     if (!processingStartTime || !isProcessing) return null;
     
@@ -1052,6 +1099,13 @@ const Outbound = () => {
                 size="sm"
               >
                 Process Scheduled
+              </Button>
+              <Button
+                onClick={syncReplies}
+                className="text-xs"
+                size="sm"
+              >
+                Sync Replies
               </Button>
             </div>
           </div>
@@ -1427,6 +1481,7 @@ const Outbound = () => {
               <TableHead className="font-semibold text-xs px-2 py-1">Email</TableHead>
               <TableHead className="font-semibold text-xs px-2 py-1">First Name</TableHead>
               <TableHead className="font-semibold text-xs px-2 py-1 hidden md:table-cell">Tags</TableHead>
+              <TableHead className="font-semibold text-xs px-2 py-1 hidden md:table-cell">Status</TableHead>
               <TableHead className="font-semibold text-xs px-2 py-1 hidden md:table-cell">Email Count</TableHead>
               <TableHead className="font-semibold text-xs px-2 py-1">Email Template</TableHead>
               <TableHead className="font-semibold text-xs px-2 py-1 hidden md:table-cell">Sender Email</TableHead>
@@ -1473,6 +1528,18 @@ const Outbound = () => {
                         </span>
                       ))}
                     </div>
+                  </TableCell>
+                  <TableCell className="text-xs px-2 py-1 hidden md:table-cell">
+                    {(() => {
+                      const emailCount = emailCounts[practice.email] || 0;
+                      if (emailCount === 0) {
+                        return <span className="text-gray-500">Unsent</span>;
+                      }
+                      if (practice.reply_meta && practice.reply_meta.has_replied) {
+                        return <span className="text-green-700">Replied</span>;
+                      }
+                      return <span className="text-gray-700">No reply</span>;
+                    })()}
                   </TableCell>
                   <TableCell className="text-xs px-2 py-1 hidden md:table-cell">
                     {highlightMatch(emailCounts[practice.email] || 0)}

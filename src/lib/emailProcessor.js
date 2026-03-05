@@ -594,6 +594,17 @@ async function sendEmail(emailData, isDirectSend = true) {
     console.log(`✓ Email sent successfully to ${emailData.to}`);
     console.log('Message ID:', result.messageId);
     console.log('Response:', result.response);
+
+    // Store reply tracking metadata for this practice
+    try {
+      await updatePracticeReplyMeta(emailData.to, {
+        last_outbound_message_id: result.messageId,
+        has_replied: false,
+        last_reply_at: null
+      });
+    } catch (metaError) {
+      console.error('Error updating practice reply_meta:', metaError);
+    }
     
     // Increment email counter for successful sends
     await incrementEmailCounter(emailData.senderEmail, isDirectSend);
@@ -610,6 +621,52 @@ async function sendEmail(emailData, isDirectSend = true) {
       responseCode: error.responseCode
     });
     throw error;
+  }
+}
+
+/**
+ * Update reply tracking metadata for a practice in the practices table.
+ * Uses the JSONB reply_meta column to keep the schema flexible.
+ */
+async function updatePracticeReplyMeta(recipientEmail, updates) {
+  try {
+    console.log('\n📊 Updating reply_meta for practice:', recipientEmail);
+
+    // Fetch existing reply_meta so we can merge updates without losing other keys
+    const { data, error } = await supabase
+      .from('practices')
+      .select('id, reply_meta')
+      .eq('email', recipientEmail)
+      .single();
+
+    if (error) {
+      console.error('Error fetching practice for reply_meta update:', error);
+      return;
+    }
+
+    if (!data) {
+      console.log('No practice found for reply_meta update with email:', recipientEmail);
+      return;
+    }
+
+    const currentMeta = data.reply_meta || {};
+    const newMeta = {
+      ...currentMeta,
+      ...updates
+    };
+
+    const { error: updateError } = await supabase
+      .from('practices')
+      .update({ reply_meta: newMeta })
+      .eq('id', data.id);
+
+    if (updateError) {
+      console.error('Error writing reply_meta to practices table:', updateError);
+    } else {
+      console.log('✓ reply_meta updated for practice', data.id);
+    }
+  } catch (error) {
+    console.error('Unexpected error updating reply_meta:', error);
   }
 }
 
