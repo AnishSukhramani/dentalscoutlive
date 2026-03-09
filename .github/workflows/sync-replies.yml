@@ -1,0 +1,25 @@
+# Sync email replies from inbox into database - runs daily at 8:30 PM IST (~15:00 UTC).
+# Run this BEFORE campaign progression (9 PM IST) so the DB has latest reply state.
+#
+# Uses same secrets as campaign progression:
+#   CAMPAIGN_PROGRESSION_URL - Your app URL (e.g. https://dentalscout.vercel.app)
+#   CRON_SECRET              - Same value as CRON_SECRET in your app env
+name: Sync replies
+
+on:
+  schedule:
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync replies from inbox
+        env:
+          CAMPAIGN_PROGRESSION_URL: ${{ secrets.CAMPAIGN_PROGRESSION_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl -sS -f -X POST "${CAMPAIGN_PROGRESSION_URL}/api/syncReplies" \
+            -H "x-cron-secret: ${CRON_SECRET}" \
+            -H "Content-Type: application/json"
