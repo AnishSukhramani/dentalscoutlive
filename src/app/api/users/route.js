@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { requireAuth } from '@/lib/authApi';
 
 const USERS_FILE_PATH = path.join(process.cwd(), 'data', 'user.json');
 
@@ -14,7 +15,9 @@ const readUsers = () => {
   }
 };
 
-export async function GET() {
+export async function GET(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const usersData = readUsers();
     return NextResponse.json(usersData);

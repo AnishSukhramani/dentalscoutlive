@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuthOrCron } from '@/lib/authApi';
 
 // Initialize Supabase client (server-side)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,7 +17,9 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
  *   practices.reply_meta.last_outbound_message_id
  * - If a match is found, updates reply_meta.has_replied and reply_meta.last_reply_at
  */
-export async function POST() {
+export async function POST(request) {
+  const auth = await requireAuthOrCron(request);
+  if (auth instanceof NextResponse) return auth;
   const {
     REPLY_IMAP_HOST,
     REPLY_IMAP_PORT,

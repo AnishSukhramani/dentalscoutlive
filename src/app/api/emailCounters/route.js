@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from '@/lib/authApi';
 
 // Check for required environment variables
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -92,7 +93,9 @@ const updateCounter = (counter, isDirectSend = true) => {
   return updatedCounter;
 };
 
-export async function GET() {
+export async function GET(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     // Get all email counters from Supabase
     const { data: counters, error } = await supabase
@@ -121,6 +124,8 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const { emailId, isDirectSend = true } = await request.json();
     
@@ -183,6 +188,8 @@ export async function POST(request) {
 }
 
 export async function PUT(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const { emailId, dailyLimit } = await request.json();
     
@@ -204,6 +211,8 @@ export async function PUT(request) {
 
 // Reset a specific email ID counter (for testing/override)
 export async function DELETE(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const { searchParams } = new URL(request.url);
     const emailId = searchParams.get('emailId');

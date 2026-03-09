@@ -33,7 +33,10 @@ export async function POST(request) {
     // 1) Sync replies so we have latest reply/token state
     if (baseUrl) {
       try {
-        const syncRes = await fetch(`${baseUrl}/api/syncReplies`, { method: 'POST' });
+        const syncRes = await fetch(`${baseUrl}/api/syncReplies`, {
+          method: 'POST',
+          headers: { 'x-cron-secret': process.env.CRON_SECRET || '' },
+        });
         const syncJson = await syncRes.json();
         if (!syncRes.ok) console.error('[campaign-progression] Sync replies failed:', syncJson);
       } catch (e) {

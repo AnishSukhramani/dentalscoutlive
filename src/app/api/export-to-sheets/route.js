@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
+import { requireAuth } from '@/lib/authApi';
 
 // Initialize Google Sheets API
 const auth = new google.auth.GoogleAuth({
@@ -16,6 +17,8 @@ const auth = new google.auth.GoogleAuth({
 const sheets = google.sheets({ version: 'v4', auth });
 
 export async function POST(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const { data, sheetName, headers } = await request.json();
 

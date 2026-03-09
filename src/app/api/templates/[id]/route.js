@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
+import { requireAuth } from '@/lib/authApi';
 
 export async function PUT(request, { params }) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const { id } = params;
     const body = await request.json();

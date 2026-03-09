@@ -6,6 +6,7 @@
 //TODO: location Counter - hard to do so maybe try later
 //TODO: Add number of entries selected feature
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import UploadFile from "@/components/UploadFile";
 import SupabaseTable from "@/components/SupabaseTable";
 import Outbound from "@/components/Outbound";
@@ -14,13 +15,20 @@ import IDs from "@/components/IDs";
 import Audience from "@/components/Audience";
 import AgenticCall from "@/components/AgenticCall";
 import CampaignMetrics from "@/components/CampaignMetrics";
-import { Menu, FileUp, Table2, Rocket, LayoutTemplate, IdCard, Users, PhoneCall, BarChart2 } from "lucide-react";
+import { Menu, FileUp, Table2, Rocket, LayoutTemplate, IdCard, Users, PhoneCall, BarChart2, LogOut } from "lucide-react";
 import Glass from "@/components/Glass";
 import FloatingDock from "@/components/ui/floating-dock";
 
 export default function Home() {
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState("upload");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+    router.refresh();
+  }
 
   const renderContent = () => {
     switch (activeSection) {
@@ -66,8 +74,8 @@ export default function Home() {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:flex md:flex-col`}
       >
-        <Glass tier="thick" className="h-full w-full p-4">
-          <h2 className="text-2xl font-heavy mb-6">
+        <Glass tier="thick" className="h-full w-full p-4 flex flex-col">
+          <h2 className="text-2xl font-heavy mb-6 whitespace-nowrap shrink-0">
             <span style={{color: '#2563eb'}}>Neurality</span> Health
           </h2>
           <ul className="space-y-2">
@@ -181,6 +189,15 @@ export default function Home() {
               </button>
             </li>
           </ul>
+          <div className="mt-auto pt-6 border-t border-[color:var(--hairline-color)]">
+            <button
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] hover:bg-foreground/6 text-foreground/80"
+              onClick={handleLogout}
+            >
+              <LogOut size={18} />
+              Sign out
+            </button>
+          </div>
         </Glass>
       </aside>
       {/* Mobile overlay to close sidebar on outside click */}

@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { processEmailQueue } from '@/lib/emailProcessor';
+import { requireAuth } from '@/lib/authApi';
 
 export async function POST(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     console.log('Processing email queue via API...');
     
@@ -27,6 +30,8 @@ export async function POST(request) {
 }
 
 export async function GET(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     // Return status information about the email processor
     const { getCurrentSenderEmail, EMAIL_CONFIGS } = await import('@/lib/emailProcessor');

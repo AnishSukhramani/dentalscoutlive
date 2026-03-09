@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from '@/lib/authApi';
 
 // Check for required environment variables
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -16,7 +17,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-export async function GET() {
+export async function GET(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     // Get email queue from Supabase
     const { data: queue, error: queueError } = await supabase

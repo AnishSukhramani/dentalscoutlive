@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
+import { requireAuth } from '@/lib/authApi';
 
 // GET /api/campaigns/[id]/metrics
 // Returns one row per practice included in this campaign with send/reply status.
 export async function GET(request, { params }) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const { id } = await params;
 

@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
+import { requireAuth } from '@/lib/authApi';
 
-export async function GET() {
+export async function GET(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const { data: templates, error } = await supabase
       .from('email_templates')
@@ -21,6 +24,8 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const body = await request.json();
     const { name, subject, body: templateBody, campaign_id, template_id } = body;
@@ -60,6 +65,8 @@ export async function POST(request) {
 }
 
 export async function DELETE(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

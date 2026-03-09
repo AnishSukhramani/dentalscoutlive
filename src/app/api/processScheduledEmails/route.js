@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { processScheduledEmails } from '../../../lib/emailProcessor.js';
+import { requireAuth } from '@/lib/authApi';
 
-export async function POST() {
+export async function POST(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     console.log('Processing scheduled emails...');
     

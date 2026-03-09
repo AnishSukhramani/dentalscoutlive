@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
+import { requireAuth } from '@/lib/authApi';
 
 // GET - Retrieve all unique tags from practices table
-export async function GET() {
+export async function GET(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     // Get all unique tags from practices table
     const { data: tags, error } = await supabase
@@ -37,6 +40,8 @@ export async function GET() {
 
 // POST - Add new tag (this will be automatically handled when adding tags to practices)
 export async function POST(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const { tagName } = await request.json();
     
@@ -81,6 +86,8 @@ export async function POST(request) {
 
 // PUT - Update tags (for bulk operations)
 export async function PUT(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const { tags } = await request.json();
     

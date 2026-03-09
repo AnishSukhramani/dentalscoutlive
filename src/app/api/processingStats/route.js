@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from '@/lib/authApi';
 
 // Check for required environment variables
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -16,7 +17,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-export async function GET() {
+export async function GET(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     // Get processing stats from Supabase
     const { data: stats, error } = await supabase
@@ -59,6 +62,8 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const { totalProcessed, totalFailed, sessionProcessed, sessionFailed } = await request.json();
     
@@ -137,6 +142,8 @@ export async function POST(request) {
 }
 
 export async function PUT(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     const { totalProcessed, totalFailed, sessionProcessed, sessionFailed, lastProcessingTime } = await request.json();
     
@@ -216,7 +223,9 @@ export async function PUT(request) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request) {
+  const auth = await requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
   try {
     // Reset all processing stats
     const { data, error } = await supabase
