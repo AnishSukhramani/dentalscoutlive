@@ -1,3 +1,8 @@
+/**
+ * TEST-ONLY: Campaign progression that SKIPS interval checks (7-day, 3-day).
+ * Use for internal testing - queues next touchpoint emails regardless of when last sent.
+ * Only callable via manual GitHub Actions (workflow_dispatch).
+ */
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -5,9 +10,6 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
-
-const FIRST_TOUCHPOINT_INTERVAL_DAYS = 7;
-const NEXT_TOUCHPOINT_INTERVAL_DAYS = 3;
 
 function requireCronSecret(request) {
   const secret = process.env.CRON_SECRET;
@@ -38,9 +40,9 @@ export async function POST(request) {
           headers: { 'x-cron-secret': process.env.CRON_SECRET || '' },
         });
         const syncJson = await syncRes.json();
-        if (!syncRes.ok) console.error('[campaign-progression] Sync replies failed:', syncJson);
+        if (!syncRes.ok) console.error('[campaign-progression-test] Sync replies failed:', syncJson);
       } catch (e) {
-        console.error('[campaign-progression] Sync replies error:', e);
+        console.error('[campaign-progression-test] Sync replies error:', e);
       }
     }
 
@@ -100,7 +102,7 @@ export async function POST(request) {
       }
     }
 
-    // 4) Outbound sends: campaign_id, practice_id, template_id (email template id), sent_at
+    // 4) Outbound sends
     const { data: outboundRows, error: outboundError } = await supabase
       .from('outbound_message_tracking')
       .select('campaign_id, practice_id, template_id, sent_at');
@@ -121,7 +123,7 @@ export async function POST(request) {
       templateIdToCampaignIds.get(tid).push(cid);
     }
 
-    // 5) Last touchpoint sent per (campaign_id, practice_id): { index, sent_at }
+    // 5) Last touchpoint sent per (campaign_id, practice_id)
     const lastSentByCampaignPractice = new Map();
     for (const row of outbound) {
       const campaignIds = row.campaign_id
@@ -145,10 +147,8 @@ export async function POST(request) {
       .select('campaign_id, practice_id');
     const repliedSet = new Set((tokens || []).map((t) => `${t.campaign_id}:${t.practice_id}`));
 
-    // 7) Decide who gets next touchpoint
+    // 7) Decide who gets next touchpoint - TEST MODE: SKIP INTERVAL CHECKS (7-day, 3-day)
     const toQueue = [];
-    const now = Date.now();
-    const oneDay = 24 * 60 * 60 * 1000;
 
     for (const campaign of campaigns) {
       const touchpoints = campaign.touchpoints || [];
@@ -161,10 +161,8 @@ export async function POST(request) {
         const nextIndex = value.index + 1;
         if (nextIndex >= touchpoints.length) continue;
 
-        const intervalDays =
-          value.index === 0 ? FIRST_TOUCHPOINT_INTERVAL_DAYS : NEXT_TOUCHPOINT_INTERVAL_DAYS;
-        const dueAt = value.sentAt + intervalDays * oneDay;
-        if (now < dueAt) continue;
+        // TEST: Skip interval check - queue regardless of 7-day/3-day wait
+        // (Main cron enforces: if (now < dueAt) continue;)
 
         const nextTp = touchpoints[nextIndex];
         const nextUuid = nextTp?.template_id;
@@ -201,7 +199,7 @@ export async function POST(request) {
       return NextResponse.json({
         success: true,
         queued: 0,
-        message: 'No contacts due for next touchpoint',
+        message: 'No contacts due for next touchpoint (test mode)',
       });
     }
 
@@ -226,7 +224,7 @@ export async function POST(request) {
       const practice = practiceMap.get(Number(q.practice_id)) || practiceMap.get(q.practice_id);
       if (!practice?.email) continue;
       entries.push({
-        id: `cron-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        id: `cron-test-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         recipientEmail: practice.email,
         recipientName: practice.first_name || practice.practice_name || practice.owner_name || 'N/A',
         templateId: q.template_id,
@@ -286,19 +284,19 @@ export async function POST(request) {
           headers: { 'x-cron-secret': process.env.CRON_SECRET || '' },
         });
       } catch (e) {
-        console.error('[campaign-progression] processEmailQueue error:', e);
+        console.error('[campaign-progression-test] processEmailQueue error:', e);
       }
     }
 
     return NextResponse.json({
       success: true,
       queued: entries.length,
-      message: `Queued ${entries.length} next-touchpoint emails`,
+      message: `[TEST] Queued ${entries.length} next-touchpoint emails (interval checks skipped)`,
     });
   } catch (err) {
-    console.error('[campaign-progression]', err);
+    console.error('[campaign-progression-test]', err);
     return NextResponse.json(
-      { error: err.message || 'Campaign progression failed' },
+      { error: err.message || 'Campaign progression test failed' },
       { status: 500 }
     );
   }

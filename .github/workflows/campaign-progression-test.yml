@@ -1,0 +1,24 @@
+# TEST-ONLY: Campaign progression with interval checks SKIPPED.
+# Use for internal testing - queues/sends next touchpoint emails regardless of 7-day/3-day wait.
+# Runs ONLY on manual trigger (workflow_dispatch) - no schedule.
+#
+# Uses same secrets as main workflow:
+#   CAMPAIGN_PROGRESSION_URL - Your app URL
+#   CRON_SECRET              - Same value as CRON_SECRET in your app env
+name: Campaign progression (test)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger campaign progression (test mode)
+        env:
+          CAMPAIGN_PROGRESSION_URL: ${{ secrets.CAMPAIGN_PROGRESSION_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl -sS -f -X POST "${CAMPAIGN_PROGRESSION_URL}/api/cron/campaign-progression-test" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Content-Type: application/json"
