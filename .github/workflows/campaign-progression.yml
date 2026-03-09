@@ -1,0 +1,25 @@
+# Run campaign progression daily at 9 PM IST (~15:30 UTC)
+# Syncs replies, then queues and processes next touchpoint emails for campaigns.
+#
+# Required GitHub repo secrets:
+#   CAMPAIGN_PROGRESSION_URL - Your app URL (e.g. https://your-app.vercel.app)
+#   CRON_SECRET              - Same value as CRON_SECRET in your app env
+name: Campaign progression
+
+on:
+  schedule:
+    - cron: '30 15 * * *'
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger campaign progression
+        env:
+          CAMPAIGN_PROGRESSION_URL: ${{ secrets.CAMPAIGN_PROGRESSION_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl -sS -f -X POST "${CAMPAIGN_PROGRESSION_URL}/api/cron/campaign-progression" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Content-Type: application/json"

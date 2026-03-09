@@ -89,7 +89,68 @@ export async function POST() {
         const inReplyTo = inReplyToRaw.trim();
         console.log('[syncReplies] In-Reply-To from envelope:', inReplyTo);
 
-        // Look up any practices whose reply_meta contains this last_outbound_message_id
+        const replyAt =
+          (message.internalDate && message.internalDate.toISOString
+            ? message.internalDate.toISOString()
+            : new Date().toISOString());
+
+        // Step 3: Prefer outbound_message_tracking so we can set replied_to_template_id
+        const { data: trackingRow, error: trackingError } = await supabase
+          .from('outbound_message_tracking')
+          .select('practice_id, template_id, campaign_id, touch_key')
+          .eq('message_id', inReplyTo)
+          .maybeSingle();
+
+        if (!trackingError && trackingRow) {
+          // Found in tracking table: update this practice with template attribution
+          matched += 1;
+          const { data: practice, error: fetchErr } = await supabase
+            .from('practices')
+            .select('id, reply_meta')
+            .eq('id', trackingRow.practice_id)
+            .single();
+          if (fetchErr || !practice) {
+            continue;
+          }
+          const currentMeta = practice.reply_meta || {};
+          const newMeta = {
+            ...currentMeta,
+            has_replied: true,
+            last_reply_at: replyAt,
+            reply_count: (currentMeta.reply_count || 0) + 1,
+            replied_to_template_id: trackingRow.template_id
+          };
+          const { error: updateError } = await supabase
+            .from('practices')
+            .update({ reply_meta: newMeta })
+            .eq('id', practice.id);
+          if (!updateError) {
+            updated += 1;
+          } else {
+            console.error('Error updating practice reply_meta during sync:', updateError);
+          }
+
+          // If this send came from a campaign touchpoint, create a token row
+          if (trackingRow.campaign_id && trackingRow.touch_key) {
+            const { error: tokenError } = await supabase
+              .from('campaign_reply_tokens')
+              .insert({
+                practice_id: trackingRow.practice_id,
+                campaign_id: trackingRow.campaign_id,
+                touch_key: trackingRow.touch_key,
+                template_id: trackingRow.template_id,
+                in_reply_to_message_id: inReplyTo,
+                replied_at: replyAt
+              });
+            if (tokenError) {
+              console.error('Error inserting campaign_reply_tokens:', tokenError);
+            }
+          }
+
+          continue;
+        }
+
+        // Fallback: match by reply_meta.last_outbound_message_id (e.g. messages sent before tracking table)
         const { data: practices, error } = await supabase
           .from('practices')
           .select('id, reply_meta')
@@ -106,15 +167,9 @@ export async function POST() {
 
         matched += practices.length;
 
-        const replyAt =
-          (message.internalDate && message.internalDate.toISOString
-            ? message.internalDate.toISOString()
-            : new Date().toISOString());
-
         for (const practice of practices) {
           const currentMeta = practice.reply_meta || {};
 
-          // If we've already marked this practice as replied, we can skip updating
           if (currentMeta.has_replied && currentMeta.last_reply_at) {
             continue;
           }

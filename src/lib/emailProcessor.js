@@ -395,7 +395,13 @@ async function processSendEmail(entry, template) {
       body: processedBody,
       senderEmail: entry.sender_email,
       senderName: entry.sender_name,
-      recipientName: entry.recipient_name
+      recipientName: entry.recipient_name,
+      templateName: template.name,
+      templateId: entry.template_id,
+      // Campaign + touchpoint metadata (if present in entry_data)
+      campaignId: entryData.campaign_id || null,
+      touchKey: entryData.touch_key || null,
+      tags: entryData.tags && Array.isArray(entryData.tags) ? entryData.tags : []
     };
     
     console.log('\n📧 Email data prepared:');
@@ -595,17 +601,49 @@ async function sendEmail(emailData, isDirectSend = true) {
     console.log('Message ID:', result.messageId);
     console.log('Response:', result.response);
 
-    // Store reply tracking metadata for this practice
+    // Store reply tracking metadata for this practice (template name and tags at send time)
     try {
-      await updatePracticeReplyMeta(emailData.to, {
+      const metaUpdates = {
         last_outbound_message_id: result.messageId,
         has_replied: false,
         last_reply_at: null
-      });
+      };
+      if (emailData.templateName != null) metaUpdates.template_name = emailData.templateName;
+      if (emailData.tags != null && Array.isArray(emailData.tags)) metaUpdates.tags = emailData.tags;
+      await updatePracticeReplyMeta(emailData.to, metaUpdates);
     } catch (metaError) {
       console.error('Error updating practice reply_meta:', metaError);
     }
-    
+
+    // Record message_id → practice_id + template_id for reply-to-template attribution
+    if (emailData.templateId) {
+      try {
+        const { data: practiceRow, error: practiceError } = await supabase
+          .from('practices')
+          .select('id')
+          .eq('email', emailData.to)
+          .single();
+        if (!practiceError && practiceRow) {
+          const { error: insertError } = await supabase.from('outbound_message_tracking').insert({
+            message_id: result.messageId,
+            practice_id: practiceRow.id,
+            template_id: emailData.templateId,
+            sent_at: new Date().toISOString(),
+            // Campaign + touchpoint metadata if this send came from a campaign
+            campaign_id: emailData.campaignId || null,
+            touch_key: emailData.touchKey || null
+          });
+          if (insertError) {
+            console.error('Error inserting outbound_message_tracking:', insertError);
+          } else {
+            console.log('✓ outbound_message_tracking recorded for message_id');
+          }
+        }
+      } catch (trackingError) {
+        console.error('Error recording outbound_message_tracking:', trackingError);
+      }
+    }
+
     // Increment email counter for successful sends
     await incrementEmailCounter(emailData.senderEmail, isDirectSend);
     

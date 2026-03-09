@@ -13,7 +13,8 @@ import TemplatesAndIDs from "@/components/TemplatesAndIDs";
 import IDs from "@/components/IDs";
 import Audience from "@/components/Audience";
 import AgenticCall from "@/components/AgenticCall";
-import { Menu, FileUp, Table2, Rocket, LayoutTemplate, IdCard, Users, PhoneCall } from "lucide-react";
+import CampaignMetrics from "@/components/CampaignMetrics";
+import { Menu, FileUp, Table2, Rocket, LayoutTemplate, IdCard, Users, PhoneCall, BarChart2 } from "lucide-react";
 import Glass from "@/components/Glass";
 import FloatingDock from "@/components/ui/floating-dock";
 
@@ -37,6 +38,8 @@ export default function Home() {
         return <Audience />;
       case "agentic-call":
         return <AgenticCall />;
+      case "campaign-metrics":
+        return <CampaignMetrics />;
       default:
         return <div>Select a section</div>;
     }
@@ -164,6 +167,19 @@ export default function Home() {
                 </div>
               </button>
             </li>
+            <li>
+              <button
+                className={`w-full text-left px-3 py-2 rounded-[var(--radius-md)] hover:bg-foreground/6 ${
+                  activeSection === "campaign-metrics" ? "bg-foreground/10" : ""
+                }`}
+                onClick={() => {
+                  setActiveSection("campaign-metrics");
+                  setSidebarOpen(false);
+                }}
+              >
+                Campaign Metrics
+              </button>
+            </li>
           </ul>
         </Glass>
       </aside>
@@ -193,6 +209,7 @@ export default function Home() {
             { title: "IDs", icon: <IdCard size={22} />, href: "#", onClick: () => setActiveSection("ids") },
             { title: "Audience", icon: <Users size={22} />, href: "#", onClick: () => setActiveSection("audience") },
             { title: "Agentic Call", icon: <PhoneCall size={22} />, href: "#", onClick: () => setActiveSection("agentic-call") },
+            { title: "Campaign Metrics", icon: <BarChart2 size={22} />, href: "#", onClick: () => setActiveSection("campaign-metrics") },
           ]}
           desktopClassName=""
           mobileClassName=""

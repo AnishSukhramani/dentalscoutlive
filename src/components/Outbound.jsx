@@ -431,6 +431,13 @@ const Outbound = () => {
         return;
       }
 
+      // Find the selected template so we can attach campaign/touchpoint metadata
+      const template = templates.find(t => t.id === templateId);
+      if (!template) {
+        console.error('Selected template not found:', templateId);
+        return;
+      }
+
       // Create the email queue entry with user parameters
       const queueEntry = {
         recipientEmail: practiceEmail,
@@ -450,7 +457,10 @@ const Outbound = () => {
           owner_name: practice.owner_name,
           email: practice.email,
           phone_number: practice.phone_number,
-          first_name: practice.first_name
+          first_name: practice.first_name,
+          // Attach campaign + touchpoint information derived from the template
+          campaign_id: template.campaign_id || null,
+          touch_key: template.template_id || null
         }
       };
       
@@ -786,7 +796,10 @@ const Outbound = () => {
           owner_name: practice.owner_name,
           email: practice.email,
           phone_number: practice.phone_number,
-          first_name: practice.first_name
+          first_name: practice.first_name,
+          // Attach campaign + touchpoint information derived from the template
+          campaign_id: template.campaign_id || null,
+          touch_key: template.template_id || null
         },
         status: 'pending',
         createdAt: new Date().toISOString()

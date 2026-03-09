@@ -23,7 +23,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { name, subject, body: templateBody } = body;
+    const { name, subject, body: templateBody, campaign_id, template_id } = body;
     
     if (!name || !subject || !templateBody) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -34,6 +34,9 @@ export async function POST(request) {
       name,
       subject,
       body: templateBody,
+      // optional campaign + template linkage
+      campaign_id: campaign_id || null,
+      template_id: template_id || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };

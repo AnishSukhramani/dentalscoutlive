@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import AnimatedSearchInput from "@/components/ui/animated-search";
 import { Plus, Search, Edit, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Bold, Italic, Underline, List, Link, ArrowDownToLine, ChevronLeft, Reply, Trash, FolderDown, MoreHorizontal, SquareArrowOutUpRight, SquarePen } from "lucide-react";
 
@@ -15,6 +22,12 @@ const TemplatesAndIDs = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
+
+  // Campaign + touchpoint linkage for templates
+  const [campaigns, setCampaigns] = useState([]);
+  const [campaignsLoading, setCampaignsLoading] = useState(true);
+  const [selectedCampaignId, setSelectedCampaignId] = useState("");
+  const [selectedTemplateIdForTouchpoint, setSelectedTemplateIdForTouchpoint] = useState("");
 
   // Supabase table columns reference
   const tableColumns = [
@@ -84,8 +97,28 @@ const TemplatesAndIDs = () => {
     }
   };
 
+  const fetchCampaigns = async () => {
+    try {
+      setCampaignsLoading(true);
+      const response = await fetch("/api/campaigns");
+      if (response.ok) {
+        const data = await response.json();
+        setCampaigns(data.campaigns || []);
+      }
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+      setCampaigns([]);
+    } finally {
+      setCampaignsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchTemplates();
+  }, []);
+
+  useEffect(() => {
+    fetchCampaigns();
   }, []);
 
   const handleChange = (e) => {
@@ -94,17 +127,32 @@ const TemplatesAndIDs = () => {
 
   const handleSave = async () => {
     try {
+      // If a campaign is selected, require a touchpoint selection
+      if (selectedCampaignId && !selectedTemplateIdForTouchpoint) {
+        alert("Please select a touchpoint for the selected campaign.");
+        return;
+      }
+
+      const payload = {
+        ...template,
+        // Attach campaign + template linkage if present
+        campaign_id: selectedCampaignId || null,
+        template_id: selectedTemplateIdForTouchpoint || null,
+      };
+
       const response = await fetch('/api/templates', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(template),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         setShowForm(false);
         setTemplate({ name: "", subject: "", body: "" });
+        setSelectedCampaignId("");
+        setSelectedTemplateIdForTouchpoint("");
         fetchTemplates(); // Refresh templates list
       } else {
         console.error('Failed to save template');
@@ -376,6 +424,66 @@ const TemplatesAndIDs = () => {
         </div>
         {showForm && (
           <div className="flex flex-col gap-3 mt-2">
+            {/* Campaign + touchpoint selectors */}
+            <div className="flex flex-col md:flex-row gap-2">
+              <div className="flex-1 min-w-[140px] space-y-1">
+                <label className="text-xs text-muted-foreground block">
+                  Campaign (optional)
+                </label>
+                <Select
+                  value={selectedCampaignId || "__none__"}
+                  onValueChange={(v) => {
+                    const value = v === "__none__" ? "" : v;
+                    setSelectedCampaignId(value);
+                    setSelectedTemplateIdForTouchpoint("");
+                  }}
+                  disabled={campaignsLoading}
+                >
+                  <SelectTrigger className="w-full h-9 text-sm">
+                    <SelectValue placeholder="No campaign" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">No campaign</SelectItem>
+                    {campaigns.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {selectedCampaignId && (
+                <div className="flex-1 min-w-[140px] space-y-1">
+                  <label className="text-xs text-muted-foreground block">
+                    Touchpoint
+                  </label>
+                  <Select
+                    value={selectedTemplateIdForTouchpoint || "__none__"}
+                    onValueChange={(v) =>
+                      setSelectedTemplateIdForTouchpoint(
+                        v === "__none__" ? "" : v
+                      )
+                    }
+                  >
+                    <SelectTrigger className="w-full h-9 text-sm">
+                      <SelectValue placeholder="Select touchpoint" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">
+                        Select touchpoint
+                      </SelectItem>
+                      {(campaigns.find((c) => c.id === selectedCampaignId)
+                        ?.touchpoints || []
+                      ).map((tp, index) => (
+                        <SelectItem key={tp.template_id || index} value={tp.template_id}>
+                          {`Touchpoint ${index + 1}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
             <Input
               name="name"
               placeholder="Template Name"
