@@ -13,6 +13,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [signupToken, setSignupToken] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -29,6 +30,7 @@ export default function SignupPage() {
           email: email.trim(),
           password,
           name: name.trim() || undefined,
+          signupToken: signupToken.trim(),
         }),
       });
 
@@ -71,7 +73,7 @@ export default function SignupPage() {
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="you@neuralityhealth.ai"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -90,6 +92,19 @@ export default function SignupPage() {
               required
               minLength={8}
               autoComplete="new-password"
+              disabled={loading}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="signupToken">Invite token</Label>
+            <Input
+              id="signupToken"
+              type="password"
+              placeholder="Enter invite token"
+              value={signupToken}
+              onChange={(e) => setSignupToken(e.target.value)}
+              required
+              autoComplete="off"
               disabled={loading}
             />
           </div>

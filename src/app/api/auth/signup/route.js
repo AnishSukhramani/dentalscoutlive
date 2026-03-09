@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
 import {
   hashPassword,
   createToken,
@@ -25,16 +26,54 @@ function validatePassword(password) {
   );
 }
 
+/** Constant-time comparison to prevent timing attacks */
+function secureCompare(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (a.length !== b.length) return false;
+  const bufA = Buffer.from(a, 'utf8');
+  const bufB = Buffer.from(b, 'utf8');
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+function isAllowedEmailDomain(email) {
+  const allowedDomains = process.env.SIGNUP_ALLOWED_DOMAINS;
+  if (!allowedDomains || typeof allowedDomains !== 'string') return false;
+  const domains = allowedDomains.split(',').map((d) => d.trim().toLowerCase()).filter(Boolean);
+  const emailLower = email.trim().toLowerCase();
+  return domains.some((domain) => emailLower.endsWith(`@${domain}`));
+}
+
+function isSignupTokenValid(providedToken) {
+  const expectedToken = process.env.SIGNUP_ACCESS_TOKEN;
+  if (!expectedToken || typeof providedToken !== 'string') return false;
+  return secureCompare(providedToken.trim(), expectedToken);
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { email, password, name } = body;
+    const { email, password, name, signupToken } = body;
 
     const emailTrimmed = email?.trim?.();
     if (!validateEmail(emailTrimmed)) {
       return NextResponse.json(
         { error: 'Valid email is required' },
         { status: 400 }
+      );
+    }
+
+    if (!isAllowedEmailDomain(emailTrimmed)) {
+      return NextResponse.json(
+        { error: 'Only company email addresses can create an account' },
+        { status: 403 }
+      );
+    }
+
+    if (!isSignupTokenValid(signupToken)) {
+      return NextResponse.json(
+        { error: 'Invalid invite token' },
+        { status: 403 }
       );
     }
 
