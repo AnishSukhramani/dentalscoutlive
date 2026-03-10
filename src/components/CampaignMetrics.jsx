@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Trash2 } from "lucide-react";
+import { Trash2, Pause, Square, Play } from "lucide-react";
 import { toast } from "sonner";
 
 const supabase = createClient(
@@ -33,6 +33,7 @@ const CampaignMetrics = () => {
   const [updateSubmitting, setUpdateSubmitting] = useState(false);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [addTouchpointSubmitting, setAddTouchpointSubmitting] = useState(false);
+  const [statusSubmitting, setStatusSubmitting] = useState(false);
 
   const [campaignMetrics, setCampaignMetrics] = useState([]);
   const [metricsLoading, setMetricsLoading] = useState(false);
@@ -235,6 +236,35 @@ const CampaignMetrics = () => {
     }
   };
 
+  const handleCampaignStatus = async (newStatus) => {
+    if (!selectedCampaignId) return;
+    setStatusSubmitting(true);
+    try {
+      const res = await fetch(`/api/campaigns/${selectedCampaignId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        toast.success(
+          newStatus === "paused"
+            ? "Campaign paused"
+            : newStatus === "stopped"
+              ? "Campaign stopped"
+              : "Campaign resumed"
+        );
+        fetchCampaigns();
+      } else {
+        toast.error(json.error || "Failed to update campaign status");
+      }
+    } catch (e) {
+      toast.error("Failed to update campaign status");
+    } finally {
+      setStatusSubmitting(false);
+    }
+  };
+
   const handleDeleteCampaign = async () => {
     if (!selectedCampaignId) return;
     if (!confirm("Delete this campaign? This cannot be undone.")) return;
@@ -336,7 +366,14 @@ const CampaignMetrics = () => {
                 <SelectItem value="__none__">Select a campaign…</SelectItem>
                 {campaigns.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
-                    {c.name}
+                    <span className="flex items-center gap-2">
+                      {c.name}
+                      {(c.status || "active") !== "active" && (
+                        <span className="text-xs text-muted-foreground">
+                          ({(c.status || "active")})
+                        </span>
+                      )}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -344,6 +381,58 @@ const CampaignMetrics = () => {
           </div>
           {selectedCampaign && (
             <>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span
+                  className={`text-xs px-2 py-0.5 rounded font-medium ${
+                    (selectedCampaign.status || "active") === "active"
+                      ? "bg-green-500/20 text-green-700 dark:text-green-400"
+                      : (selectedCampaign.status || "active") === "paused"
+                        ? "bg-amber-500/20 text-amber-700 dark:text-amber-400"
+                        : "bg-red-500/20 text-red-700 dark:text-red-400"
+                  }`}
+                >
+                  {(selectedCampaign.status || "active").charAt(0).toUpperCase() +
+                    (selectedCampaign.status || "active").slice(1)}
+                </span>
+                <div className="flex items-center gap-1">
+                  {(selectedCampaign.status || "active") === "active" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleCampaignStatus("paused")}
+                      disabled={statusSubmitting}
+                      className="h-8 px-2"
+                      title="Pause campaign"
+                    >
+                      <Pause className="w-4 h-4" />
+                    </Button>
+                  )}
+                  {(selectedCampaign.status || "active") === "paused" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleCampaignStatus("active")}
+                      disabled={statusSubmitting}
+                      className="h-8 px-2"
+                      title="Resume campaign"
+                    >
+                      <Play className="w-4 h-4" />
+                    </Button>
+                  )}
+                  {(selectedCampaign.status || "active") !== "stopped" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleCampaignStatus("stopped")}
+                      disabled={statusSubmitting}
+                      className="h-8 px-2 text-destructive border-destructive/50 hover:bg-destructive/10"
+                      title="Stop campaign permanently"
+                    >
+                      <Square className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>
                   {(selectedCampaign.touchpoints || []).length} touchpoint

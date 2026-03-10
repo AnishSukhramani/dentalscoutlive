@@ -8,7 +8,7 @@ export async function PATCH(request, { params }) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, touchpoints } = body;
+    const { name, touchpoints, status } = body;
 
     const updates = {};
     if (name !== undefined) {
@@ -22,6 +22,12 @@ export async function PATCH(request, { params }) {
         return NextResponse.json({ error: 'touchpoints must be an array' }, { status: 400 });
       }
       updates.touchpoints = touchpoints;
+    }
+    if (status !== undefined) {
+      if (!['active', 'paused', 'stopped'].includes(status)) {
+        return NextResponse.json({ error: 'status must be active, paused, or stopped' }, { status: 400 });
+      }
+      updates.status = status;
     }
 
     if (Object.keys(updates).length === 0) {

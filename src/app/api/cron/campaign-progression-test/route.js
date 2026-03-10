@@ -57,12 +57,15 @@ export async function POST(request) {
       );
     }
 
-    // 2) Load campaigns with touchpoints
-    const { data: campaigns, error: campaignsError } = await supabase
+    // 2) Load campaigns with touchpoints (exclude paused/stopped)
+    const { data: campaignsRaw, error: campaignsError } = await supabase
       .from('campaigns')
-      .select('id, name, touchpoints');
+      .select('id, name, touchpoints, status');
+    const campaigns = (campaignsRaw || []).filter(
+      (c) => (c.status || 'active') === 'active'
+    );
 
-    if (campaignsError || !campaigns?.length) {
+    if (campaignsError || !campaignsRaw?.length) {
       return NextResponse.json({
         success: true,
         queued: 0,
@@ -157,8 +160,53 @@ export async function POST(request) {
     // 7) Decide who gets next touchpoint - TEST MODE: SKIP INTERVAL CHECKS (7-day, 3-day)
     const toQueue = [];
 
+    // 7a) First touchpoint: all practices (except "test" tag) - TEST skips scheduled_date check
+    const { data: allPractices } = await supabase
+      .from('practices')
+      .select('id, email, first_name, practice_name, owner_name, domain_url, phone_number, tags');
+    const practicesNoTest = (allPractices || []).filter(
+      (p) => p.email && !(Array.isArray(p.tags) && p.tags.includes('test'))
+    );
+
     for (const campaign of campaigns) {
       const touchpoints = campaign.touchpoints || [];
+      if (touchpoints.length === 0) continue;
+
+      const firstTp = touchpoints[0];
+      const firstUuid = firstTp?.template_id;
+      if (firstUuid) {
+        let firstEmailTemplateId = null;
+        const { data: et } = await supabase
+          .from('email_templates')
+          .select('id')
+          .eq('template_id', firstUuid)
+          .eq('campaign_id', campaign.id)
+          .maybeSingle();
+        if (et?.id) firstEmailTemplateId = et.id;
+        if (!firstEmailTemplateId) {
+          const { data: et2 } = await supabase
+            .from('email_templates')
+            .select('id')
+            .eq('template_id', firstUuid)
+            .maybeSingle();
+          if (et2?.id) firstEmailTemplateId = et2.id;
+        }
+        if (firstEmailTemplateId) {
+          for (const practice of practicesNoTest) {
+            const key = `${campaign.id}:${practice.id}`;
+            if (repliedSet.has(key)) continue;
+            if (lastSentByCampaignPractice.has(key)) continue;
+            toQueue.push({
+              campaign_id: campaign.id,
+              practice_id: practice.id,
+              template_id: firstEmailTemplateId,
+              touch_key: firstTp.touch_key || 'tp1',
+              sender_email: null,
+            });
+          }
+        }
+      }
+
       if (touchpoints.length < 2) continue;
 
       for (const [key, value] of lastSentByCampaignPractice) {

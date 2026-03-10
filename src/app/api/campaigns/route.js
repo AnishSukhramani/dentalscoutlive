@@ -8,7 +8,7 @@ export async function GET(request) {
   try {
     const { data, error } = await supabase
       .from('campaigns')
-      .select('id, name, touchpoints, created_at')
+      .select('id, name, touchpoints, status, created_at')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -38,7 +38,7 @@ export async function POST(request) {
 
     const { data: inserted, error: insertError } = await supabase
       .from('campaigns')
-      .insert([{ name: campaignName, touchpoints: [] }])
+      .insert([{ name: campaignName, touchpoints: [], status: 'active' }])
       .select('id')
       .single();
 

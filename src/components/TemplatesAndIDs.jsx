@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Plus, ChevronRight, FileText, Trash2 } from "lucide-react";
+import { Plus, ChevronRight, FileText, Trash2, Pause, Square, Play } from "lucide-react";
 import { toast } from "sonner";
 
 const TemplatesAndIDs = () => {
@@ -18,6 +18,7 @@ const TemplatesAndIDs = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [addTouchpointLoading, setAddTouchpointLoading] = useState(false);
   const [createTemplateLoading, setCreateTemplateLoading] = useState(false);
+  const [statusSubmitting, setStatusSubmitting] = useState(false);
 
   const tableColumns = [
     { name: "id", description: "Unique identifier for each practice entry" },
@@ -293,6 +294,31 @@ const TemplatesAndIDs = () => {
     setTemplate({ ...template, [e.target.name]: e.target.value });
   };
 
+  const handleCampaignStatus = async (newStatus) => {
+    if (!selectedCampaignId) return;
+    setStatusSubmitting(true);
+    try {
+      const res = await fetch(`/api/campaigns/${selectedCampaignId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        toast.success(
+          newStatus === "paused" ? "Campaign paused" : newStatus === "stopped" ? "Campaign stopped" : "Campaign resumed"
+        );
+        fetchCampaigns();
+      } else {
+        const json = await res.json();
+        toast.error(json.error || "Failed to update status");
+      }
+    } catch (e) {
+      toast.error("Failed to update status");
+    } finally {
+      setStatusSubmitting(false);
+    }
+  };
+
   const handleScheduledDateChange = async (tpIndex, newDate) => {
     if (!selectedCampaignId || !selectedCampaign) return;
     const updated = [...touchpoints];
@@ -358,7 +384,18 @@ const TemplatesAndIDs = () => {
                     }`}
                   >
                     <ChevronRight size={14} className={selectedCampaignId === c.id ? "opacity-100" : "opacity-50"} />
-                    <span className="truncate">{c.name}</span>
+                    <span className="truncate flex-1">{c.name}</span>
+                    {(c.status || "active") !== "active" && (
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${
+                          (c.status || "active") === "paused"
+                            ? "bg-amber-500/20 text-amber-600"
+                            : "bg-red-500/20 text-red-600"
+                        }`}
+                      >
+                        {(c.status || "active")}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -373,18 +410,35 @@ const TemplatesAndIDs = () => {
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <h3 className="text-sm font-medium text-foreground/70">
                     {selectedCampaign?.name} – Touchpoints
                   </h3>
-                  <Button
-                    size="sm"
-                    onClick={handleAddTouchpoint}
-                    disabled={addTouchpointLoading}
-                  >
-                    <Plus size={14} className="mr-1" />
-                    Add touchpoint
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {(selectedCampaign?.status || "active") === "active" && (
+                      <Button size="sm" variant="outline" onClick={() => handleCampaignStatus("paused")} disabled={statusSubmitting} title="Pause">
+                        <Pause size={14} />
+                      </Button>
+                    )}
+                    {(selectedCampaign?.status || "active") === "paused" && (
+                      <Button size="sm" variant="outline" onClick={() => handleCampaignStatus("active")} disabled={statusSubmitting} title="Resume">
+                        <Play size={14} />
+                      </Button>
+                    )}
+                    {(selectedCampaign?.status || "active") !== "stopped" && (
+                      <Button size="sm" variant="outline" onClick={() => handleCampaignStatus("stopped")} disabled={statusSubmitting} className="text-red-600 hover:text-red-700" title="Stop permanently">
+                        <Square size={14} />
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      onClick={handleAddTouchpoint}
+                      disabled={addTouchpointLoading}
+                    >
+                      <Plus size={14} className="mr-1" />
+                      Add touchpoint
+                    </Button>
+                  </div>
                 </div>
                 {templatesLoading ? (
                   <p className="text-sm text-foreground/60">Loading templates...</p>
@@ -395,7 +449,6 @@ const TemplatesAndIDs = () => {
                     {touchpoints.map((tp, idx) => {
                       const templateForTp = templateByTouchpointId[tp.template_id];
                       const label = tp.touch_key || `Touchpoint ${idx + 1}`;
-                      const isFirstTouchpoint = idx === 0;
                       return (
                         <div
                           key={tp.template_id}
@@ -413,21 +466,15 @@ const TemplatesAndIDs = () => {
                             </div>
                           </div>
                           <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                            {isFirstTouchpoint ? (
-                              <span className="text-xs text-foreground/50 px-2 py-1 rounded bg-foreground/10">
-                                Manual
-                              </span>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <label className="text-xs text-foreground/70 whitespace-nowrap">Send on:</label>
-                                <Input
-                                  type="date"
-                                  value={tp.scheduled_date || ""}
-                                  onChange={(e) => handleScheduledDateChange(idx, e.target.value || null)}
-                                  className="h-9 w-auto min-w-[140px] bg-foreground/5 text-foreground [color-scheme:light]"
-                                />
-                              </div>
-                            )}
+                            <div className="flex items-center gap-2">
+                              <label className="text-xs text-foreground/70 whitespace-nowrap">Send on:</label>
+                              <Input
+                                type="date"
+                                value={tp.scheduled_date || ""}
+                                onChange={(e) => handleScheduledDateChange(idx, e.target.value || null)}
+                                className="h-9 w-auto min-w-[140px] bg-foreground/5 text-foreground [color-scheme:light]"
+                              />
+                            </div>
                             {templateForTp ? (
                               <>
                                 <Button
