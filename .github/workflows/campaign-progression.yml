@@ -1,5 +1,5 @@
-# Run campaign progression daily at 9 PM IST (~15:30 UTC)
-# Syncs replies, then queues and processes next touchpoint emails for campaigns.
+# Campaign progression - queues next touchpoint emails for campaigns.
+# Runs ONLY on manual trigger (workflow_dispatch) - no automatic schedule.
 #
 # Required GitHub repo secrets:
 #   CAMPAIGN_PROGRESSION_URL - Your app URL (e.g. https://your-app.vercel.app)
@@ -7,8 +7,6 @@
 name: Campaign progression
 
 on:
-  schedule:
-    - cron: '30 15 * * *'
   workflow_dispatch:
 
 jobs:
