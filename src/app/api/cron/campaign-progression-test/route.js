@@ -5,6 +5,8 @@
  */
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -105,7 +107,7 @@ export async function POST(request) {
     // 4) Outbound sends
     const { data: outboundRows, error: outboundError } = await supabase
       .from('outbound_message_tracking')
-      .select('campaign_id, practice_id, template_id, sent_at');
+      .select('campaign_id, practice_id, template_id, sent_at, sender_email');
 
     if (outboundError) {
       return NextResponse.json(
@@ -136,7 +138,12 @@ export async function POST(request) {
         const sentAt = row.sent_at ? new Date(row.sent_at).getTime() : 0;
         const cur = lastSentByCampaignPractice.get(key);
         if (!cur || meta.index > cur.index || (meta.index === cur.index && sentAt > cur.sentAt)) {
-          lastSentByCampaignPractice.set(key, { index: meta.index, sentAt, touch_key: meta.touch_key });
+          lastSentByCampaignPractice.set(key, {
+            index: meta.index,
+            sentAt,
+            touch_key: meta.touch_key,
+            sender_email: row.sender_email || null
+          });
         }
       }
     }
@@ -186,11 +193,13 @@ export async function POST(request) {
         }
         if (!emailTemplateId) continue;
 
+        const lastSent = lastSentByCampaignPractice.get(`${campaign.id}:${practiceId}`);
         toQueue.push({
           campaign_id: campaign.id,
           practice_id: practiceId,
           template_id: emailTemplateId,
           touch_key: nextTp.touch_key || `tp${nextIndex + 1}`,
+          sender_email: lastSent?.sender_email || null
         });
       }
     }
@@ -219,17 +228,33 @@ export async function POST(request) {
 
     const practiceMap = new Map(practices.map((p) => [p.id, p]));
 
+    // Build sender email -> displayName map from user.json
+    let senderNameByEmail = {};
+    try {
+      const userData = JSON.parse(
+        await readFile(join(process.cwd(), 'data', 'user.json'), 'utf8')
+      );
+      const users = userData.users || [];
+      for (const u of users) {
+        senderNameByEmail[u.email] = u.displayName || u.name || 'Campaign';
+      }
+    } catch (e) {
+      console.warn('[campaign-progression-test] Could not load user.json for sender names:', e.message);
+    }
+
     const entries = [];
     for (const q of toQueue) {
       const practice = practiceMap.get(Number(q.practice_id)) || practiceMap.get(q.practice_id);
       if (!practice?.email) continue;
+      const finalSenderEmail = q.sender_email || senderEmail;
+      const finalSenderName = senderNameByEmail[finalSenderEmail] || senderName;
       entries.push({
         id: `cron-test-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         recipientEmail: practice.email,
         recipientName: practice.first_name || practice.practice_name || practice.owner_name || 'N/A',
         templateId: q.template_id,
-        senderEmail,
-        senderName,
+        senderEmail: finalSenderEmail,
+        senderName: finalSenderName,
         senderPassword: 'N/A',
         sendMode: 'send',
         scheduledDate: null,
@@ -277,16 +302,17 @@ export async function POST(request) {
       );
     }
 
-    if (baseUrl && entries.length > 0) {
-      try {
-        await fetch(`${baseUrl}/api/processEmailQueue`, {
-          method: 'POST',
-          headers: { 'x-cron-secret': process.env.CRON_SECRET || '' },
-        });
-      } catch (e) {
-        console.error('[campaign-progression-test] processEmailQueue error:', e);
-      }
-    }
+    // Processing of email queue is manual for now - do not auto-trigger processEmailQueue
+    // if (baseUrl && entries.length > 0) {
+    //   try {
+    //     await fetch(`${baseUrl}/api/processEmailQueue`, {
+    //       method: 'POST',
+    //       headers: { 'x-cron-secret': process.env.CRON_SECRET || '' },
+    //     });
+    //   } catch (e) {
+    //     console.error('[campaign-progression-test] processEmailQueue error:', e);
+    //   }
+    // }
 
     return NextResponse.json({
       success: true,

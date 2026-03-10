@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const FIRST_TOUCHPOINT_INTERVAL_DAYS = 7;
-const NEXT_TOUCHPOINT_INTERVAL_DAYS = 3;
+// Date-based scheduling: each touchpoint (except tp1, which is manual) has scheduled_date (YYYY-MM-DD).
+// Cron runs daily and queues when today (IST) >= touchpoint's scheduled_date.
 
 function requireCronSecret(request) {
   const secret = process.env.CRON_SECRET;
@@ -100,10 +102,10 @@ export async function POST(request) {
       }
     }
 
-    // 4) Outbound sends: campaign_id, practice_id, template_id (email template id), sent_at
+    // 4) Outbound sends: campaign_id, practice_id, template_id, sent_at, sender_email
     const { data: outboundRows, error: outboundError } = await supabase
       .from('outbound_message_tracking')
-      .select('campaign_id, practice_id, template_id, sent_at');
+      .select('campaign_id, practice_id, template_id, sent_at, sender_email');
 
     if (outboundError) {
       return NextResponse.json(
@@ -121,7 +123,7 @@ export async function POST(request) {
       templateIdToCampaignIds.get(tid).push(cid);
     }
 
-    // 5) Last touchpoint sent per (campaign_id, practice_id): { index, sent_at }
+    // 5) Last touchpoint sent per (campaign_id, practice_id): { index, sentAt, touch_key, sender_email }
     const lastSentByCampaignPractice = new Map();
     for (const row of outbound) {
       const campaignIds = row.campaign_id
@@ -134,7 +136,12 @@ export async function POST(request) {
         const sentAt = row.sent_at ? new Date(row.sent_at).getTime() : 0;
         const cur = lastSentByCampaignPractice.get(key);
         if (!cur || meta.index > cur.index || (meta.index === cur.index && sentAt > cur.sentAt)) {
-          lastSentByCampaignPractice.set(key, { index: meta.index, sentAt, touch_key: meta.touch_key });
+          lastSentByCampaignPractice.set(key, {
+            index: meta.index,
+            sentAt,
+            touch_key: meta.touch_key,
+            sender_email: row.sender_email || null
+          });
         }
       }
     }
@@ -145,10 +152,9 @@ export async function POST(request) {
       .select('campaign_id, practice_id');
     const repliedSet = new Set((tokens || []).map((t) => `${t.campaign_id}:${t.practice_id}`));
 
-    // 7) Decide who gets next touchpoint
+    // 7) Decide who gets next touchpoint (date-based: scheduled_date per touchpoint)
     const toQueue = [];
-    const now = Date.now();
-    const oneDay = 24 * 60 * 60 * 1000;
+    const todayIST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // YYYY-MM-DD
 
     for (const campaign of campaigns) {
       const touchpoints = campaign.touchpoints || [];
@@ -161,12 +167,10 @@ export async function POST(request) {
         const nextIndex = value.index + 1;
         if (nextIndex >= touchpoints.length) continue;
 
-        const intervalDays =
-          value.index === 0 ? FIRST_TOUCHPOINT_INTERVAL_DAYS : NEXT_TOUCHPOINT_INTERVAL_DAYS;
-        const dueAt = value.sentAt + intervalDays * oneDay;
-        if (now < dueAt) continue;
-
         const nextTp = touchpoints[nextIndex];
+        const scheduledDate = nextTp?.scheduled_date;
+        if (!scheduledDate) continue; // No date configured - skip (user must set in Templates)
+        if (todayIST < scheduledDate) continue; // Not yet due
         const nextUuid = nextTp?.template_id;
         if (!nextUuid) continue;
 
@@ -188,11 +192,13 @@ export async function POST(request) {
         }
         if (!emailTemplateId) continue;
 
+        const lastSent = lastSentByCampaignPractice.get(`${campaign.id}:${practiceId}`);
         toQueue.push({
           campaign_id: campaign.id,
           practice_id: practiceId,
           template_id: emailTemplateId,
           touch_key: nextTp.touch_key || `tp${nextIndex + 1}`,
+          sender_email: lastSent?.sender_email || null
         });
       }
     }
@@ -221,17 +227,34 @@ export async function POST(request) {
 
     const practiceMap = new Map(practices.map((p) => [p.id, p]));
 
+    // Build sender email -> displayName map from user.json (for follow-up sender name)
+    let senderNameByEmail = {};
+    try {
+      const userData = JSON.parse(
+        await readFile(join(process.cwd(), 'data', 'user.json'), 'utf8')
+      );
+      const users = userData.users || [];
+      for (const u of users) {
+        senderNameByEmail[u.email] = u.displayName || u.name || 'Campaign';
+      }
+    } catch (e) {
+      console.warn('[campaign-progression] Could not load user.json for sender names:', e.message);
+    }
+
     const entries = [];
     for (const q of toQueue) {
       const practice = practiceMap.get(Number(q.practice_id)) || practiceMap.get(q.practice_id);
       if (!practice?.email) continue;
+      // Use recorded sender from first touchpoint if available; else fallback to CRON_SENDER_EMAIL
+      const finalSenderEmail = q.sender_email || senderEmail;
+      const finalSenderName = senderNameByEmail[finalSenderEmail] || senderName;
       entries.push({
         id: `cron-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         recipientEmail: practice.email,
         recipientName: practice.first_name || practice.practice_name || practice.owner_name || 'N/A',
         templateId: q.template_id,
-        senderEmail,
-        senderName,
+        senderEmail: finalSenderEmail,
+        senderName: finalSenderName,
         senderPassword: 'N/A',
         sendMode: 'send',
         scheduledDate: null,
@@ -279,16 +302,17 @@ export async function POST(request) {
       );
     }
 
-    if (baseUrl && entries.length > 0) {
-      try {
-        await fetch(`${baseUrl}/api/processEmailQueue`, {
-          method: 'POST',
-          headers: { 'x-cron-secret': process.env.CRON_SECRET || '' },
-        });
-      } catch (e) {
-        console.error('[campaign-progression] processEmailQueue error:', e);
-      }
-    }
+    // Processing of email queue is manual for now - do not auto-trigger processEmailQueue
+    // if (baseUrl && entries.length > 0) {
+    //   try {
+    //     await fetch(`${baseUrl}/api/processEmailQueue`, {
+    //       method: 'POST',
+    //       headers: { 'x-cron-secret': process.env.CRON_SECRET || '' },
+    //     });
+    //   } catch (e) {
+    //     console.error('[campaign-progression] processEmailQueue error:', e);
+    //   }
+    // }
 
     return NextResponse.json({
       success: true,

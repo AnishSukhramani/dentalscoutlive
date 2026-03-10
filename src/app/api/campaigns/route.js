@@ -69,6 +69,23 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Campaign created but first touchpoint failed' }, { status: 500 });
     }
 
+    // Auto-create email_template linked to first touchpoint (campaign-centric templates)
+    const { error: templateError } = await supabase.from('email_templates').insert([{
+      id: crypto.randomUUID(),
+      name: 'Touchpoint 1',
+      subject: '',
+      body: '',
+      campaign_id: campaignId,
+      template_id: firstTouchTemplateId,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }]);
+
+    if (templateError) {
+      console.error('Error creating initial template:', templateError);
+      // Don't fail - campaign and touchpoint are created; user can add template manually
+    }
+
     return NextResponse.json(updated);
   } catch (error) {
     console.error('Error in POST /api/campaigns:', error);

@@ -631,7 +631,9 @@ async function sendEmail(emailData, isDirectSend = true) {
             sent_at: new Date().toISOString(),
             // Campaign + touchpoint metadata if this send came from a campaign
             campaign_id: emailData.campaignId || null,
-            touch_key: emailData.touchKey || null
+            touch_key: emailData.touchKey || null,
+            // Track which sender was used (for follow-up touchpoints to reuse same sender)
+            sender_email: emailData.senderEmail || null
           });
           if (insertError) {
             console.error('Error inserting outbound_message_tracking:', insertError);

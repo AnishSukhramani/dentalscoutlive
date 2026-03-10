@@ -10,16 +10,19 @@ export async function PUT(request, { params }) {
     const body = await request.json();
     const { name, subject, body: templateBody } = body;
     
-    if (!name || !subject || !templateBody) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      return NextResponse.json({ error: 'Template name is required' }, { status: 400 });
     }
+    // Allow empty subject and body (e.g. for newly created touchpoint templates)
+    const safeSubject = typeof subject === 'string' ? subject : '';
+    const safeBody = typeof templateBody === 'string' ? templateBody : '';
     
     const { data, error } = await supabase
       .from('email_templates')
       .update({
-        name,
-        subject,
-        body: templateBody,
+        name: name.trim(),
+        subject: safeSubject,
+        body: safeBody,
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
