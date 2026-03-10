@@ -449,6 +449,7 @@ const TemplatesAndIDs = () => {
                     {touchpoints.map((tp, idx) => {
                       const templateForTp = templateByTouchpointId[tp.template_id];
                       const label = tp.touch_key || `Touchpoint ${idx + 1}`;
+                      const isFirstTouchpoint = idx === 0;
                       return (
                         <div
                           key={tp.template_id}
@@ -466,15 +467,21 @@ const TemplatesAndIDs = () => {
                             </div>
                           </div>
                           <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                            <div className="flex items-center gap-2">
-                              <label className="text-xs text-foreground/70 whitespace-nowrap">Send on:</label>
-                              <Input
-                                type="date"
-                                value={tp.scheduled_date || ""}
-                                onChange={(e) => handleScheduledDateChange(idx, e.target.value || null)}
-                                className="h-9 w-auto min-w-[140px] bg-foreground/5 text-foreground [color-scheme:light]"
-                              />
-                            </div>
+                            {isFirstTouchpoint ? (
+                              <span className="text-xs text-foreground/50 px-2 py-1 rounded bg-foreground/10">
+                                Manual
+                              </span>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <label className="text-xs text-foreground/70 whitespace-nowrap">Send on:</label>
+                                <Input
+                                  type="date"
+                                  value={tp.scheduled_date || ""}
+                                  onChange={(e) => handleScheduledDateChange(idx, e.target.value || null)}
+                                  className="h-9 w-auto min-w-[140px] bg-foreground/5 text-foreground [color-scheme:light]"
+                                />
+                              </div>
+                            )}
                             {templateForTp ? (
                               <>
                                 <Button
