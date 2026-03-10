@@ -29,25 +29,7 @@ export async function POST(request) {
     return NextResponse.json({ error: auth.error }, { status: 401 });
   }
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
-
   try {
-    // 1) Sync replies so we have latest reply/token state
-    if (baseUrl) {
-      try {
-        const syncRes = await fetch(`${baseUrl}/api/syncReplies`, {
-          method: 'POST',
-          headers: { 'x-cron-secret': process.env.CRON_SECRET || '' },
-        });
-        const syncJson = await syncRes.json();
-        if (!syncRes.ok) console.error('[campaign-progression-test] Sync replies failed:', syncJson);
-      } catch (e) {
-        console.error('[campaign-progression-test] Sync replies error:', e);
-      }
-    }
-
     const senderEmail = process.env.CRON_SENDER_EMAIL;
     const senderName = process.env.CRON_SENDER_NAME || 'Campaign';
     if (!senderEmail) {
@@ -158,55 +140,11 @@ export async function POST(request) {
     const repliedSet = new Set((tokens || []).map((t) => `${t.campaign_id}:${t.practice_id}`));
 
     // 7) Decide who gets next touchpoint - TEST MODE: SKIP INTERVAL CHECKS (7-day, 3-day)
+    // Only queues tp2+ for people who received the previous touchpoint. Does NOT queue tp1.
     const toQueue = [];
-
-    // 7a) First touchpoint: all practices (except "test" tag) - TEST skips scheduled_date check
-    const { data: allPractices } = await supabase
-      .from('practices')
-      .select('id, email, first_name, practice_name, owner_name, domain_url, phone_number, tags');
-    const practicesNoTest = (allPractices || []).filter(
-      (p) => p.email && !(Array.isArray(p.tags) && p.tags.includes('test'))
-    );
 
     for (const campaign of campaigns) {
       const touchpoints = campaign.touchpoints || [];
-      if (touchpoints.length === 0) continue;
-
-      const firstTp = touchpoints[0];
-      const firstUuid = firstTp?.template_id;
-      if (firstUuid) {
-        let firstEmailTemplateId = null;
-        const { data: et } = await supabase
-          .from('email_templates')
-          .select('id')
-          .eq('template_id', firstUuid)
-          .eq('campaign_id', campaign.id)
-          .maybeSingle();
-        if (et?.id) firstEmailTemplateId = et.id;
-        if (!firstEmailTemplateId) {
-          const { data: et2 } = await supabase
-            .from('email_templates')
-            .select('id')
-            .eq('template_id', firstUuid)
-            .maybeSingle();
-          if (et2?.id) firstEmailTemplateId = et2.id;
-        }
-        if (firstEmailTemplateId) {
-          for (const practice of practicesNoTest) {
-            const key = `${campaign.id}:${practice.id}`;
-            if (repliedSet.has(key)) continue;
-            if (lastSentByCampaignPractice.has(key)) continue;
-            toQueue.push({
-              campaign_id: campaign.id,
-              practice_id: practice.id,
-              template_id: firstEmailTemplateId,
-              touch_key: firstTp.touch_key || 'tp1',
-              sender_email: null,
-            });
-          }
-        }
-      }
-
       if (touchpoints.length < 2) continue;
 
       for (const [key, value] of lastSentByCampaignPractice) {
