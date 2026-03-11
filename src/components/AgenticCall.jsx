@@ -247,7 +247,7 @@ const AgenticCall = () => {
                 <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full animate-pulse-green"></div>
               </div>
               <div>
-                <h1 className="text-3xl font-bold">
+                <h1 className="text-2xl font-heavy">
                   Agentic Call
                 </h1>
                 <div className="flex items-center space-x-2 mt-1">

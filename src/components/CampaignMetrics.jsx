@@ -306,7 +306,7 @@ const CampaignMetrics = () => {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold">Campaign Metrics</h1>
+          <h1 className="text-2xl font-heavy">Campaign Metrics</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Contacts who replied to outbound emails
           </p>

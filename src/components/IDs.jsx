@@ -178,7 +178,7 @@ const IDs = () => {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium">Error loading email IDs</h3>
+              <h4 className="text-base font-medium">Error loading email IDs</h4>
               <div className="mt-2 text-sm">{error}</div>
             </div>
           </div>
@@ -189,17 +189,17 @@ const IDs = () => {
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="glass rounded-lg shadow p-4">
-              <h3 className="text-lg font-semibold text-black">Total Email IDs</h3>
+              <h4 className="text-base font-medium text-black">Total Email IDs</h4>
               <p className="text-3xl font-bold">{emailIds.length}</p>
             </div>
             <div className="glass rounded-lg shadow p-4">
-              <h3 className="text-lg font-semibold text-black">Active IDs</h3>
+              <h4 className="text-base font-medium text-black">Active IDs</h4>
               <p className="text-3xl font-bold">
                 {emailIds.filter(id => !id.isBlocked).length}
               </p>
             </div>
             <div className="glass rounded-lg shadow p-4">
-              <h3 className="text-lg font-semibold text-black">Blocked IDs</h3>
+              <h4 className="text-base font-medium text-black">Blocked IDs</h4>
               <p className="text-3xl font-bold">
                 {emailIds.filter(id => id.isBlocked).length}
               </p>
@@ -208,7 +208,7 @@ const IDs = () => {
 
           <div className="glass rounded-lg shadow">
             <div className="p-4 border-b">
-              <h3 className="text-lg font-semibold">Email IDs Overview</h3>
+              <h2 className="text-xl font-semibold">Email IDs Overview</h2>
             </div>
             <div className="p-4">
               <div className="flex justify-between items-center mb-4">
@@ -309,7 +309,7 @@ const IDs = () => {
 
     return (
       <div className="glass rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">Daily Limits Configuration</h3>
+        <h2 className="text-xl font-semibold mb-4">Daily Limits Configuration</h2>
         <p className="text-black mb-4">
           Configure daily sending limits for each email ID. Limits are enforced to prevent rate limiting and maintain good sending reputation.
         </p>
@@ -330,7 +330,7 @@ const IDs = () => {
                 </svg>
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium">Error loading email IDs</h3>
+                <h4 className="text-base font-medium">Error loading email IDs</h4>
                 <div className="mt-2 text-sm">{error}</div>
               </div>
             </div>
@@ -348,7 +348,7 @@ const IDs = () => {
                 <div key={emailId.id} className="border rounded-lg p-4">
                   <div className="flex justify-between items-center">
                     <div className="flex-1">
-                      <h4 className="font-medium">{emailId.label}</h4>
+                      <h5 className="text-sm font-medium">{emailId.label}</h5>
                       <p className="text-sm text-black">{emailId.email}</p>
                       <div className="mt-2 text-sm text-black">
                         <span>Sent today: {emailId.emailsSentToday}/{emailId.dailyLimit}</span>
@@ -397,13 +397,13 @@ const IDs = () => {
 
   const renderHistory = () => (
     <div className="glass rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold mb-4">Sending History</h3>
+      <h2 className="text-xl font-semibold mb-4">Sending History</h2>
       <p className="text-black mb-4">
         View historical data about email sending patterns and limit enforcement.
       </p>
       <div className="space-y-4">
         <div className="border rounded-lg p-4">
-          <h4 className="font-medium mb-2">Last 7 Days Activity</h4>
+          <h5 className="text-sm font-medium mb-2">Last 7 Days Activity</h5>
           <div className="grid grid-cols-7 gap-2">
             {Array.from({ length: 7 }, (_, i) => (
               <div key={i} className="text-center">
@@ -414,7 +414,7 @@ const IDs = () => {
           </div>
         </div>
         <div className="border rounded-lg p-4">
-          <h4 className="font-medium mb-2">Recent Limit Events</h4>
+          <h5 className="text-sm font-medium mb-2">Recent Limit Events</h5>
           <p className="text-black text-sm">No recent limit events to display.</p>
         </div>
       </div>
@@ -424,7 +424,7 @@ const IDs = () => {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Email IDs Management</h1>
+        <h1 className="text-2xl font-heavy">Email IDs Management</h1>
         <p className="text-foreground/70 mt-2">
           Manage your sending identities, configure daily limits, and monitor usage.
         </p>

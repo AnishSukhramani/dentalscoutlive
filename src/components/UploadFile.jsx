@@ -199,7 +199,7 @@ const UploadFile = () => {
             {/* Desktop: File Preview under upload card */}
             {filePreview.length > 0 && (
               <div className="hidden md:block scrollbar-none overflow-auto glass rounded-xl shadow p-6 border animate-fade-in mt-4">
-                <h2 className="font-semibold mb-2">File Preview (first 5 rows)</h2>
+                <h2 className="text-xl font-semibold mb-2">File Preview (first 5 rows)</h2>
                 <table className="min-w-full text-sm">
                   <thead>
                     <tr>
@@ -234,7 +234,7 @@ const UploadFile = () => {
             {/* MAPPING UI: Shown only after file loaded */}
             {fileMetrics?.columnNames?.length > 0 && (
               <div className="space-y-4 glass p-6 border rounded-xl shadow animate-fade-in">
-                <h2 className="font-semibold text-lg mb-2">Map Required Fields</h2>
+                <h2 className="text-xl font-semibold mb-2">Map Required Fields</h2>
                 <div className="grid grid-cols-1 gap-4">
                   {/* Required fields */}
                   <div>
@@ -340,7 +340,7 @@ const UploadFile = () => {
 
             {filePreview.length > 0 && (
               <div className="md:hidden scrollbar-none overflow-auto glass rounded-xl shadow p-6 border animate-fade-in">
-                <h2 className="font-semibold mb-2">File Preview (first 5 rows)</h2>
+                <h2 className="text-xl font-semibold mb-2">File Preview (first 5 rows)</h2>
                 <table className="min-w-full text-sm">
                   <thead>
                     <tr>
@@ -380,7 +380,7 @@ const UploadFile = () => {
 
       {/* {filteredJson && (
         <div className="mt-6 p-4 bg-foreground/5 border rounded-xl animate-fade-in">
-          <h3 className="font-bold mb-2">Filtered JSON Output</h3>
+          <h3 className="text-lg font-semibold mb-2">Filtered JSON Output</h3>
           <pre className="text-xs whitespace-pre-wrap break-words">
             {JSON.stringify(filteredJson, null, 2)}
           </pre>

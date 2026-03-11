@@ -271,6 +271,7 @@ export default function SupabaseTable() {
 
   return (
     <div className="p-4 max-w-full overflow-x-auto space-y-4">
+      <h1 className="text-2xl font-heavy mb-4">Supabase Table</h1>
       <div className="flex items-center space-x-4 flex-wrap">
         <span>Rows per page:</span>
         <Select

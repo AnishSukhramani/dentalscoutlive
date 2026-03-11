@@ -409,7 +409,7 @@ export default function Audience() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Audience</h1>
+          <h1 className="text-2xl font-heavy">Audience</h1>
           <p className="text-foreground/70">
             Manage practice contacts and tags
           </p>
@@ -442,7 +442,7 @@ export default function Audience() {
         <div className="glass p-4 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <h3 className="text-lg font-semibold">Tags</h3>
+              <h2 className="text-xl font-semibold">Tags</h2>
               {selectedTags && selectedTags.length > 0 && (
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                   {selectedTags.length} filter{selectedTags.length > 1 ? 's' : ''} active

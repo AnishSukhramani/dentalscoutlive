@@ -3,17 +3,20 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* SF Pro Display Font Face Declarations
- * 
- * Font Weight Usage Guide:
- * - font-heavy (700): Headings, Logos, and Subtitles - Use for main titles, brand names, section headers, and important labels
- * - font-regular (400): Normal text - Use for body text, buttons, and general content
- * - font-light (300): Underhighlighted text - Use for descriptions, captions, and secondary information
- * 
- * Available Font Files:
- * - SF-Pro-Display-Heavy.otf (700 weight) 
- * - SF-Pro-Display-Regular.otf (400 weight)
- * - SF-Pro-Rounded-Light.otf (300 weight)
+/* SF Pro Font Face Declarations
+ * All fonts are SF Pro - no external font dependencies.
+ *
+ * Font Weight Usage:
+ * - 300: SF Pro Rounded Light - descriptions, captions, h6
+ * - 400: SF Pro Display Regular - body text, h4, h5
+ * - 700: SF Pro Display Heavy - headings, logos, h1-h3
+ * - 900: SF Pro Display Black - heaviest emphasis (optional)
+ *
+ * Loaded Files:
+ * - SF-Pro-Display-Regular.otf (400)
+ * - SF-Pro-Display-Heavy.otf (700)
+ * - SF-Pro-Display-Black.otf (900)
+ * - SF-Pro-Rounded-Light.otf (300)
  */
 @font-face {
   font-family: 'SF Pro Display';
@@ -31,6 +34,13 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('/fonts/SF-Pro-Display-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 @font-face {
   font-family: 'SF Pro Display';
@@ -65,8 +75,9 @@
     --color-input: var(--hairline-color);
     --color-ring: color-mix(in oklab, var(--text-color) 60%, transparent);
 
-    --font-sans: "SF Pro Display",-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif;
-    --font-mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    /* SF Pro only - mono uses same stack as sans (no external monospace fonts) */
+    --font-sans: "SF Pro Display",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    --font-mono: "SF Pro Display",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
 
     --radius-sm: var(--radius-sm);
     --radius-md: var(--radius-md);
@@ -106,8 +117,8 @@
   --shadow-ambient: 0 8px 30px rgba(0,0,0,.25);
   --highlight-inner: inset 0 1px 0 rgba(255,255,255,.25), inset 0 -1px 0 rgba(0,0,0,.12);
 
-  /* Typography */
-  --font-sans: "SF Pro Display",-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif;
+  /* Typography - SF Pro only */
+  --font-sans: "SF Pro Display",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
 
   /* Spacing & Motion */
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px;
@@ -230,10 +241,11 @@
   .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
   .scrollbar-none::-webkit-scrollbar { width: 0; height: 0; display: none; }
   
-  /* SF Pro Display Font Weight Utilities */
-  .font-light { font-weight: 300; } /* SF Pro Rounded Light for descriptions */
-  .font-regular { font-weight: 400; } /* SF Pro Display Regular for normal text */
-  .font-heavy { font-weight: 700; } /* SF Pro Display Heavy for headings, logos, and subtitles */
+  /* SF Pro Font Weight Utilities */
+  .font-light { font-weight: 300; } /* SF Pro Rounded Light */
+  .font-regular { font-weight: 400; } /* SF Pro Display Regular */
+  .font-heavy { font-weight: 700; } /* SF Pro Display Heavy */
+  .font-black { font-weight: 900; } /* SF Pro Display Black */
   
   /* Custom Green Pulse Animation */
   .animate-pulse-green { 

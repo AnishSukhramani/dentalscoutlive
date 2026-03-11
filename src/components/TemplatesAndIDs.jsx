@@ -343,6 +343,7 @@ const TemplatesAndIDs = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
+      <h1 className="text-2xl font-heavy mb-6">Templates</h1>
       {/* Placeholders reference */}
       <div className="glass rounded-lg shadow p-4 mb-4 border">
         <h3 className="text-lg font-semibold mb-3">Available Placeholders</h3>
@@ -361,12 +362,12 @@ const TemplatesAndIDs = () => {
       </div>
 
       <div className="glass rounded-lg shadow p-4 border flex flex-col gap-4">
-        <h2 className="text-lg font-semibold">Templates (Campaign-centric)</h2>
+        <h2 className="text-xl font-semibold">Templates (Campaign-centric)</h2>
 
         <div className="flex flex-col md:flex-row gap-4 min-h-[400px]">
           {/* Campaign list */}
           <div className="flex flex-col gap-2 md:w-64 shrink-0">
-            <h3 className="text-sm font-medium text-foreground/70">Campaigns</h3>
+            <h4 className="text-base font-medium text-foreground/70">Campaigns</h4>
             {campaignsLoading ? (
               <p className="text-sm text-foreground/60">Loading...</p>
             ) : campaigns.length === 0 ? (
@@ -411,9 +412,9 @@ const TemplatesAndIDs = () => {
             ) : (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                  <h3 className="text-sm font-medium text-foreground/70">
+                  <h4 className="text-base font-medium text-foreground/70">
                     {selectedCampaign?.name} – Touchpoints
-                  </h3>
+                  </h4>
                   <div className="flex items-center gap-2">
                     {(selectedCampaign?.status || "active") === "active" && (
                       <Button size="sm" variant="outline" onClick={() => handleCampaignStatus("paused")} disabled={statusSubmitting} title="Pause">
@@ -523,7 +524,7 @@ const TemplatesAndIDs = () => {
         {/* Edit form */}
         {showEditForm && editingTemplate && (
           <div className="mt-4 p-4 glass rounded-lg border">
-            <h3 className="text-md font-medium mb-3">Edit Template: {editingTemplate.name}</h3>
+            <h3 className="text-lg font-semibold mb-3">Edit Template: {editingTemplate.name}</h3>
             <div className="flex flex-col gap-3">
               <Input
                 name="name"
@@ -579,7 +580,7 @@ const TemplatesAndIDs = () => {
               </div>
               {showPreview && (
                 <div className="mt-4 p-4 glass rounded-lg border">
-                  <h4 className="font-medium mb-2">Preview</h4>
+                  <h5 className="text-sm font-medium mb-2">Preview</h5>
                   <p className="text-sm font-medium text-foreground/70">Subject:</p>
                   <p className="text-sm p-2 rounded border mb-2">
                     {replacePlaceholders(template.subject, sampleEntryData)}

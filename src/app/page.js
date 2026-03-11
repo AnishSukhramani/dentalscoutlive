@@ -75,9 +75,9 @@ export default function Home() {
         } md:flex md:flex-col`}
       >
         <Glass tier="thick" className="h-full w-full p-4 flex flex-col">
-          <h2 className="text-2xl font-heavy mb-6 whitespace-nowrap shrink-0">
+          <h1 className="text-2xl font-heavy mb-6 whitespace-nowrap shrink-0">
             <span style={{color: '#2563eb'}}>Neurality</span> Health
-          </h2>
+          </h1>
           <ul className="space-y-2">
             <li>
               <button

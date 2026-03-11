@@ -15,7 +15,7 @@ import {
 export default function LiquidGlassDocs() {
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Liquid Glass Black & White</h1>
+      <h1 className="text-2xl font-heavy">Liquid Glass Black & White</h1>
       <p className="text-foreground/70 max-w-prose">
         Monochrome-only UI using Black/White + grayscale, frosted translucent materials with rim highlights, and San Francisco typography. All emphasis comes from opacity, blur, weight, and density.
       </p>

@@ -1025,7 +1025,7 @@ const Outbound = () => {
   if (isLoading) {
     return (
       <div className="p-4">
-        <h1 className="text-2xl font-semibold mb-4">Outbound</h1>
+        <h1 className="text-2xl font-heavy mb-4">Outbound</h1>
         <div className="flex items-center justify-center py-8">
           <p className="text-black">Loading practices...</p>
         </div>
@@ -1037,7 +1037,7 @@ const Outbound = () => {
   if (error) {
     return (
       <div className="p-4">
-        <h1 className="text-2xl font-semibold mb-4">Outbound</h1>
+        <h1 className="text-2xl font-heavy mb-4">Outbound</h1>
         <div className="flex items-center justify-center py-8">
           <p className="text-foreground/70">{error}</p>
         </div>
@@ -1050,7 +1050,7 @@ const Outbound = () => {
       {/* Page header and PST/IST converter */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Outbound</h1>
+          <h1 className="text-2xl font-heavy">Outbound</h1>
           <p className="mt-1 text-foreground/70">
             Manage and send emails to your practice contacts
           </p>
@@ -1085,10 +1085,10 @@ const Outbound = () => {
       <div className="mb-4">
         <div className="glass rounded-lg p-4 shadow-sm border">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold flex items-center">
+            <h2 className="text-xl font-semibold flex items-center">
               <div className="w-3 h-3 rounded-full mr-2 animate-pulse-green"></div>
               Email Queue Status
-            </h3>
+            </h2>
             <div className="flex items-center space-x-2">
               <Button
                 onClick={startProcessing}
@@ -1146,10 +1146,10 @@ const Outbound = () => {
           {scheduledEmailsStatus.total > 0 && (
             <div className="mt-4 glass rounded-lg p-3 border">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-md font-semibold flex items-center">
+                <h3 className="text-lg font-semibold flex items-center">
                   <div className="w-3 h-3 rounded-full mr-2 bg-foreground/60"></div>
                   Scheduled Emails
-                </h4>
+                </h3>
                 <Button onClick={fetchScheduledEmailsStatus} size="sm" className="text-xs">
                   Refresh
                 </Button>
@@ -1173,7 +1173,7 @@ const Outbound = () => {
               {/* Scheduled Emails List */}
               {scheduledEmailsStatus.emails.length > 0 && (
                 <div className="mt-3">
-                  <h5 className="text-sm font-medium text-foreground/70 mb-2">Scheduled Emails:</h5>
+                  <h4 className="text-base font-medium text-foreground/70 mb-2">Scheduled Emails:</h4>
                   <div className="max-h-32 overflow-y-auto space-y-1">
                     {scheduledEmailsStatus.emails.slice(0, 5).map((email, index) => {
                       const scheduledTime = new Date(email.scheduledDate);
@@ -1265,7 +1265,7 @@ const Outbound = () => {
         <div className="mb-4 glass p-4 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <h3 className="text-lg font-semibold">Filter by Tags</h3>
+              <h2 className="text-xl font-semibold">Filter by Tags</h2>
               {selectedTags.length > 0 && (
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
                   {selectedTags.length} filter{selectedTags.length > 1 ? 's' : ''} active
