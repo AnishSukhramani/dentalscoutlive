@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -577,7 +578,7 @@ export default function Audience() {
       <div className="glass rounded-lg shadow-sm border overflow-hidden">
         {/* Filter Status */}
         {selectedTags && selectedTags.length > 0 && (
-          <div className="px-6 py-3 bg-blue-50 border-b border-blue-200">
+          <div className="px-6 py-3 bg-blue-500/10 border-b border-blue-200/50">
             <div className="flex items-center justify-between">
               <span className="text-sm text-blue-800">
                 🔍 Filtering by: {selectedTags.join(', ')} 
@@ -596,27 +597,23 @@ export default function Audience() {
         )}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-foreground/5">
               <tr>
                 <th className="px-6 py-3 text-left">
                   <div className="flex flex-col space-y-1">
                     <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={isCurrentPageSelected}
-                        onChange={handleSelectAll}
-                        className="rounded border"
-                        title="Select all on current page"
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Select all on current page"
                       />
                       <span className="text-xs text-gray-600">Current page</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={selectAllPages}
-                        onChange={handleSelectAllPages}
-                        className="rounded border"
-                        title="Select all across all pages"
+                        onCheckedChange={handleSelectAllPages}
+                        aria-label="Select all across all pages"
                       />
                       <span className="text-xs text-gray-600">All pages</span>
                     </div>
@@ -642,15 +639,14 @@ export default function Audience() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-transparent divide-y divide-gray-200/80">
               {currentPageContacts && currentPageContacts.map((contact) => (
-                <tr key={contact.id} className="hover:bg-gray-50">
+                <tr key={contact.id} className="hover:bg-foreground/5">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={selectedRows.includes(contact.id)}
-                      onChange={() => handleRowSelect(contact.id)}
-                      className="rounded border"
+                      onCheckedChange={() => handleRowSelect(contact.id)}
+                      aria-label="Select row"
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-black">

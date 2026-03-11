@@ -210,7 +210,7 @@ export default function Home() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 md:ml-0 p-4 overflow-y-auto scrollbar-none pb-24 md:pb-0">
+      <main className="flex-1 ml-0 md:ml-0 p-4 overflow-y-auto scrollbar-none pb-24 md:pb-4">
         <Glass className="h-full overflow-y-auto scrollbar-none max-w-auto mx-auto p-4">
           {renderContent()}
         </Glass>

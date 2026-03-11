@@ -126,16 +126,21 @@
   }
 }
 
-/* Liquid Glass primitive */
+/* Liquid Glass primitive - default uses "active" state values for consistent appearance */
 .glass {
-  backdrop-filter: blur(4px) !important;
+  backdrop-filter: blur(17px) !important;
   /* background: #00163c1f; */
   background: #6d6f9523;
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-ambient);
+  box-shadow: 0 4px 16px rgba(0,0,0,.18);
   border: 1px solid rgba(255,255,255,.22);
   position: relative;
   /* transition: box-shadow var(--duration-base) var(--easing), transform var(--duration-base) var(--easing); */
+}
+
+/* Nested glass: no tint to prevent accumulation when stacking glass divs */
+.glass .glass {
+  background: transparent !important;
 }
 .glassdark {
   backdrop-filter: blur(4px) !important;
@@ -174,8 +179,9 @@
   position: fixed !important;
 }
 
-.glass:hover:not([data-slot="dialog-content"]) { transform: translateY(0px); }
-.glass:active:not([data-slot="dialog-content"]) { backdrop-filter: blur(17px) !important; box-shadow: 0 4px 16px rgba(0,0,0,.18); transform: translateY(0); }
+/* Hover/active states removed - glass uses consistent default appearance at all times */
+/* .glass:hover:not([data-slot="dialog-content"]) { transform: translateY(0px); } */
+/* .glass:active:not([data-slot="dialog-content"]) { backdrop-filter: blur(17px) !important; box-shadow: 0 4px 16px rgba(0,0,0,.18); transform: translateY(0); } */
 
 @media (prefers-reduced-motion: reduce) {
   .glass { transition: none; }
@@ -235,7 +241,8 @@
   }
 }
 
-/* Custom Blackhole Cursor */
+/* Custom Blackhole Cursor - commented out to use default cursor */
+/*
 .cursor-dot {
   width: 12px;
   height: 12px;
@@ -264,10 +271,10 @@
   transition: width .2s ease, height .2s ease, filter .2s ease;
 }
 
-/* Hide native cursor so our custom one is visible (only on hover-capable devices) */
 @media (hover: hover) and (pointer: fine) {
   html, body, *, *::before, *::after { cursor: none !important; }
 }
+*/
 
 /* Reusable Toggle (hidden checkbox + styled label) */
 .toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; }

@@ -188,17 +188,17 @@ const IDs = () => {
       {!loading && !error && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="glass rounded-lg shadow p-4">
               <h3 className="text-lg font-semibold text-black">Total Email IDs</h3>
               <p className="text-3xl font-bold">{emailIds.length}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="glass rounded-lg shadow p-4">
               <h3 className="text-lg font-semibold text-black">Active IDs</h3>
               <p className="text-3xl font-bold">
                 {emailIds.filter(id => !id.isBlocked).length}
               </p>
             </div>
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="glass rounded-lg shadow p-4">
               <h3 className="text-lg font-semibold text-black">Blocked IDs</h3>
               <p className="text-3xl font-bold">
                 {emailIds.filter(id => id.isBlocked).length}
@@ -308,7 +308,7 @@ const IDs = () => {
     };
 
     return (
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="glass rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold mb-4">Daily Limits Configuration</h3>
         <p className="text-black mb-4">
           Configure daily sending limits for each email ID. Limits are enforced to prevent rate limiting and maintain good sending reputation.
@@ -396,7 +396,7 @@ const IDs = () => {
   };
 
   const renderHistory = () => (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="glass rounded-lg shadow p-6">
       <h3 className="text-lg font-semibold mb-4">Sending History</h3>
       <p className="text-black mb-4">
         View historical data about email sending patterns and limit enforcement.

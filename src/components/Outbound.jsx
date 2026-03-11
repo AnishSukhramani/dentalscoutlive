@@ -1372,7 +1372,7 @@ const Outbound = () => {
 
       {/* Bulk select bar */}
       {selectedIds.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2 border p-2 rounded-md shadow bg-muted mb-2">
+        <div className="flex flex-wrap items-center gap-2 border p-2 rounded-md shadow glass mb-2">
           <Button variant="secondary" size="sm" onClick={handleSelectAllPage}>Select All on Page</Button>
           <Button variant="secondary" size="sm" onClick={handleSelectAllGlobal}>Select All Across Pages</Button>
           <Button variant="outline" size="sm" onClick={handleClearSelection}>Clear Selection</Button>
